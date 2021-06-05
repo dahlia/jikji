@@ -25,7 +25,7 @@ Deno.test("MediaType.get()", () => {
   assertEquals(odt.parameters, {});
   // application/xhtml+xml; charset=utf-8:
   const xhtml = MediaType.get("Application", ["xhtml"], ["xml"], {
-    CharSet: "utf-8",
+    CharSet: "UTF8",
   });
   assertStrictEquals(xhtml.type, "application");
   assertEquals(xhtml.subtype, ["xhtml"]);
@@ -115,7 +115,7 @@ Deno.test("MediaType.fromString()", () => {
   assertEquals(odt.subtype, ["vnd", "oasis", "opendocument", "text"]);
   assertEquals(odt.suffixes, []);
   assertEquals(odt.parameters, {});
-  const xhtml = MediaType.fromString("application/xhtml+xml; charset=utf-8");
+  const xhtml = MediaType.fromString("application/xhtml+xml; charset=UTF8");
   assertStrictEquals(xhtml.type, "application");
   assertEquals(xhtml.subtype, ["xhtml"]);
   assertEquals(xhtml.suffixes, ["xml"]);

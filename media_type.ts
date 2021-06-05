@@ -53,30 +53,7 @@ export class MediaType {
     Object.freeze(this.subtype);
     this.suffixes = suffixes || [];
     Object.freeze(this.suffixes);
-    this.parameters = {};
-    for (const attr in parameters) {
-      if (attr.length < 1) {
-        throw new MediaTypeError("Parameter names cannot be empty.");
-      }
-      const illegalChars = attr.match(/[^-!#$%&'*+.0-9<>A-Z^_`a-z{|}~]+/);
-      if (illegalChars != null) {
-        throw new MediaTypeError(
-          `There are some disallowed characters ${
-            JSON.stringify(illegalChars[0])
-          } in a parameter name: ${JSON.stringify(attr)}.`,
-        );
-      }
-      const a = attr.toLowerCase();
-      if (this.parameters[a] == null) {
-        this.parameters[a] = parameters[attr];
-      } else {
-        throw new MediaTypeError(
-          `There are duplicate parameter names: ${
-            JSON.stringify(a)
-          }.  Note that parameter names are case-insensitive.`,
-        );
-      }
-    }
+    this.parameters = parameters || {};
     Object.freeze(this.parameters);
     Object.freeze(this);
   }
@@ -107,10 +84,48 @@ export class MediaType {
       }
       subtype = split as [string, ...string[]];
     }
+    parameters = this.normalizeParameters(parameters);
+    const encoding = parameters?.charset;
+    if (encoding != null) {
+      const normalized = new TextDecoder(encoding).encoding;
+      if (encoding !== normalized) {
+        parameters = { ...parameters, charset: normalized };
+      }
+    }
     const mediaType = new this(type, subtype, suffixes, parameters);
     const key = mediaType.toString();
     const interned = this.interns[key];
     return interned || (this.interns[key] = mediaType);
+  }
+
+  private static normalizeParameters(
+    parameters?: Record<string, string> | null,
+  ): Record<string, string> {
+    const normalized: Record<string, string> = {};
+    for (const attr in parameters) {
+      if (attr.length < 1) {
+        throw new MediaTypeError("Parameter names cannot be empty.");
+      }
+      const illegalChars = attr.match(/[^-!#$%&'*+.0-9<>A-Z^_`a-z{|}~]+/);
+      if (illegalChars != null) {
+        throw new MediaTypeError(
+          `There are some disallowed characters ${
+            JSON.stringify(illegalChars[0])
+          } in a parameter name: ${JSON.stringify(attr)}.`,
+        );
+      }
+      const a = attr.toLowerCase();
+      if (normalized[a] == null) {
+        normalized[a] = parameters[attr];
+      } else {
+        throw new MediaTypeError(
+          `There are duplicate parameter names: ${
+            JSON.stringify(a)
+          }.  Note that parameter names are case-insensitive.`,
+        );
+      }
+    }
+    return normalized;
   }
 
   private static readonly PATTERN: RegExp =

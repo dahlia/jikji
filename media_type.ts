@@ -199,6 +199,30 @@ export class MediaType {
     }
     return MediaType.get(this.type, this.subtype, this.suffixes, params);
   }
+
+  /**
+   * Checks if the media type is compatible with the operand.  If the operand
+   * has no parameters it does not compare parameters.
+   * @param type The operand to test equality.
+   * @returns Whether two media types are compatible.
+   */
+  matches(type: MediaType | string): boolean {
+    const operand = typeof type == "string" ? MediaType.fromString(type) : type;
+    if (Object.keys(operand.parameters).length > 0) {
+      return this === type;
+    }
+    if (this.type !== operand.type) return false;
+    else if (this.subtype.length !== operand.subtype.length) return false;
+    else if (this.suffixes.length !== operand.suffixes.length) return false;
+    for (let i = 0; i < this.subtype.length; i++) {
+      if (this.subtype[i] !== operand.subtype[i]) return false;
+    }
+    for (let i = 0; i < this.suffixes.length; i++) {
+      if (this.suffixes[i] !== operand.suffixes[i]) return false;
+    }
+    return true;
+  }
+
   /**
    * Turns a media type object into an IANA media type string.
    * @returns A string formatted as IANA media type.

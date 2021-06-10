@@ -196,6 +196,44 @@ Deno.test("MediaType.withParameter()", () => {
   );
 });
 
+Deno.test("MediaType.matches()", () => {
+  const txt = MediaType.fromString("text/plain");
+  const txtUtf8 = MediaType.fromString("text/plain; charset=utf-8");
+  const txtAscii = MediaType.fromString("text/plain; charset=ascii");
+  const html = MediaType.fromString("text/html");
+  const htmlUtf8 = MediaType.fromString("text/html; charset=utf8");
+  const atom = MediaType.fromString("application/atom+xml");
+  const xhtml = MediaType.fromString("application/xhtml+xml");
+  const vndXhtml = MediaType.fromString("application/vnd.foo.xhtml+xml");
+  const types = [txt, txtUtf8, txtAscii, html, htmlUtf8, atom, xhtml, vndXhtml];
+  // txt     txtUtf8 txtAsci html    htmlUtf atom    xhtml   vndXhtml
+  // deno-fmt-ignore
+  const truthTable = [
+    [true,   false,  false,  false,  false,  false,  false,  false], // txt
+    [true,   true,   false,  false,  false,  false,  false,  false], // txtUtf8
+    [true,   false,  true,   false,  false,  false,  false,  false], // txtAscii
+    [false,  false,  false,  true,   false,  false,  false,  false], // html
+    [false,  false,  false,  true,   true,   false,  false,  false], // htmlUtf8
+    [false,  false,  false,  false,  false,  true,   false,  false], // atom
+    [false,  false,  false,  false,  false,  false,  true,   false], // xhtml
+    [false,  false,  false,  false,  false,  false,  false,  true],  // vndXhtml
+  ];
+  for (let i = 0; i < types.length; i++) {
+    for (let j = 0; j < types.length; j++) {
+      assertStrictEquals(
+        types[i].matches(types[j]),
+        truthTable[i][j],
+        `MediaType.fromString(${JSON.stringify(types[i].toString())}).matches(${
+          JSON.stringify(types[j].toString())
+        }) should be ${JSON.stringify(truthTable[i][j])}, but got ${
+          JSON.stringify(types[i].matches(types[j]))
+        }.`,
+      );
+      assertStrictEquals(types[i].matches(types[j]), truthTable[i][j]);
+    }
+  }
+});
+
 Deno.test("MediaType.toString()", () => {
   const odt = MediaType.get("application", [
     "Vnd",

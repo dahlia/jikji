@@ -179,6 +179,27 @@ export class MediaType {
   }
 
   /**
+   * Updates its {@link parameters}.  Note that it does not change
+   * the {@link MediaType} instance in place, but returns a distinct instance
+   * with new {@link parameters}.
+   * @param name The parameter name to update.  If it did not exist it adds
+   *             a new parameter.  If it existed it updates the `value`.
+   * @param value The parameter value to be set.  If it is omitted or `null`
+   *              the parameter is removed at all.
+   * @returns A distinct instance with new {@link parameters}.
+   */
+  withParameter(name: string, value?: string | null): MediaType {
+    let params: Record<string, string>;
+    name = name.toLowerCase();
+    if (value == null) {
+      params = { ...this.parameters };
+      delete params[name];
+    } else {
+      params = { ...this.parameters, [name]: value };
+    }
+    return MediaType.get(this.type, this.subtype, this.suffixes, params);
+  }
+  /**
    * Turns a media type object into an IANA media type string.
    * @returns A string formatted as IANA media type.
    */

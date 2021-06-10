@@ -174,6 +174,28 @@ Deno.test("MediaType.fromString()", () => {
   );
 });
 
+Deno.test("MediaType.withParameter()", () => {
+  const txt = MediaType.fromString("text/plain");
+  const txtUtf8 = MediaType.fromString("text/plain; charset=utf-8");
+  const txtAscii = MediaType.fromString("text/plain; charset=ascii");
+  assertStrictEquals(txt.withParameter("charset"), txt);
+  assertStrictEquals(txt.withParameter("charset", null), txt);
+  assertStrictEquals(txt.withParameter("charset", "utf-8"), txtUtf8);
+  assertStrictEquals(txt.withParameter("CHARSET", "ascii"), txtAscii);
+  assertStrictEquals(txtUtf8.withParameter("charset"), txt);
+  assertStrictEquals(txtUtf8.withParameter("charset", null), txt);
+  assertStrictEquals(txtUtf8.withParameter("charset", "ascii"), txtAscii);
+  assertStrictEquals(
+    txtUtf8.withParameter("foo", "bar"),
+    MediaType.fromString("text/plain; charset=utf-8; foo=bar"),
+  );
+  assertThrows(
+    () => txt.withParameter("invalid,name", "value"),
+    MediaTypeError,
+    "disallowed characters",
+  );
+});
+
 Deno.test("MediaType.toString()", () => {
   const odt = MediaType.get("application", [
     "Vnd",

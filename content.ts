@@ -11,9 +11,9 @@ import { MediaType, MediaTypeError } from "./media_type.ts";
  * Names are given to resources.
  */
 export class Content {
-  private bodyCache?: string | Uint8Array;
-  private bodyGetter: () => Promise<string | Uint8Array>;
-  private readonly lastModifiedInternal: Date;
+  #body?: string | Uint8Array;
+  #getBody: () => Promise<string | Uint8Array>;
+  readonly #lastModified: Date;
 
   /** The media type of the content. */
   readonly type: MediaType;
@@ -51,14 +51,15 @@ export class Content {
   ) {
     if (typeof bodyGetter == "string" || bodyGetter instanceof Uint8Array) {
       const body = bodyGetter;
+      this.#body = body;
       bodyGetter = () => Promise.resolve(body);
     }
-    this.bodyGetter = bodyGetter;
+    this.#getBody = bodyGetter;
     this.type = typeof type == "string" ? MediaType.fromString(type) : type;
     this.language = typeof language == "string"
       ? LanguageTag.fromString(language)
       : language || null;
-    this.lastModifiedInternal = lastModified == null
+    this.#lastModified = lastModified == null
       ? new Date()
       : new Date(lastModified);
     this.metadata = metadata || {};
@@ -72,7 +73,7 @@ export class Content {
    * @returns The actual content body.
    */
   async getBody(): Promise<string | Uint8Array> {
-    return this.bodyCache || (this.bodyCache = await this.bodyGetter());
+    return this.#body || (this.#body = await this.#getBody());
   }
 
   /**
@@ -95,7 +96,7 @@ export class Content {
    * to the {@link Content} instance's internal state.
    */
   get lastModified(): Date {
-    return new Date(this.lastModifiedInternal);
+    return new Date(this.#lastModified);
   }
 }
 

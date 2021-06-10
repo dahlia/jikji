@@ -125,6 +125,57 @@ Deno.test("Content.lastModified", () => {
   assertEquals(c.lastModified, new Date(lastModified));
 });
 
+const mediaTypeLikeTypes: Record<string, (_: string) => MediaType | string> = {
+  string: (s) => s,
+  MediaType: MediaType.fromString.bind(MediaType),
+};
+for (const [typeName, c] of Object.entries(mediaTypeLikeTypes)) {
+  Deno.test(`Content.matches(${typeName})`, () => {
+    const txt = new Content("", "text/plain");
+    const txtAscii = new Content("", "text/plain; charset=ascii");
+    const txtUtf8 = new Content("", "text/plain; charset=utf8");
+    const html = new Content("", "text/html");
+
+    // type:
+    assert(txt.matches({ type: c("text/plain") }));
+    assert(!txt.matches({ type: c("text/plain; charset=utf-8") }));
+    assert(txtAscii.matches({ type: c("text/plain") }));
+    assert(!txtAscii.matches({ type: c("text/plain; charset=utf-8") }));
+    assert(txtUtf8.matches({ type: c("text/plain") }));
+    assert(txtUtf8.matches({ type: c("text/plain; charset=utf-8") }));
+    assert(!html.matches({ type: c("text/plain") }));
+    assert(!html.matches({ type: c("text/plain; charset=utf-8") }));
+
+    // exactType:
+    assert(txt.matches({ exactType: c("text/plain") }));
+    assert(!txt.matches({ exactType: c("text/plain; charset=utf-8") }));
+    assert(!txtAscii.matches({ exactType: c("text/plain") }));
+    assert(!txtAscii.matches({ exactType: c("text/plain; charset=utf-8") }));
+    assert(!txtUtf8.matches({ exactType: c("text/plain") }));
+    assert(txtUtf8.matches({ exactType: c("text/plain; charset=utf-8") }));
+    assert(!html.matches({ exactType: c("text/plain") }));
+    assert(!html.matches({ exactType: c("text/plain; charset=utf-8") }));
+
+    // both:
+    assert(txt.matches({ type: c("text/plain"), exactType: c("text/plain") }));
+    assert(
+      !txt.matches({
+        type: c("text/plain"),
+        exactType: c("text/plain; charset=ascii"),
+      }),
+    );
+    assert(
+      !txtAscii.matches({ type: c("text/plain"), exactType: c("text/plain") }),
+    );
+    assert(
+      txtAscii.matches({
+        type: c("text/plain"),
+        exactType: c("text/plain; charset=ascii"),
+      }),
+    );
+  });
+}
+
 Deno.test("ContentKey.get()", () => {
   const txt = ContentKey.get(MediaType.fromString("text/plain"));
   assertStrictEquals(txt.type, MediaType.get("text", "plain"));

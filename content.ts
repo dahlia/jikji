@@ -98,6 +98,30 @@ export class Content {
   get lastModified(): Date {
     return new Date(this.#lastModified);
   }
+
+  /**
+   * Checks if the {@link Content} satisfies the given `filter`.
+   * @param filter The criteria to check.  If it's omitted (`undefined`)
+                   `true` is returned.
+   * @returns `true` if the {@link Content} satisfies the given `filter`.
+              `false` otherwise.
+   */
+  matches(filter?: ContentFilter): boolean {
+    if (filter == null) return true;
+    if (filter.type != null) {
+      const type = typeof filter.type == "string"
+        ? MediaType.fromString(filter.type)
+        : filter.type;
+      if (!this.type.matches(type)) return false;
+    }
+    if (filter.exactType != null) {
+      const type = typeof filter.exactType == "string"
+        ? MediaType.fromString(filter.exactType)
+        : filter.exactType;
+      if (this.type !== type) return false;
+    }
+    return true;
+  }
 }
 
 /**
@@ -160,6 +184,27 @@ export class ContentKey {
  * {@link ContentKey}s.
  */
 export class ContentKeyError extends Error {
+}
+
+/**
+ * Represents criteria on {@link Content}s.  Each field represents a criterium,
+ * and a {@link Content} satisfies a filter when it *all* criteria (fields) in
+ * the filter are satisfied.
+ *
+ * Omitted (`undefined`) fields are satisfied for any {@link Content}.
+ */
+export interface ContentFilter {
+  /**
+   * Filters out {@link Content}s having `type`s that don't match to this.
+   * This use {@link MediaType.matches} method for comparison under the hood,
+   * which means it does not compare parameters if it lacks parameters.
+   */
+  type?: MediaType | string;
+  /**
+   * Similar to {@link type} filter, except it does exact match, which means
+   * is is sensitive to {@link MediaType.parameters} unlike {@link type} filter.
+   */
+  exactType?: MediaType | string;
 }
 
 export default Content;

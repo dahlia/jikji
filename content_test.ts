@@ -8,6 +8,7 @@ import {
 import {
   Content,
   ContentKey,
+  ContentMetadata,
   LanguageTag,
   LanguageTagError,
   MediaType,
@@ -22,11 +23,11 @@ const contentBodyTypes: [string, string | Uint8Array][] = [
 for (const [contentBodyType, contentBodyValue] of contentBodyTypes) {
   Deno.test(`Content(${contentBodyType})`, async () => {
     // all parameters are filled:
-    let getterInvoked = false;
+    let loaderInvoked = false;
     const lastModified = Date.UTC(1988, 8, 4, 1, 2, 3, 4);
     const c = new Content(
       () => {
-        getterInvoked = true;
+        loaderInvoked = true;
         return Promise.resolve(contentBodyValue);
       },
       "text/plain",
@@ -34,40 +35,37 @@ for (const [contentBodyType, contentBodyValue] of contentBodyTypes) {
       new Date(lastModified),
       { foo: 123, bar: "baz" },
     );
-    assert(!getterInvoked);
+    assert(!loaderInvoked);
     assertStrictEquals(c.type, MediaType.get("text", "plain"));
     assertStrictEquals(c.language, LanguageTag.get("en", null, "US"));
     assertEquals(c.lastModified, new Date(lastModified));
-    assertEquals(c.metadata, { foo: 123, bar: "baz" });
-    assertStrictEquals(await c.getBody(), contentBodyValue);
-
-    // Content.metadata should be immutable:
-    assertThrows(() => c.metadata.baz = 456, TypeError);
+    assertEquals(await c.getBody(), contentBodyValue);
+    assertEquals(await c.getMetadata(), { foo: 123, bar: "baz" });
 
     // optional fields are omitted:
-    getterInvoked = false;
+    loaderInvoked = false;
     const before = new Date();
     const c2 = new Content(
       () => {
-        getterInvoked = true;
+        loaderInvoked = true;
         return Promise.resolve(contentBodyValue);
       },
       "text/plain",
     );
     const after = new Date();
-    assert(!getterInvoked);
+    assert(!loaderInvoked);
     assertStrictEquals(c2.type, MediaType.get("text", "plain"));
     assertStrictEquals(c2.language, null);
     assert(before <= c2.lastModified);
     assert(c2.lastModified <= after);
-    assertEquals(c2.metadata, {});
-    assertStrictEquals(await c2.getBody(), contentBodyValue);
+    assertEquals(await c2.getBody(), contentBodyValue);
+    assertEquals(await c2.getMetadata(), {});
 
     // non-lazy body:
     const c3 = new Content(contentBodyValue, "text/plain");
     assertStrictEquals(c3.type, MediaType.get("text", "plain"));
     assertStrictEquals(c3.language, null);
-    assertStrictEquals(await c2.getBody(), contentBodyValue);
+    assertEquals(await c2.getBody(), contentBodyValue);
 
     // invalid arguments:
     assertThrows(
@@ -86,21 +84,93 @@ for (const [contentBodyType, contentBodyValue] of contentBodyTypes) {
   });
 
   Deno.test(`Content.getBody(): ${contentBodyType}`, async () => {
-    const getterInvoked: boolean[] = [];
+    const loaderInvoked: boolean[] = [];
     const c = new Content(
       () => {
-        getterInvoked.push(true);
+        loaderInvoked.push(true);
         return Promise.resolve(contentBodyValue);
       },
       "text/plain",
     );
-    assertEquals(getterInvoked, []);
-    assertStrictEquals(await c.getBody(), contentBodyValue);
-    assertEquals(getterInvoked, [true]);
-    assertStrictEquals(await c.getBody(), contentBodyValue);
-    assertEquals(getterInvoked, [true]);
+    assertEquals(loaderInvoked, []);
+    assertEquals(await c.getBody(), contentBodyValue);
+    assertEquals(loaderInvoked, [true]);
+    assertEquals(await c.getBody(), contentBodyValue);
+    assertEquals(loaderInvoked, [true]);
+
+    const body = await c.getBody();
+    if (contentBodyValue instanceof Uint8Array && body instanceof Uint8Array) {
+      // Mutating the return value of Content.getBody() does not affect
+      // the Content instance's internal buffer:
+      body.set(new Uint8Array(body.length), 0);
+      assertEquals(await c.getBody(), contentBodyValue);
+
+      // Mutating the input buffer does not affect the Content instance's
+      // internal buffer:
+      const buffer = contentBodyValue.slice(0);
+      const scalarValue = new Content(buffer, "text/plain");
+      const scalarCallback = new Content(
+        () => Promise.resolve(buffer),
+        "text/plain",
+      );
+      const tupleCallback = new Content(
+        () => Promise.resolve([buffer]),
+        "text/plain",
+      );
+      buffer.set(new Uint8Array(body.length), 0);
+      assertEquals(await scalarValue.getBody(), contentBodyValue);
+      assertEquals(await scalarCallback.getBody(), contentBodyValue);
+      assertEquals(await tupleCallback.getBody(), contentBodyValue);
+    }
   });
 }
+
+Deno.test("Content.getMetadata()", async () => {
+  const loaderInvoked: boolean[] = [];
+  const init: ContentMetadata = { foo: 1, bar: null };
+  const c = new Content(
+    () => {
+      loaderInvoked.push(true);
+      return Promise.resolve(["", { bar: 2, baz: 3 }]);
+    },
+    "text/plain",
+    null,
+    null,
+    init,
+  );
+  assertEquals(loaderInvoked, []);
+  assertEquals(await c.getMetadata(), { foo: 1, bar: 2, baz: 3 });
+  assertEquals(loaderInvoked, [true]);
+  assertEquals(await c.getMetadata(), { foo: 1, bar: 2, baz: 3 });
+  assertEquals(loaderInvoked, [true]);
+
+  // Mutating the return value of Content.getBody() does not affect
+  // the Content instance's internal buffer:
+  const returned = await c.getMetadata();
+  assert(returned != null);
+  returned.mutate = true;
+  assertEquals(await c.getMetadata(), { foo: 1, bar: 2, baz: 3 });
+
+  // Mutating the input buffer does not affect the Content instance's
+  // internal buffer:
+  const init2 = { ...init };
+  const scalarValue = new Content("", "text/plain", null, null, init2);
+  const scalarCallback = new Content(
+    () => Promise.resolve(["", init2]),
+    "text/plain",
+  );
+  const tupleCallback = new Content(
+    () => Promise.resolve(["", init2]),
+    "text/plain",
+  );
+  const scalarValueMetadata = await scalarValue.getMetadata();
+  const scalarCallbackMetadata = await scalarCallback.getMetadata();
+  const tupleCallbackMetadata = await tupleCallback.getMetadata();
+  init2.mutate = true;
+  assertEquals(scalarValueMetadata, init);
+  assertEquals(scalarCallbackMetadata, init);
+  assertEquals(tupleCallbackMetadata, init);
+});
 
 Deno.test("Content.encoding", () => {
   const c = new Content("", "text/plain; charset=UTF8");

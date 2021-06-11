@@ -1,6 +1,19 @@
 import { LanguageTag, LanguageTagError } from "./language_tag.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
 
+/** The content metadata.  Usually extracted from front matter. */
+export type ContentMetadata = Record<string, unknown> | null;
+
+/** The content body.  It can be either a Unicode string or a byte array. */
+export type ContentBody = string | Uint8Array;
+
+/** The asynchronous function to load content body and optionally metadata. */
+export type ContentLoader = () => Promise<
+  | ContentBody
+  | [ContentBody]
+  | [ContentBody, ContentMetadata | undefined]
+>;
+
 /**
  * The content with metadata.  It can be a source content, or also can be
  * a target content, or even can be an intermediate content.  Although it
@@ -11,24 +24,22 @@ import { MediaType, MediaTypeError } from "./media_type.ts";
  * Names are given to resources.
  */
 export class Content {
-  #body?: string | Uint8Array;
-  #getBody: () => Promise<string | Uint8Array>;
+  #body?: ContentBody;
+  readonly #loader: ContentLoader;
   readonly #lastModified: Date;
+  readonly #metadata: ContentMetadata;
 
   /** The media type of the content. */
   readonly type: MediaType;
   /** An optional hint of the content's natural language. */
   readonly language: LanguageTag | null;
-  /** Additional metadata about the content. */
-  readonly metadata: Record<string, unknown>;
 
   /**
    *
-   * @param bodyGetter A function to load the actual content body.
-   *                   It can be invoked a while after the instance is created,
-   *                   or even can be never invoked if it is unnecessary.
-   *                   It also can be just a {@link string} or
-   *                   a {@link Uint8Array}.
+   * @param loader A function to load the actual content body and metadata.
+   *               It can be invoked a while after the instance is created,
+   *               or even can be never invoked if it is unnecessary.
+   *               It also can be just a {@link string} or a {@link Uint8Array}.
    * @param type The media type of the content.  If it is a string,
    *             it is interpreted as an IANA media type (a.k.a. MIME type).
    * @param language An optional hint of the content's natural language.
@@ -36,25 +47,26 @@ export class Content {
    *                 language tag.
    * @param lastModified An optional last modification time.  The current time
    *                     is set if omitted.
-   * @param metadata Additional metadata about the content.
+   * @param metadata Additional metadata about the content.  The entries can
+   *                 be partly overwritten by metadata that `loader` returns.
    * @throws {MediaTypeError} Thrown when the `type` is an invalid IANA media
    *                          type.
    * @throws {LanguageTagError} Thrown when the `language` is an invalid
    *                            RFC 5646 language tag string.
    */
   constructor(
-    bodyGetter: (() => Promise<string | Uint8Array>) | string | Uint8Array,
+    loader: ContentLoader | ContentBody,
     type: MediaType | string,
     language?: LanguageTag | string | null,
     lastModified?: Date | null,
-    metadata?: Record<string, unknown> | null,
+    metadata?: ContentMetadata,
   ) {
-    if (typeof bodyGetter == "string" || bodyGetter instanceof Uint8Array) {
-      const body = bodyGetter;
+    if (typeof loader == "string" || loader instanceof Uint8Array) {
+      const body = loader instanceof Uint8Array ? loader.slice(0) : loader;
       this.#body = body;
-      bodyGetter = () => Promise.resolve(body);
+      loader = () => Promise.resolve(body);
     }
-    this.#getBody = bodyGetter;
+    this.#loader = loader;
     this.type = typeof type == "string" ? MediaType.fromString(type) : type;
     this.language = typeof language == "string"
       ? LanguageTag.fromString(language)
@@ -62,18 +74,51 @@ export class Content {
     this.#lastModified = lastModified == null
       ? new Date()
       : new Date(lastModified);
-    this.metadata = metadata || {};
-    Object.freeze(this.metadata);
+    this.#metadata = { ...metadata };
+  }
+
+  private async load(): Promise<ContentBody> {
+    if (this.#body != null) return this.#body;
+    const loaded = await this.#loader();
+    if (typeof loaded == "string" || loaded instanceof Uint8Array) {
+      this.#body = loaded instanceof Uint8Array ? loaded.slice(0) : loaded;
+      return this.#body;
+    }
+
+    this.#body = loaded[0] instanceof Uint8Array
+      ? loaded[0].slice(0)
+      : loaded[0];
+    if (loaded.length > 1 && loaded[1] != null) {
+      Object.assign(this.#metadata, loaded[1]);
+    }
+    return this.#body;
   }
 
   /**
    * Gets the actual content body.  If the body has never been loaded on memory
-   * yet, it invokes the memory getter function, which usually does I/O under
+   * yet, it invokes the loader function, which usually does I/O under
    * the hood.  The body is cached on memory after it is loaded once.
-   * @returns The actual content body.
+   * @returns The actual content body.  Note that mutating this value outside
+   *          does not affect the {@link Content} instance's internal state,
+   *          because it makes a copy of the internal buffer every time.
    */
-  async getBody(): Promise<string | Uint8Array> {
-    return this.#body || (this.#body = await this.#getBody());
+  async getBody(): Promise<ContentBody> {
+    const body = await this.load();
+    return typeof body == "string" ? body : body.slice(0);
+  }
+
+  /**
+   * Gets additional metadata about the content.  If the metadata has never
+   * been loaded on memory yet, it invokes the loader function, which usually
+   * does I/O under the hood.  The metadata is cached on memory after it is
+   * loaded once.
+   * @returns The actual content metadata.  Note that mutating this object
+   *          outside does not affect the {@link Content} instance's internal
+   *          state, because it makes a copy of the internal object every time.
+   */
+  async getMetadata(): Promise<ContentMetadata> {
+    await this.load();
+    return { ...this.#metadata };
   }
 
   /**

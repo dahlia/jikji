@@ -77,6 +77,37 @@ export class LanguageTag {
   }
 
   /**
+   * Checks if the language tag instance shares some parts in common with
+   * the operand.  The operand is treated as a pattern, which means if some
+   * fields are empty these are treated as wildcard.  For example:
+   *
+   * - `ko-KR` matches to `ko-KR`
+   * - `ko-KR` matches to `ko`
+   * - `ko-KR` does not match to `ko-Kore`
+   * - `ko-KR` does not match to `ko-KP`
+   * - `zh-Hant-HK` matches to `zh-Hant-HK`
+   * - `zh-Hant-HK` matches to `zh-HK`
+   * - `zh-Hant-HK` matches to `zh-Hant`
+   * - `zh-Hant-HK` matches to `zh`
+   * - `zh-Hant-HK` does not match to `zh-Hant-TW`
+   * - `zh-Hant-HK` does not match to `zh-Hans-HK`
+   * - `zh-Hant-HK` does not match to `en`
+   * @param language The language pattern.
+   * @returns Whether two language tags are compatible.
+   * @throws {LanguageTagError} Thrown when the given argument is a string which
+   *         is not a valid RFC 5646 language tag.
+   */
+  matches(language: LanguageTag | string): boolean {
+    const pattern = typeof language == "string"
+      ? LanguageTag.fromString(language)
+      : language;
+    return this === pattern ||
+      this.language === pattern.language &&
+        (pattern.script == null || this.script === pattern.script) &&
+        (pattern.region == null || this.region === pattern.region);
+  }
+
+  /**
    * Turns a language tag object into an RFC 5646 string.
    * @returns A string formatted as RFC 5646.
    */

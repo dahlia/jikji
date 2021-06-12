@@ -1,4 +1,5 @@
 import {
+  assert,
   assertEquals,
   assertStrictEquals,
   assertThrows,
@@ -169,6 +170,32 @@ Deno.test("LanguageTag.fromString()", () => {
     LanguageTagError,
     "Not a correct language tag",
   );
+});
+
+Deno.test("LanguageTag.matches()", () => {
+  const ko = LanguageTag.fromString("ko");
+  const koKore = LanguageTag.fromString("ko-Kore");
+  const koKR = LanguageTag.fromString("ko-KR");
+  const koKP = LanguageTag.fromString("ko-KP");
+  const zh = LanguageTag.fromString("zh");
+  const zhHant = LanguageTag.fromString("zh-Hant");
+  const zhHK = LanguageTag.fromString("zh-HK");
+  const zhHantHK = LanguageTag.fromString("zh-Hant-HK");
+  const zhHantTW = LanguageTag.fromString("zh-Hant-TW");
+  const zhHansHK = LanguageTag.fromString("zh-Hans-HK");
+  const en = LanguageTag.fromString("en");
+  assert(koKR.matches(koKR));
+  assert(koKR.matches(ko));
+  assert(!koKR.matches(koKore));
+  assert(!koKR.matches(koKP));
+  assert(!koKR.matches(en));
+  assert(zhHantHK.matches(zhHantHK));
+  assert(zhHantHK.matches(zhHK));
+  assert(zhHantHK.matches(zhHant));
+  assert(zhHantHK.matches(zh));
+  assert(!zhHantHK.matches(zhHantTW));
+  assert(!zhHantHK.matches(zhHansHK));
+  assert(!zhHantHK.matches(en));
 });
 
 Deno.test("LanguageTag.toString()", () => {

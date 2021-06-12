@@ -165,6 +165,18 @@ export class Content {
         : filter.exactType;
       if (this.type !== type) return false;
     }
+    if (filter.language != null) {
+      const lang = typeof filter.language == "string"
+        ? LanguageTag.fromString(filter.language)
+        : filter.language;
+      if (this.language == null || !this.language.matches(lang)) return false;
+    }
+    if (filter.exactLanguage != null) {
+      const lang = typeof filter.exactLanguage == "string"
+        ? LanguageTag.fromString(filter.exactLanguage)
+        : filter.exactLanguage;
+      if (this.language !== lang) return false;
+    }
     return true;
   }
 }
@@ -245,11 +257,21 @@ export interface ContentFilter {
    * which means it does not compare parameters if it lacks parameters.
    */
   type?: MediaType | string;
+
   /**
    * Similar to {@link type} filter, except it does exact match, which means
    * is is sensitive to {@link MediaType.parameters} unlike {@link type} filter.
    */
   exactType?: MediaType | string;
+
+  /**
+   * Filters out {@link Content}s having incompatible `language`s with this.
+   * This use {@link LanguageTag.matches} method for comparison under the hood.
+   */
+  language?: LanguageTag | string;
+
+  /** Similar to {@link language} filter, except it does exact match. */
+  exactLanguage?: LanguageTag | string;
 }
 
 export default Content;

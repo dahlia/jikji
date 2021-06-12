@@ -200,7 +200,7 @@ const mediaTypeLikeTypes: Record<string, (_: string) => MediaType | string> = {
   MediaType: MediaType.fromString.bind(MediaType),
 };
 for (const [typeName, c] of Object.entries(mediaTypeLikeTypes)) {
-  Deno.test(`Content.matches(${typeName})`, () => {
+  Deno.test(`Content.matches({ type|exactType: ${typeName} })`, () => {
     const txt = new Content("", "text/plain");
     const txtAscii = new Content("", "text/plain; charset=ascii");
     const txtUtf8 = new Content("", "text/plain; charset=utf8");
@@ -245,6 +245,88 @@ for (const [typeName, c] of Object.entries(mediaTypeLikeTypes)) {
     );
   });
 }
+
+const langTagLikeTypes: Record<string, (_: string) => LanguageTag | string> = {
+  string: (s) => s,
+  LanguageTag: LanguageTag.fromString.bind(LanguageTag),
+};
+for (const [typeName, c] of Object.entries(langTagLikeTypes)) {
+  Deno.test(`Content.matches({ language|exactLanguage: ${typeName} })`, () => {
+    const empty = new Content("", "text/plain");
+    const ko = new Content("", "text/plain", "ko");
+    const koHang = new Content("", "text/plain", "ko-Hang");
+    const koKR = new Content("", "text/plain", "ko-KR");
+
+    // language:
+    assert(!empty.matches({ language: c("ko") }));
+    assert(!empty.matches({ language: c("ko-Hang") }));
+    assert(!empty.matches({ language: c("ko-Kore") }));
+    assert(!empty.matches({ language: c("ko-KR") }));
+    assert(!empty.matches({ language: c("ko-KP") }));
+    assert(!empty.matches({ language: c("en") }));
+    assert(ko.matches({ language: c("ko") }));
+    assert(!ko.matches({ language: c("ko-Hang") }));
+    assert(!ko.matches({ language: c("ko-Kore") }));
+    assert(!ko.matches({ language: c("ko-KR") }));
+    assert(!ko.matches({ language: c("ko-KP") }));
+    assert(!ko.matches({ language: c("en") }));
+    assert(koHang.matches({ language: c("ko") }));
+    assert(koHang.matches({ language: c("ko-Hang") }));
+    assert(!koHang.matches({ language: c("ko-Kore") }));
+    assert(!koHang.matches({ language: c("ko-KR") }));
+    assert(!koHang.matches({ language: c("ko-KP") }));
+    assert(!koHang.matches({ language: c("en") }));
+    assert(koKR.matches({ language: c("ko") }));
+    assert(!koKR.matches({ language: c("ko-Hang") }));
+    assert(!koKR.matches({ language: c("ko-Kore") }));
+    assert(koKR.matches({ language: c("ko-KR") }));
+    assert(!koKR.matches({ language: c("ko-KP") }));
+    assert(!koKR.matches({ language: c("en") }));
+
+    // exactLanguage:
+    assert(!empty.matches({ exactLanguage: c("ko") }));
+    assert(!empty.matches({ exactLanguage: c("ko-Hang") }));
+    assert(!empty.matches({ exactLanguage: c("ko-Kore") }));
+    assert(!empty.matches({ exactLanguage: c("ko-KR") }));
+    assert(!empty.matches({ exactLanguage: c("ko-KP") }));
+    assert(!empty.matches({ exactLanguage: c("en") }));
+    assert(ko.matches({ exactLanguage: c("ko") }));
+    assert(!ko.matches({ exactLanguage: c("ko-Hang") }));
+    assert(!ko.matches({ exactLanguage: c("ko-Kore") }));
+    assert(!ko.matches({ exactLanguage: c("ko-KR") }));
+    assert(!ko.matches({ exactLanguage: c("ko-KP") }));
+    assert(!ko.matches({ exactLanguage: c("en") }));
+    assert(!koHang.matches({ exactLanguage: c("ko") }));
+    assert(koHang.matches({ exactLanguage: c("ko-Hang") }));
+    assert(!koHang.matches({ exactLanguage: c("ko-Kore") }));
+    assert(!koHang.matches({ exactLanguage: c("ko-KR") }));
+    assert(!koHang.matches({ exactLanguage: c("ko-KP") }));
+    assert(!koHang.matches({ exactLanguage: c("en") }));
+    assert(!koKR.matches({ exactLanguage: c("ko") }));
+    assert(!koKR.matches({ exactLanguage: c("ko-Hang") }));
+    assert(!koKR.matches({ exactLanguage: c("ko-Kore") }));
+    assert(koKR.matches({ exactLanguage: c("ko-KR") }));
+    assert(!koKR.matches({ exactLanguage: c("ko-KP") }));
+    assert(!koKR.matches({ exactLanguage: c("en") }));
+  });
+}
+
+Deno.test("Content.matches({ ... })", () => {
+  const txtUtf8KoKR = new Content("", "text/plain; charset=utf-8", "ko-KR");
+
+  assert(txtUtf8KoKR.matches({ type: "text/plain", language: "ko" }));
+  assert(!txtUtf8KoKR.matches({ type: "text/plain", exactLanguage: "ko" }));
+  assert(
+    txtUtf8KoKR.matches({
+      exactType: "text/plain; charset=utf-8",
+      language: "ko-KR",
+    }),
+  );
+  assert(!txtUtf8KoKR.matches({ type: "text/plain", language: "en" }));
+  assert(
+    !txtUtf8KoKR.matches({ exactType: "text/plain", exactLanguage: "ko-KR" }),
+  );
+});
 
 Deno.test("ContentKey.get()", () => {
   const txt = ContentKey.get(MediaType.fromString("text/plain"));

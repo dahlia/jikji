@@ -145,6 +145,58 @@ export class Content {
   }
 
   /**
+   * Makes a derivation of the content by modifying some fields and leaving
+   * rest.  If every field is modified it does not differ from creating
+   * a completely new content using {@link Content} constructor.  If no field
+   * is modified it returns the same instance.
+   * @param fields Fields to modify.  Unspecified fields are left unmodified.
+   * @returns A new distinct {@link Content} instance derived from the content.
+   *          If no fields are modified it can return the same {@link Content}
+   *          instance.
+   */
+  replace(
+    fields: {
+      body?: ContentBody | (() => Promise<ContentBody>);
+      type?: MediaType | string;
+      language?: LanguageTag | string | null;
+      lastModified?: Date;
+      metadata?: ContentMetadata | (() => Promise<ContentMetadata>);
+    },
+  ): Content {
+    const body = fields.body;
+    const metadata = fields.metadata;
+    if (
+      body == null &&
+      fields.type == null &&
+      typeof fields.language == "undefined" &&
+      fields.lastModified == null &&
+      metadata == null
+    ) {
+      return this;
+    }
+    return new Content(
+      async () => {
+        return [
+          body == null
+            ? await this.getBody()
+            : typeof body == "function"
+            ? await body()
+            : body,
+          // deno-fmt-ignore
+          metadata == null
+            ? await this.getMetadata()
+            : typeof metadata == "function"
+            ? await metadata()
+            : metadata,
+        ];
+      },
+      fields.type ?? this.type,
+      typeof fields.language == "undefined" ? this.language : fields.language,
+      fields.lastModified ?? this.lastModified,
+    );
+  }
+
+  /**
    * Checks if the {@link Content} satisfies the given `filter`.
    * @param filter The criteria to check.  If it's omitted (`undefined`)
                    `true` is returned.

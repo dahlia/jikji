@@ -5,6 +5,7 @@ import {
   assertStrictEquals,
   assertThrows,
 } from "https://deno.land/std@0.97.0/testing/asserts.ts";
+import { assertContentEquals } from "./asserts.ts";
 import {
   Content,
   ContentKey,
@@ -310,6 +311,43 @@ for (const [typeName, c] of Object.entries(langTagLikeTypes)) {
     assert(!koKR.matches({ exactLanguage: c("en") }));
   });
 }
+
+Deno.test("Content.replace()", async () => {
+  const t = "text/plain";
+  const d = new Date(Date.UTC(2000, 0, 1));
+  const m = { foo: 1, bar: 2 };
+  const c = new Content("foo", t, "en", d, m);
+  const newBody = c.replace({ body: "bar" });
+  await assertContentEquals(newBody, new Content("bar", t, "en", d, m));
+  await assertContentEquals(c, new Content("foo", t, "en", d, m));
+  const newType = c.replace({ type: "text/html" });
+  await assertContentEquals(
+    newType,
+    new Content("foo", "text/html", "en", d, m)
+  );
+  const newLang = c.replace({ language: null });
+  await assertContentEquals(newLang, new Content("foo", t, null, d, m));
+  const newDate = new Date();
+  const newLastModified = c.replace({ lastModified: newDate });
+  await assertContentEquals(
+    newLastModified,
+    new Content("foo", t, "en", newDate, m)
+  );
+  const newMeta = c.replace({ metadata: { bar: 3, baz: 4 } });
+  await assertContentEquals(
+    newMeta,
+    new Content("foo", t, "en", d, { bar: 3, baz: 4 })
+  );
+  const c2 = c.replace({
+    type: "text/html",
+    language: "ko",
+    lastModified: newDate,
+  });
+  await assertContentEquals(
+    c2,
+    new Content("foo", "text/html", "ko", newDate, m)
+  );
+});
 
 Deno.test("Content.matches({ ... })", () => {
   const txtUtf8KoKR = new Content("", "text/plain; charset=utf-8", "ko-KR");

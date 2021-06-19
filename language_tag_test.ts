@@ -221,3 +221,12 @@ Deno.test("Deno.inspect(LanguageTag)", () => {
     "[ LanguageTag(en), LanguageTag(ko-KR), LanguageTag(zh-Hans-CN) ]"
   );
 });
+
+Deno.test("LanguageTagError()", () => {
+  const e = new LanguageTagError();
+  assertEquals(e.message, "");
+  assertEquals(e.name, "LanguageTagError");
+  const e2 = new LanguageTagError("error message");
+  assertEquals(e2.message, "error message");
+  assertEquals(e2.name, "LanguageTagError");
+});

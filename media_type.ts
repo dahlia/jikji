@@ -254,6 +254,10 @@ export class MediaType {
 
 /** Thrown when an invalid IANA media type is tried to be made. */
 export class MediaTypeError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "MediaTypeError";
+  }
 }
 
 export default MediaType;

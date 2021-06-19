@@ -9,6 +9,7 @@ import { assertContentEquals } from "./asserts.ts";
 import {
   Content,
   ContentKey,
+  ContentKeyError,
   ContentMetadata,
   LanguageTag,
   LanguageTagError,
@@ -323,7 +324,7 @@ Deno.test("Content.replace()", async () => {
   const newType = c.replace({ type: "text/html" });
   await assertContentEquals(
     newType,
-    new Content("foo", "text/html", "en", d, m)
+    new Content("foo", "text/html", "en", d, m),
   );
   const newLang = c.replace({ language: null });
   await assertContentEquals(newLang, new Content("foo", t, null, d, m));
@@ -331,12 +332,12 @@ Deno.test("Content.replace()", async () => {
   const newLastModified = c.replace({ lastModified: newDate });
   await assertContentEquals(
     newLastModified,
-    new Content("foo", t, "en", newDate, m)
+    new Content("foo", t, "en", newDate, m),
   );
   const newMeta = c.replace({ metadata: { bar: 3, baz: 4 } });
   await assertContentEquals(
     newMeta,
-    new Content("foo", t, "en", d, { bar: 3, baz: 4 })
+    new Content("foo", t, "en", d, { bar: 3, baz: 4 }),
   );
   const c2 = c.replace({
     type: "text/html",
@@ -345,7 +346,7 @@ Deno.test("Content.replace()", async () => {
   });
   await assertContentEquals(
     c2,
-    new Content("foo", "text/html", "ko", newDate, m)
+    new Content("foo", "text/html", "ko", newDate, m),
   );
 });
 
@@ -414,4 +415,13 @@ Deno.test("ContentKey.toString()", () => {
     htmlEn.toString(),
     'ContentKey { type: "text/html", language: "en" }',
   );
+});
+
+Deno.test("ContentKeyError()", () => {
+  const e = new ContentKeyError();
+  assertEquals(e.message, "");
+  assertEquals(e.name, "ContentKeyError");
+  const e2 = new ContentKeyError("error message");
+  assertEquals(e2.message, "error message");
+  assertEquals(e2.name, "ContentKeyError");
 });

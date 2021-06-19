@@ -126,6 +126,10 @@ export class LanguageTag {
 
 /** Thrown when an invalid language tag is tried to be made. */
 export class LanguageTagError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "LanguageTagError";
+  }
 }
 
 export default LanguageTag;

@@ -263,3 +263,12 @@ Deno.test("Deno.inspect(MediaType)", () => {
     "[ MediaType(text/plain), MediaType(text/html; charset=utf-8) ]"
   );
 });
+
+Deno.test("MediaTypeError()", () => {
+  const e = new MediaTypeError();
+  assertEquals(e.message, "");
+  assertEquals(e.name, "MediaTypeError");
+  const e2 = new MediaTypeError("error message");
+  assertEquals(e2.message, "error message");
+  assertEquals(e2.name, "MediaTypeError");
+});

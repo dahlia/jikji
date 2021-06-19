@@ -304,6 +304,10 @@ export class ContentKey {
  * {@link ContentKey}s.
  */
 export class ContentKeyError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "ContentKeyError";
+  }
 }
 
 /**

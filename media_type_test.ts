@@ -247,3 +247,19 @@ Deno.test("MediaType.toString()", () => {
   });
   assertStrictEquals(xhtml.toString(), "application/xhtml+xml; charset=utf-8");
 });
+
+Deno.test("Deno.inspect(MediaType)", () => {
+  const txt = MediaType.fromString("text/plain");
+  const htmlUtf8 = MediaType.fromString("text/html; charset=utf8");
+  const vndXhtml = MediaType.fromString("application/vnd.foo.xhtml+xml");
+  assertEquals(Deno.inspect(txt), "MediaType(text/plain)");
+  assertEquals(Deno.inspect(htmlUtf8), "MediaType(text/html; charset=utf-8)");
+  assertEquals(
+    Deno.inspect(vndXhtml),
+    "MediaType(application/vnd.foo.xhtml+xml)"
+  );
+  assertEquals(
+    Deno.inspect([txt, htmlUtf8]),
+    "[ MediaType(text/plain), MediaType(text/html; charset=utf-8) ]"
+  );
+});

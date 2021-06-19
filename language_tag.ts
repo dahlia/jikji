@@ -118,6 +118,10 @@ export class LanguageTag {
       this.region?.toUpperCase(),
     ].filter((t) => t != null).join("-");
   }
+
+  [Deno?.customInspect ?? Symbol("Deno.customInspect")](): string {
+    return `LanguageTag(${this.toString()})`;
+  }
 }
 
 /** Thrown when an invalid language tag is tried to be made. */

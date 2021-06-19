@@ -208,3 +208,16 @@ Deno.test("LanguageTag.toString()", () => {
     "zho-Hans-CHN",
   );
 });
+
+Deno.test("Deno.inspect(LanguageTag)", () => {
+  const en = LanguageTag.get("en");
+  const koKR = LanguageTag.get("ko", null, "KR");
+  const zhHansCN = LanguageTag.get("zh", "Hans", "CN");
+  assertEquals(Deno.inspect(en), "LanguageTag(en)");
+  assertEquals(Deno.inspect(koKR), "LanguageTag(ko-KR)");
+  assertEquals(Deno.inspect(zhHansCN), "LanguageTag(zh-Hans-CN)");
+  assertEquals(
+    Deno.inspect([en, koKR, zhHansCN]),
+    "[ LanguageTag(en), LanguageTag(ko-KR), LanguageTag(zh-Hans-CN) ]"
+  );
+});

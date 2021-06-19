@@ -236,6 +236,10 @@ export class MediaType {
     return `${this.type}/${this.subtype.join(".")}${suffixes}${params}`;
   }
 
+  [Deno?.customInspect ?? Symbol("Deno.customInspect")](): string {
+    return `MediaType(${this.toString()})`;
+  }
+
   private static readonly BARE_PARAMETER_VALUE_PATTERN: RegExp =
     /^[^()<>@,;:\\"\/\[\]?=]+$/;
 

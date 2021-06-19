@@ -231,6 +231,17 @@ export class Content {
     }
     return true;
   }
+
+  [Deno?.customInspect ?? Symbol("Deno.customInspect")](): string {
+    const body = this.#body;
+    return "Content {\n" +
+      `  body: ${body == null ? "(unloaded)" : Deno.inspect(body)},\n` +
+      `  type: ${Deno.inspect(this.type)},\n` +
+      `  language: ${Deno.inspect(this.language)},\n` +
+      `  lastModified: ${Deno.inspect(this.lastModified)},\n` +
+      `  metadata: ${Deno.inspect(this.#metadata)}\n` +
+      "}";
+  }
 }
 
 /**

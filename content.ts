@@ -154,15 +154,7 @@ export class Content {
    *          If no fields are modified it can return the same {@link Content}
    *          instance.
    */
-  replace(
-    fields: {
-      body?: ContentBody | (() => Promise<ContentBody>);
-      type?: MediaType | string;
-      language?: LanguageTag | string | null;
-      lastModified?: Date;
-      metadata?: ContentMetadata | (() => Promise<ContentMetadata>);
-    },
-  ): Content {
+  replace(fields: ContentFields): Content {
     const body = fields.body;
     const metadata = fields.metadata;
     if (
@@ -242,6 +234,37 @@ export class Content {
       `  metadata: ${Deno.inspect(this.#metadata)}\n` +
       "}";
   }
+}
+
+/**
+ * Represents fields of {@link Content} to modify some of them.  Omitted fields
+ * (`undefined` fields) mean that these fields remain unchanged.
+ */
+export interface ContentFields {
+  /**
+   * A new body of content, or an asynchronous function to load a new content of
+   * content.
+   */
+  body?: ContentBody | (() => Promise<ContentBody>);
+
+  /** A new media type of content. */
+  type?: MediaType | string;
+
+  /**
+   * A new language of content.  Note that `null` means to set the language
+   * to `null`, which differs from `undefined`, which means to maintain
+   * the language as it is.
+   */
+  language?: LanguageTag | string | null;
+
+  /** A new timestamp when content was lastly modified. */
+  lastModified?: Date;
+
+  /**
+   * New metadata of content, or an asynchronous function to load new metadata
+   * of content.
+   */
+  metadata?: ContentMetadata | (() => Promise<ContentMetadata>);
 }
 
 /**
@@ -327,7 +350,7 @@ export interface ContentFilter {
 
   /**
    * Similar to {@link type} filter, except it does exact match, which means
-   * is is sensitive to {@link MediaType.parameters} unlike {@link type} filter.
+   * is is sensitive to {@link MediaType#parameters} unlike {@link type} filter.
    */
   exactType?: MediaType | string;
 

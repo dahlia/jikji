@@ -5,7 +5,7 @@ import {
   assertStrictEquals,
   assertThrows,
 } from "https://deno.land/std@0.97.0/testing/asserts.ts";
-import { assertContentEquals } from "./asserts.ts";
+import { assertEquals$ } from "./asserts.ts";
 import {
   Content,
   ContentKey,
@@ -319,23 +319,23 @@ Deno.test("Content.replace()", async () => {
   const m = { foo: 1, bar: 2 };
   const c = new Content("foo", t, "en", d, m);
   const newBody = c.replace({ body: "bar" });
-  await assertContentEquals(newBody, new Content("bar", t, "en", d, m));
-  await assertContentEquals(c, new Content("foo", t, "en", d, m));
+  await assertEquals$(newBody, new Content("bar", t, "en", d, m));
+  await assertEquals$(c, new Content("foo", t, "en", d, m));
   const newType = c.replace({ type: "text/html" });
-  await assertContentEquals(
+  await assertEquals$(
     newType,
     new Content("foo", "text/html", "en", d, m),
   );
   const newLang = c.replace({ language: null });
-  await assertContentEquals(newLang, new Content("foo", t, null, d, m));
+  await assertEquals$(newLang, new Content("foo", t, null, d, m));
   const newDate = new Date();
   const newLastModified = c.replace({ lastModified: newDate });
-  await assertContentEquals(
+  await assertEquals$(
     newLastModified,
     new Content("foo", t, "en", newDate, m),
   );
   const newMeta = c.replace({ metadata: { bar: 3, baz: 4 } });
-  await assertContentEquals(
+  await assertEquals$(
     newMeta,
     new Content("foo", t, "en", d, { bar: 3, baz: 4 }),
   );
@@ -344,7 +344,7 @@ Deno.test("Content.replace()", async () => {
     language: "ko",
     lastModified: newDate,
   });
-  await assertContentEquals(
+  await assertEquals(
     c2,
     new Content("foo", "text/html", "ko", newDate, m),
   );

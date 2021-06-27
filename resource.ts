@@ -98,10 +98,22 @@ export class Resource implements Iterable<Content> {
    * @returns A distinct {@link Resource} instance with added a more
    *          `representation`.
    * @throws {ContentKeyError} Thrown when there is a duplicate key of
-   *         the given `representation` in the exsting `representations`.
+   *         the given `representation` in the existing `representations`.
    */
   addRepresentation(representation: Content): Resource {
     return new Resource(this.#path, [...this, representation]);
+  }
+
+  /**
+   * Changes the {@link Resource}'s path.  Note that it does not manipulate
+   * in place, but returns a distinct {@link Resource} instance with the new
+   * `path`.
+   * @param path A path to replace the resource's existing path.  Even though
+   *             it can be a string, its content should be a URL anyway.
+   * @returns A distinct {@link Resource} instance with the new `path`.
+   */
+  move(path: URL | string) {
+    return new Resource(path, [...this]);
   }
 
   /**

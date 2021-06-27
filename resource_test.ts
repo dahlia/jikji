@@ -3,7 +3,7 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "https://deno.land/std@0.97.0/testing/asserts.ts";
+} from "https://deno.land/std@0.99.0/testing/asserts.ts";
 import {
   Content,
   ContentKey,
@@ -136,6 +136,15 @@ Deno.test("Resource.addRepresentation()", async () => {
   await assertEquals$(r, new Resource(r.path, [...fixture, c]));
 
   assertThrows(() => r.addRepresentation(c), ContentKeyError);
+});
+
+Deno.test("Resource.move()", async () => {
+  const bar = fixture.move(new URL("file:///tmp/site/bar.txt"));
+  assertEquals(bar.path, new URL("file:///tmp/site/bar.txt"));
+  await assertEquals$(Array.from(bar), Array.from(fixture));
+  const baz = fixture.move("file:///tmp/site/baz.txt");
+  assertEquals(baz.path, new URL("file:///tmp/site/baz.txt"));
+  await assertEquals$(Array.from(baz), Array.from(fixture));
 });
 
 Deno.test("ResourceError()", () => {

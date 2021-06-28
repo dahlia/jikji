@@ -25,16 +25,49 @@ async function contentEquals(
   if (actual != null && expected != null) {
     // Load bodies & metadata ahead of time to make these instances to be
     // completely rendered by Deno.inspect() function:
-    await actual.getMetadata();
-    await expected.getMetadata();
+    let aBody = await actual.getBody();
+    let eBody = await expected.getBody();
+    let aType = actual.type;
+    let eType = expected.type;
 
-    return actual.key === expected.key &&
+    if (
+      aBody instanceof Uint8Array &&
+      typeof eBody == "string" &&
+      expected.encoding == "utf-8"
+    ) {
+      eBody = new TextEncoder().encode(eBody);
+      eType = eType.withParameter("charset", null);
+    } else if (
+      typeof aBody == "string" &&
+      eBody instanceof Uint8Array &&
+      actual.encoding == "utf-8"
+    ) {
+      aBody = new TextEncoder().encode(aBody);
+      aType = aType.withParameter("charset", null);
+    }
+
+    return aType === eType &&
+      actual.language === expected.language &&
       equal(actual.lastModified, expected.lastModified) &&
-      equal(await actual.getBody(), await expected.getBody()) &&
+      equal(aBody, eBody) &&
       equal(await actual.getMetadata(), await expected.getMetadata());
   }
 
   return actual === expected;
+}
+
+async function contentsEqual(
+  actual: unknown[],
+  expected: unknown[],
+) {
+  if (actual.length !== expected.length) return false;
+  for (let i = 0; i < actual.length; i++) {
+    const a = actual[i], e = expected[i];
+    if (!(a instanceof Content && e instanceof Content)) return false;
+    if (!await contentEquals(a, e)) return false;
+  }
+
+  return true;
 }
 
 async function resourceEquals(
@@ -50,15 +83,7 @@ async function resourceEquals(
       return false;
     }
 
-    const actualContents = [...actual];
-    const expectedContents = [...expected];
-    for (let i = 0; i < actual.size; i++) {
-      if (!await contentEquals(actualContents[i], expectedContents[i])) {
-        return false;
-      }
-    }
-
-    return true;
+    return await contentsEqual([...actual], [...expected]);
   }
 
   return actual === expected;
@@ -93,13 +118,20 @@ async function equals(
     return false;
   } else if (
     actual instanceof Array && expected instanceof Array &&
-    (actual.length < 1 ||
-      actual.some((r) => r instanceof Resource) ||
-      expected.length < 1 ||
-      expected.some((r) => r instanceof Resource))
+    (actual.length > 0 || expected.length > 0)
   ) {
     if (actual.length != expected.length) return false;
-    return await resourcesEqual(actual, expected);
+    else if (
+      actual.some((r) => r instanceof Resource) ||
+      expected.some((r) => r instanceof Resource)
+    ) {
+      return await resourcesEqual(actual, expected);
+    } else if (
+      actual.some((c) => c instanceof Content) ||
+      expected.some((c) => c instanceof Content)
+    ) {
+      return await contentsEqual(actual, expected);
+    }
   }
 
   return equal(actual, expected);

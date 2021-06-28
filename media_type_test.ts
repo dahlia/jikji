@@ -2,7 +2,7 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "https://deno.land/std@0.97.0/testing/asserts.ts";
+} from "https://deno.land/std@0.99.0/testing/asserts.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
 
 Deno.test("MediaType.get()", () => {
@@ -256,11 +256,11 @@ Deno.test("Deno.inspect(MediaType)", () => {
   assertEquals(Deno.inspect(htmlUtf8), "MediaType(text/html; charset=utf-8)");
   assertEquals(
     Deno.inspect(vndXhtml),
-    "MediaType(application/vnd.foo.xhtml+xml)"
+    "MediaType(application/vnd.foo.xhtml+xml)",
   );
   assertEquals(
     Deno.inspect([txt, htmlUtf8]),
-    "[ MediaType(text/plain), MediaType(text/html; charset=utf-8) ]"
+    "[ MediaType(text/plain), MediaType(text/html; charset=utf-8) ]",
   );
 });
 

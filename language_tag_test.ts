@@ -3,7 +3,7 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "https://deno.land/std@0.97.0/testing/asserts.ts";
+} from "https://deno.land/std@0.99.0/testing/asserts.ts";
 import { LanguageTag, LanguageTagError } from "./language_tag.ts";
 
 Deno.test("LanguageTag.get()", () => {
@@ -218,7 +218,7 @@ Deno.test("Deno.inspect(LanguageTag)", () => {
   assertEquals(Deno.inspect(zhHansCN), "LanguageTag(zh-Hans-CN)");
   assertEquals(
     Deno.inspect([en, koKR, zhHansCN]),
-    "[ LanguageTag(en), LanguageTag(ko-KR), LanguageTag(zh-Hans-CN) ]"
+    "[ LanguageTag(en), LanguageTag(ko-KR), LanguageTag(zh-Hans-CN) ]",
   );
 });
 

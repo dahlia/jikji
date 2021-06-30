@@ -87,6 +87,27 @@ Deno.test("Pipeline#union()", async () => {
   await assertEquals$((await toArray(p21)).sort(pathCmp), [...r2, r1[1]]);
 });
 
+Deno.test("Pipeline#add()", async () => {
+  function pathCmp(a: Resource, b: Resource) {
+    return a.path.toString() < b.path.toString() ? -1 : 1;
+  }
+
+  const resources = Array.from(makeResources({ "foo.txt": "", "bar.txt": "" }))
+    .sort(pathCmp);
+  const [r1, r2] = Array.from(makeResources({ "baz.txt": "", "foo.txt": "dp" }))
+    .sort(pathCmp);
+  const p1 = new Pipeline(resources);
+
+  const p2 = p1.add(r1);
+  await assertEquals$(
+    (await toArray(p2)).sort(pathCmp),
+    [resources[0], r1, resources[1]],
+  );
+
+  const p3 = p1.add(r2);
+  await assertEquals$((await toArray(p3)).sort(pathCmp), [resources[0], r2]);
+});
+
 Deno.test("Pipeline#map()", async () => {
   const resources = Array.from(makeResources({
     "foo.txt": "foo",

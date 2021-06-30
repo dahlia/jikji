@@ -96,6 +96,17 @@ export class Pipeline implements AsyncIterable<Resource> {
   }
 
   /**
+   * Adds a `resource` to the pipeline.
+   * @param resource A resource to add.  If its `path` is duplicate with
+   *                 existing resource paths, existing one is replaced by it.
+   * @returns A distinct pipeline having the added `resource` besides existing
+   *          ones.
+   */
+  add(resource: Resource): Pipeline {
+    return new Pipeline(concat([resource], this));
+  }
+
+  /**
    * Transforms the {@link Resource}s in the pipeline, and returns a distinct
    * pipeline.  Note that this does not mutate the pipeline in-place.
    *

@@ -1,3 +1,4 @@
+import { basename } from "https://deno.land/std@0.99.0/path/mod.ts";
 import {
   assertEquals,
   assertThrows,
@@ -53,7 +54,7 @@ Deno.test("Pipeline.map()", async () => {
     "baz.txt": "baz",
   }));
   const p = new Pipeline(resources);
-  assertEquals(await toArray(p), resources);
+  await assertEquals$(await toArray(p), resources);
   const p2 = p.map((r) =>
     new Resource(new URL(r.path.toString() + "?transformed"), r)
   );
@@ -68,6 +69,25 @@ Deno.test("Pipeline.map()", async () => {
   }
   assertEquals(i, resources.length);
   await assertEquals$(await toArray(p), resources);
+});
+
+Deno.test("Pipeline.filter()", async () => {
+  const d = new Date();
+  const resources = () =>
+    makeResources({
+      "foo.md": "foo",
+      "bar.md": "bar",
+      "baz.txt": "baz",
+    }, d);
+  const p = new Pipeline(resources());
+  await assertEquals$(await toArray(p), Array.from(resources()));
+  const p2 = p.filter((r) => basename(r.path.pathname).startsWith("ba"));
+  const expected = Array.from(
+    makeResources({ "bar.md": "bar", "baz.txt": "baz" }, d),
+  );
+  await assertEquals$(await toArray(p2), expected);
+  await assertEquals$(await toArray(p), Array.from(resources()));
+  await assertEquals$(await toArray(p2), expected);
 });
 
 Deno.test("Pipeline.forEach()", async () => {

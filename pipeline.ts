@@ -1,4 +1,5 @@
 import map from "https://esm.sh/@async-generators/map@0.1.0";
+import filter from "https://esm.sh/@async-generators/filter@0.1.1";
 import { MediaType } from "./media_type.ts";
 import { LanguageTag } from "./language_tag.ts";
 import { Content, ContentFields, ContentFilter } from "./content.ts";
@@ -7,10 +8,19 @@ import { Resource } from "./resource.ts";
 /**
  * Represents functions to transform a {@link Resource} into another
  * {@link Resource}.
- * @param path A resource to be transformed.
+ * @param resource A resource to be transformed.
  * @returns A transformed resource.
  */
 export type ResourceTransformer = (resource: Resource) => Resource;
+
+/**
+ * Represents functions to determine whether to filter out a {@link Resource}
+ * or not.
+ * @param resource A resource to be determined if it is filtered or not.
+ * @returns `true` means to remain the given `resource`, and `false` means to
+ *          exclude it.
+ */
+export type ResourcePredicate = (resource: Resource) => boolean;
 
 /**
  * Represents functions to transform a {@link URL} into another {@link URL}.
@@ -66,18 +76,35 @@ export class Pipeline implements AsyncIterable<Resource> {
   }
 
   /**
-   * Transforms the {@link Resource}s in the pipeline, and returns a new
-   * pipeline.  Note that this does not mutate in-place.
+   * Transforms the {@link Resource}s in the pipeline, and returns a distinct
+   * pipeline.  Note that this does not mutate the pipeline in-place.
    *
    * To transform {@link Content}s or {@link Resource}s' paths instead,
    * use {@link transform} or {@link move} higher-order functions.
    * @param transformers A resource transformer.
-   * @returns A pipeline with transformed {@link Resource}s.
+   * @returns A distinct pipeline with transformed {@link Resource}s.
    */
   map(...transformers: ResourceTransformer[]): Pipeline {
-    let resources = this.#resources;
+    let resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
     for (const transformer of transformers) {
       resources = map(resources, transformer);
+    }
+    return new Pipeline(resources);
+  }
+
+  /**
+   * Remains only {@link Resource}s satisfying all given `predicates` in
+   * the pipeline, and returns a distinct pipeline with only remained
+   * {@link Resource}s.  Note that this does not mutate the pipeline in-place.
+   * @param predicates One or more predicate functions that should be all
+   *                   satisfied.
+   * @returns A distinct pipeline with only remained {@link Resource}s, which
+   *          satisfy all given `predicates`.
+   */
+  filter(...predicates: ResourcePredicate[]): Pipeline {
+    let resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
+    for (const pred of predicates) {
+      resources = filter(resources, pred);
     }
     return new Pipeline(resources);
   }

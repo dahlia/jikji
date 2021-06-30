@@ -174,7 +174,7 @@ Deno.test("MediaType.fromString()", () => {
   );
 });
 
-Deno.test("MediaType.withParameter()", () => {
+Deno.test("MediaType#withParameter()", () => {
   const txt = MediaType.fromString("text/plain");
   const txtUtf8 = MediaType.fromString("text/plain; charset=utf-8");
   const txtAscii = MediaType.fromString("text/plain; charset=ascii");
@@ -196,7 +196,7 @@ Deno.test("MediaType.withParameter()", () => {
   );
 });
 
-Deno.test("MediaType.matches()", () => {
+Deno.test("MediaType#matches()", () => {
   const txt = MediaType.fromString("text/plain");
   const txtUtf8 = MediaType.fromString("text/plain; charset=utf-8");
   const txtAscii = MediaType.fromString("text/plain; charset=ascii");
@@ -234,7 +234,7 @@ Deno.test("MediaType.matches()", () => {
   }
 });
 
-Deno.test("MediaType.toString()", () => {
+Deno.test("MediaType#toString()", () => {
   const odt = MediaType.get("application", [
     "Vnd",
     "Oasis",

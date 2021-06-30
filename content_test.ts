@@ -85,7 +85,7 @@ for (const [contentBodyType, contentBodyValue] of contentBodyTypes) {
     );
   });
 
-  Deno.test(`Content.getBody(): ${contentBodyType}`, async () => {
+  Deno.test(`Content#getBody(): ${contentBodyType}`, async () => {
     const loaderInvoked: boolean[] = [];
     const c = new Content(
       () => {
@@ -127,7 +127,7 @@ for (const [contentBodyType, contentBodyValue] of contentBodyTypes) {
   });
 }
 
-Deno.test("Content.getMetadata()", async () => {
+Deno.test("Content#getMetadata()", async () => {
   const loaderInvoked: boolean[] = [];
   const init: ContentMetadata = { foo: 1, bar: null };
   const c = new Content(
@@ -174,19 +174,19 @@ Deno.test("Content.getMetadata()", async () => {
   assertEquals(tupleCallbackMetadata, init);
 });
 
-Deno.test("Content.encoding", () => {
+Deno.test("Content#encoding", () => {
   const c = new Content("", "text/plain; charset=UTF8");
   assertEquals(c.encoding, "utf-8");
 });
 
-Deno.test("Content.key", () => {
+Deno.test("Content#key", () => {
   const c = new Content("", "text/plain; charset=UTF8");
   assertEquals(c.key, ContentKey.get("text/plain; charset=utf-8"));
   const c2 = new Content("", "text/plain", "ko");
   assertEquals(c2.key, ContentKey.get("text/plain", "ko"));
 });
 
-Deno.test("Content.lastModified", () => {
+Deno.test("Content#lastModified", () => {
   const lastModified = Date.UTC(1988, 8, 4, 1, 2, 3, 4);
   const d = new Date(lastModified);
   const c = new Content("", "text/plain", null, d);
@@ -202,7 +202,7 @@ const mediaTypeLikeTypes: Record<string, (_: string) => MediaType | string> = {
   MediaType: MediaType.fromString.bind(MediaType),
 };
 for (const [typeName, c] of Object.entries(mediaTypeLikeTypes)) {
-  Deno.test(`Content.matches({ type|exactType: ${typeName} })`, () => {
+  Deno.test(`Content#matches({ type|exactType: ${typeName} })`, () => {
     const txt = new Content("", "text/plain");
     const txtAscii = new Content("", "text/plain; charset=ascii");
     const txtUtf8 = new Content("", "text/plain; charset=utf8");
@@ -253,7 +253,7 @@ const langTagLikeTypes: Record<string, (_: string) => LanguageTag | string> = {
   LanguageTag: LanguageTag.fromString.bind(LanguageTag),
 };
 for (const [typeName, c] of Object.entries(langTagLikeTypes)) {
-  Deno.test(`Content.matches({ language|exactLanguage: ${typeName} })`, () => {
+  Deno.test(`Content#matches({ language|exactLanguage: ${typeName} })`, () => {
     const empty = new Content("", "text/plain");
     const ko = new Content("", "text/plain", "ko");
     const koHang = new Content("", "text/plain", "ko-Hang");
@@ -313,7 +313,7 @@ for (const [typeName, c] of Object.entries(langTagLikeTypes)) {
   });
 }
 
-Deno.test("Content.replace()", async () => {
+Deno.test("Content#replace()", async () => {
   const t = "text/plain";
   const d = new Date(Date.UTC(2000, 0, 1));
   const m = { foo: 1, bar: 2 };
@@ -350,7 +350,7 @@ Deno.test("Content.replace()", async () => {
   );
 });
 
-Deno.test("Content.matches({ ... })", () => {
+Deno.test("Content#matches({ ... })", () => {
   const txtUtf8KoKR = new Content("", "text/plain; charset=utf-8", "ko-KR");
 
   assert(txtUtf8KoKR.matches({ type: "text/plain", language: "ko" }));
@@ -407,7 +407,7 @@ Deno.test("ContentKey.get()", () => {
   );
 });
 
-Deno.test("ContentKey.toString()", () => {
+Deno.test("ContentKey#toString()", () => {
   const txt = ContentKey.get("text/plain");
   assertStrictEquals(txt.toString(), 'ContentKey { type: "text/plain" }');
   const htmlEn = ContentKey.get("text/html", "en");

@@ -59,7 +59,7 @@ const fixture = new Resource(
   ],
 );
 
-Deno.test("Resource.lastModified", () => {
+Deno.test("Resource#lastModified", () => {
   assertEquals(new Date(0), fixture.lastModified);
   const d = new Date(Date.UTC(2021, 0, 1, 1, 1, 1));
   const c = new Content("", "text/plain", null, d);
@@ -67,7 +67,7 @@ Deno.test("Resource.lastModified", () => {
   assertEquals(r.lastModified, d);
 });
 
-Deno.test("Resource.size", () => {
+Deno.test("Resource#size", () => {
   assertEquals(4, fixture.size);
   const contents = [...fixture];
   for (let i = 1; i < fixture.size; i++) {
@@ -76,7 +76,7 @@ Deno.test("Resource.size", () => {
   }
 });
 
-Deno.test("Resource.hasRepresentation()", () => {
+Deno.test("Resource#hasRepresentation()", () => {
   assert(
     fixture.hasRepresentation(ContentKey.get("text/plain; charset=utf8", "en")),
   );
@@ -95,7 +95,7 @@ Deno.test("Resource.hasRepresentation()", () => {
   assert(!fixture.hasRepresentation(ContentKey.get("text/html", "ko")));
 });
 
-Deno.test("Resource.getRepresentation()", async () => {
+Deno.test("Resource#getRepresentation()", async () => {
   await assertEquals$(
     fixture.getRepresentation(ContentKey.get("text/plain; charset=utf8", "en")),
     new Content("Foo", "text/plain; charset=utf8", "en", new Date(0)),
@@ -130,7 +130,7 @@ Deno.test("Resource.getRepresentation()", async () => {
   );
 });
 
-Deno.test("Resource.addRepresentation()", async () => {
+Deno.test("Resource#addRepresentation()", async () => {
   const c = new Content("甲", "text/plain; charset=utf-8", "zh", new Date(1));
   const r = fixture.addRepresentation(c);
   await assertEquals$(r, new Resource(r.path, [...fixture, c]));
@@ -138,7 +138,7 @@ Deno.test("Resource.addRepresentation()", async () => {
   assertThrows(() => r.addRepresentation(c), ContentKeyError);
 });
 
-Deno.test("Resource.move()", async () => {
+Deno.test("Resource#move()", async () => {
   const bar = fixture.move(new URL("file:///tmp/site/bar.txt"));
   assertEquals(bar.path, new URL("file:///tmp/site/bar.txt"));
   await assertEquals$(Array.from(bar), Array.from(fixture));

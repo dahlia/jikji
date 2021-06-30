@@ -172,7 +172,7 @@ Deno.test("LanguageTag.fromString()", () => {
   );
 });
 
-Deno.test("LanguageTag.matches()", () => {
+Deno.test("LanguageTag#matches()", () => {
   const ko = LanguageTag.fromString("ko");
   const koKore = LanguageTag.fromString("ko-Kore");
   const koKR = LanguageTag.fromString("ko-KR");
@@ -198,7 +198,7 @@ Deno.test("LanguageTag.matches()", () => {
   assert(!zhHantHK.matches(en));
 });
 
-Deno.test("LanguageTag.toString()", () => {
+Deno.test("LanguageTag#toString()", () => {
   assertEquals(LanguageTag.get("ZH").toString(), "zh");
   assertEquals(LanguageTag.get("ZH", "hant").toString(), "zh-Hant");
   assertEquals(LanguageTag.get("ZH", "hant", "tw").toString(), "zh-Hant-TW");

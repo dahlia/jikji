@@ -65,7 +65,7 @@ Deno.test("Pipeline(Iterable<Resource>)", async () => {
   await assertEquals$(await toArray(p2), resources);
 });
 
-Deno.test("Pipeline.union()", async () => {
+Deno.test("Pipeline#union()", async () => {
   function pathCmp(a: Resource, b: Resource) {
     return a.path.toString() < b.path.toString() ? -1 : 1;
   }
@@ -87,7 +87,7 @@ Deno.test("Pipeline.union()", async () => {
   await assertEquals$((await toArray(p21)).sort(pathCmp), [...r2, r1[1]]);
 });
 
-Deno.test("Pipeline.map()", async () => {
+Deno.test("Pipeline#map()", async () => {
   const resources = Array.from(makeResources({
     "foo.txt": "foo",
     "bar.txt": "bar",
@@ -111,7 +111,7 @@ Deno.test("Pipeline.map()", async () => {
   await assertEquals$(await toArray(p), resources);
 });
 
-Deno.test("Pipeline.filter()", async () => {
+Deno.test("Pipeline#filter()", async () => {
   const d = new Date();
   const resources = () =>
     makeResources({
@@ -130,7 +130,7 @@ Deno.test("Pipeline.filter()", async () => {
   await assertEquals$(await toArray(p2), expected);
 });
 
-Deno.test("Pipeline.forEach()", async () => {
+Deno.test("Pipeline#forEach()", async () => {
   const resources = Array.from(makeResources({
     "foo.txt": "foo",
     "bar.txt": "bar",
@@ -154,7 +154,7 @@ Deno.test("move()", async () => {
   await assertEquals$(moved, expected);
 });
 
-Deno.test("Pipeline.move()", async () => {
+Deno.test("Pipeline#move()", async () => {
   const d = new Date();
   const p = new Pipeline(
     makeResources(
@@ -246,7 +246,7 @@ Deno.test("transform()", async () => {
   await assertEquals$(partiallyTransformed2, partiallyTransformed);
 });
 
-Deno.test("Pipeline.transform()", async () => {
+Deno.test("Pipeline#transform()", async () => {
   const d = new Date();
   const p = new Pipeline(
     makeResources(
@@ -311,7 +311,7 @@ Deno.test("diversify()", async () => {
   await assertEquals$(r3, r4);
 });
 
-Deno.test("Pipeline.diversify()", async () => {
+Deno.test("Pipeline#diversify()", async () => {
   const d = new Date();
   const resources = Array.from(
     makeResources({

@@ -108,6 +108,43 @@ Deno.test("Pipeline#add()", async () => {
   await assertEquals$((await toArray(p3)).sort(pathCmp), [resources[0], r2]);
 });
 
+Deno.test("Pipeline#addSummary", async () => {
+  function pathCmp(a: Resource, b: Resource) {
+    return a.path.toString() < b.path.toString() ? -1 : 1;
+  }
+
+  const resources = Array.from(
+    makeResources({ "a.txt": "", "b.txt": "", "c.md": "", "d.md": "" }),
+  );
+  const p = new Pipeline(resources);
+  const d = new Date();
+  const p2 = p.addSummary((pipeline) =>
+    new Resource("file:///tmp/site/", [
+      new Content(
+        async () => {
+          const rs = (await toArray(pipeline));
+          const paths = rs.map((r) => r.path.toString());
+          const body = paths.sort().join("\n");
+          return body;
+        },
+        "text/html",
+        null,
+        d,
+      ),
+    ])
+  );
+  const paths = resources.map((r) => r.path.toString()).sort().join("\n");
+  await assertEquals$(
+    (await toArray(p2)).sort(pathCmp),
+    [
+      new Resource("file:///tmp/site/", [
+        new Content(paths, "text/html", null, d),
+      ]),
+      ...(await toArray(p)).sort(pathCmp),
+    ],
+  );
+});
+
 Deno.test("Pipeline#map()", async () => {
   const resources = Array.from(makeResources({
     "foo.txt": "foo",

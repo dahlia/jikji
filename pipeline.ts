@@ -7,6 +7,16 @@ import { Content, ContentFields, ContentFilter } from "./content.ts";
 import { Resource } from "./resource.ts";
 
 /**
+ * Represents functions to summarize {@link Resource}s in a `pipeline` into
+ * a {@link Resource}.
+ * @param pipeline A pipeline with {@link Resource}s to summarize.
+ * @returns A summary as a {@link Resource}.
+ */
+export type PipelineSummarizer = (
+  pipeline: Pipeline,
+) => (Promise<Resource> | Resource);
+
+/**
  * Represents functions to transform a {@link Resource} into another
  * {@link Resource}.
  * @param resource A resource to be transformed.
@@ -104,6 +114,39 @@ export class Pipeline implements AsyncIterable<Resource> {
    */
   add(resource: Resource): Pipeline {
     return new Pipeline(concat([resource], this));
+  }
+
+  /**
+   * Summarize {@link Resource}s in the pipeline into a new {@link Resource},
+   * and adds it into a distinct pipeline besides existing {@link Resource}s.
+   *
+   * If the summary's `path` is duplicate with any `path` of existing
+   * resources, the existing resource is replaced by the summary.
+   * @param summarizer A function to summarize {@link Resource}s in the pipeline
+   *                   into a new {@link Resource}.
+   * @param predicate An optional predicate to filter {@link Resource}s in
+   *                  the pipeline to summarize.  Only {@link Resource}s
+   *                  satisfying the predicate are summarized.
+   *                  Include all {@link Resource}s by default.
+   * @returns A distinct pipeline having a new summary {@link Resource}
+   *          besides existing {@link Resource}s.
+   */
+  addSummary(
+    summarizer: PipelineSummarizer,
+    predicate?: ResourcePredicate,
+  ): Pipeline {
+    const summary = summarizer(
+      predicate == null ? this : this.filter(predicate),
+    );
+
+    if (summary instanceof Promise) {
+      const iter = async function* (): AsyncIterable<Resource> {
+        yield await summary;
+      };
+      return new Pipeline(concat(iter(), this));
+    }
+
+    return this.add(summary);
   }
 
   /**

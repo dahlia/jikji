@@ -1,3 +1,4 @@
+import concat from "https://esm.sh/@async-generators/concat@0.1.0";
 import map from "https://esm.sh/@async-generators/map@0.1.0";
 import filter from "https://esm.sh/@async-generators/filter@0.1.1";
 import { MediaType } from "./media_type.ts";
@@ -82,6 +83,16 @@ export class Pipeline implements AsyncIterable<Resource> {
     } else {
       yield* this.#buffer;
     }
+  }
+
+  /**
+   * Merges all {@link Resource}s in two pipelines into a distinct pipeline.
+   * @param pipeline A pipeline to merge with.  Resources having overlapped
+   *                 paths in it are ignored in the merged pipeline.
+   * @returns A distinct pipeline having all {@link Resource}s in two pipelines.
+   */
+  union(pipeline: Pipeline): Pipeline {
+    return new Pipeline(concat(this, pipeline));
   }
 
   /**

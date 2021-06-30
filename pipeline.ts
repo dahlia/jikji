@@ -40,6 +40,9 @@ export type ContentTransformer = (content: Content) => Content;
 /**
  * Stream of multiple #resources with transformation.  The whole process of
  * build is based on this.
+ *
+ * Note that it as a data structure works as like sets rather than lists.
+ * There cannot be more {@link Resource}s than one with the duplicate `path`s.
  */
 export class Pipeline implements AsyncIterable<Resource> {
   readonly #resources: AsyncIterable<Resource>;
@@ -51,6 +54,8 @@ export class Pipeline implements AsyncIterable<Resource> {
    * @param resources An iterable or asynchronous iterable of {@link Resource}s.
    *                  As {@link Pipeline} objects in themselves are also
    *                  asynchronous iterable, these can be passed here.
+   *                  If there are more {@link Resource}s than one with
+   *                  the duplicate `path`s, later one is ignored.
    */
   constructor(resources: AsyncIterable<Resource> | Iterable<Resource>) {
     this.#resources = Symbol.asyncIterator in resources
@@ -65,7 +70,11 @@ export class Pipeline implements AsyncIterable<Resource> {
   async *[Symbol.asyncIterator](): AsyncIterableIterator<Resource> {
     if (this.#buffer == null) {
       const buffer: Resource[] = [];
+      const paths = new Set<string>();
       for await (const resource of this.#resources) {
+        const path = resource.path.toString();
+        if (paths.has(path)) continue;
+        paths.add(path);
         buffer.push(resource);
         yield resource;
       }
@@ -112,6 +121,7 @@ export class Pipeline implements AsyncIterable<Resource> {
   /**
    * Executes a provided `callback` function once for each {@link Resource}.
    * Unlike {@link map} method, this returns a promise resolving nothing.
+   * Note that this guarantees nothing about its execution order.
    * @param callback A callback function to be invoked with each
    *                 {@link Resource}, and its index.
    */

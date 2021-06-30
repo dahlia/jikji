@@ -34,6 +34,15 @@ Deno.test("Pipeline(AsyncIterable<Resource>)", async () => {
   };
   const p = new Pipeline(asyncIterable);
   await assertEquals$(await toArray(p), resources);
+
+  const dupIterable = {
+    [Symbol.asyncIterator]: async function* () {
+      yield* resources;
+      yield* makeResources({ "foo.txt": "dup" });
+    },
+  };
+  const p2 = new Pipeline(dupIterable);
+  await assertEquals$(await toArray(p2), resources);
 });
 
 Deno.test("Pipeline(Iterable<Resource>)", async () => {
@@ -45,6 +54,15 @@ Deno.test("Pipeline(Iterable<Resource>)", async () => {
   };
   const p = new Pipeline(iterable);
   await assertEquals$(await toArray(p), resources);
+
+  const dupIterable = {
+    [Symbol.iterator]: function* () {
+      yield* resources;
+      yield* makeResources({ "foo.txt": "dup" });
+    },
+  };
+  const p2 = new Pipeline(dupIterable);
+  await assertEquals$(await toArray(p2), resources);
 });
 
 Deno.test("Pipeline.map()", async () => {

@@ -78,6 +78,22 @@ export class Pipeline implements AsyncIterable<Resource> {
     Object.freeze(this);
   }
 
+  /**
+   * Gets the last time any resource/content was modified.
+   * @returns The last time any resource/content in the pipeline was modified.
+   *          It can be `null` if there are no resources at all.
+   */
+  async getLastModified(): Promise<Date | null> {
+    let result: Date | null = null;
+    for await (const r of this) {
+      const modified = r.lastModified;
+      if (result == null || modified > result) {
+        result = modified;
+      }
+    }
+    return result;
+  }
+
   async *[Symbol.asyncIterator](): AsyncIterableIterator<Resource> {
     if (this.#buffer == null) {
       const buffer: Resource[] = [];

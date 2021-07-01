@@ -87,6 +87,17 @@ Deno.test("Pipeline#union()", async () => {
   await assertEquals$((await toArray(p21)).sort(pathCmp), [...r2, r1[1]]);
 });
 
+Deno.test("Pipeline#getLastModified()", async () => {
+  const d1 = new Date(0);
+  const resources = makeResources({ "foo.txt": "", "bar.txt": "" }, d1);
+  const p1 = new Pipeline(resources);
+  assertEquals(await p1.getLastModified(), d1);
+
+  const d2 = new Date();
+  const p2 = p1.union(new Pipeline(makeResources({ "baz.txt": "" }, d2)));
+  assertEquals(await p2.getLastModified(), d2);
+});
+
 Deno.test("Pipeline#add()", async () => {
   function pathCmp(a: Resource, b: Resource) {
     return a.path.toString() < b.path.toString() ? -1 : 1;

@@ -56,9 +56,9 @@ export class Resource implements Iterable<Content> {
   }
 
   /**
-   * The last time the content was modified.  Note that every time it creates
-   * a new instance to return so that mutation on it outside does not affect
-   * to the {@link Resource} instance's internal state.
+   * The last time any content in the resource was modified.  Note that every
+   * time it creates a new instance to return so that mutation on it outside
+   * does not affect to the {@link Resource} instance's internal state.
    */
   get lastModified(): Date {
     return new Date(this.#lastModified);

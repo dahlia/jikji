@@ -12,6 +12,7 @@ import {
 import {
   Mime,
   mime as defaultMime,
+  MimeTypeMap,
 } from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
 import { Content, PathTransformer, Pipeline, Resource } from "./pipeline.ts";
@@ -221,3 +222,21 @@ export function writeFiles(
     await Promise.all(promises);
   };
 }
+
+/**
+ * Extends a given `mime` object with given `typeMaps`.
+ * @param mime A base {@link Mime} instance to extend.
+ * @param typeMaps Additional type maps.
+ * @returns A distinct {@link Mime} instance with extended types.
+ */
+export function extendMime(mime: Mime, ...typeMaps: MimeTypeMap[]): Mime {
+  const mimeTypes: MimeTypeMap = {};
+  mime.types.forEach((type, ext) => {
+    if (type in mimeTypes) mimeTypes[type].push(ext);
+    else mimeTypes[type] = [ext];
+  });
+
+  return new Mime(mimeTypes, ...typeMaps);
+}
+
+export { defaultMime, Mime };

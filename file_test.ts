@@ -4,7 +4,14 @@ import {
   assertThrows,
 } from "https://deno.land/std@0.97.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
-import { intoDirectory, rebase, scanFiles, writeFiles } from "./file.ts";
+import {
+  extendMime,
+  intoDirectory,
+  Mime,
+  rebase,
+  scanFiles,
+  writeFiles,
+} from "./file.ts";
 import { makeResources, withFixture, withTempDir } from "./fixtures.ts";
 import { Content, move, replace, Resource } from "./pipeline.ts";
 
@@ -181,4 +188,22 @@ Deno.test("writeFiles()", async () => {
       assertEquals(t, new TextEncoder().encode("Plain text content"));
     },
   });
+});
+
+Deno.test("extendMime()", () => {
+  const base = new Mime({
+    "text/plain": ["txt"],
+    "text/html": ["html", "htm"],
+  });
+  const extended = extendMime(base);
+  base.define({ "image/png": ["png"] });
+  extended.define({ "text/markdown": ["md", "markdown"] });
+  assertEquals(base.getExtension("text/plain"), "txt");
+  assertEquals(extended.getExtension("text/plain"), "txt");
+  assertEquals(base.getExtension("text/html"), "html");
+  assertEquals(extended.getExtension("text/html"), "html");
+  assertEquals(base.getExtension("image/png"), "png");
+  assertEquals(extended.getExtension("image/png"), undefined);
+  assertEquals(base.getExtension("text/markdown"), undefined);
+  assertEquals(extended.getExtension("text/markdown"), "md");
 });

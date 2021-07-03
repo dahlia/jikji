@@ -8,13 +8,16 @@ import { Resource } from "./resource.ts";
 
 /**
  * Represents functions to summarize {@link Resource}s in a `pipeline` into
- * a {@link Resource}.
+ * {@link Resource}s.
  * @param pipeline A pipeline with {@link Resource}s to summarize.
- * @returns A summary as a {@link Resource}.
+ * @returns Summary as {@link Resource}s.
  */
-export type PipelineSummarizer = (
-  pipeline: Pipeline,
-) => (Promise<Resource> | Resource);
+export type PipelineSummarizer = (pipeline: Pipeline) => (
+  | AsyncIterable<Resource>
+  | Promise<Resource>
+  | Iterable<Resource>
+  | Resource
+);
 
 /**
  * Represents functions to transform a {@link Resource} into another
@@ -133,21 +136,21 @@ export class Pipeline implements AsyncIterable<Resource> {
   }
 
   /**
-   * Summarize {@link Resource}s in the pipeline into a new {@link Resource},
-   * and adds it into a distinct pipeline besides existing {@link Resource}s.
+   * Summarize {@link Resource}s in the pipeline into new {@link Resource}s,
+   * and adds them into a distinct pipeline besides existing {@link Resource}s.
    *
-   * If the summary's `path` is duplicate with any `path` of existing
+   * If a summary's `path` is duplicate with any `path` of existing
    * resources, the existing resource is replaced by the summary.
    * @param summarizer A function to summarize {@link Resource}s in the pipeline
-   *                   into a new {@link Resource}.
+   *                   into new {@link Resource}s.
    * @param predicate An optional predicate to filter {@link Resource}s in
    *                  the pipeline to summarize.  Only {@link Resource}s
    *                  satisfying the predicate are summarized.
    *                  Include all {@link Resource}s by default.
-   * @returns A distinct pipeline having a new summary {@link Resource}
+   * @returns A distinct pipeline having new summary {@link Resource}s
    *          besides existing {@link Resource}s.
    */
-  addSummary(
+  addSummaries(
     summarizer: PipelineSummarizer,
     predicate?: ResourcePredicate,
   ): Pipeline {
@@ -160,9 +163,11 @@ export class Pipeline implements AsyncIterable<Resource> {
         yield await summary;
       };
       return new Pipeline(concat(iter(), this));
+    } else if (summary instanceof Resource) {
+      return this.add(summary);
     }
 
-    return this.add(summary);
+    return new Pipeline(concat(summary, this));
   }
 
   /**

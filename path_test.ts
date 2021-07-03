@@ -1,4 +1,4 @@
-import { intoDirectory, isBasedOn, rebase } from "./path.ts";
+import { intoDirectory, isBasedOn, rebase, removeBase } from "./path.ts";
 import {
   assert,
   assertEquals,
@@ -99,13 +99,15 @@ Deno.test("rebase()", () => {
   );
 });
 
-Deno.test("isBasedOn", () => {
+Deno.test("isBasedOn()", () => {
   const example = new URL("https://example.com/");
   const exampleFoo = new URL("https://example.com/foo/");
   const exampleFoo_ = new URL("https://example.com/foo");
   const exampleBar = new URL("https://example.com/bar/");
   const exampleFooBar = new URL("https://example.com/foo/bar");
   const other = new URL("https://other.net/");
+  const search = new URL("https://example.com/?search=1");
+  const hash = new URL("https://example.com/#hash");
   assert(isBasedOn(exampleFoo, example));
   assert(isBasedOn(exampleFoo_, example));
   assert(isBasedOn(exampleBar, example));
@@ -122,4 +124,26 @@ Deno.test("isBasedOn", () => {
     TypeError,
     "must end with a slash",
   );
+  assertThrows(
+    () => isBasedOn(exampleFooBar, search),
+    TypeError,
+    "must not have search",
+  );
+  assertThrows(
+    () => isBasedOn(exampleFooBar, hash),
+    TypeError,
+    "must not have",
+  );
+});
+
+Deno.test("removeBase()", () => {
+  const example = new URL("https://example.com/");
+  const exampleFoo = new URL("https://example.com/foo/");
+  const exampleFooBar = new URL("https://example.com/foo/bar?a=1&b=2");
+  const exampleFooBaz = new URL("https://example.com/foo/baz#hash");
+  assertEquals(removeBase(example, example), "");
+  assertEquals(removeBase(exampleFoo, example), "foo/");
+  assertEquals(removeBase(exampleFooBar, example), "foo/bar?a=1&b=2");
+  assertEquals(removeBase(exampleFooBaz, example), "foo/baz#hash");
+  assertThrows(() => removeBase(example, exampleFoo), TypeError, "not based");
 });

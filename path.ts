@@ -36,6 +36,9 @@ export function intoDirectory(stripExtension = true): PathTransformer {
  *               or fragment (`hash`).
  * @returns A function to replace the `base` of the given URL with a new
  *          base (`rebase`).
+ * @throws {TypeError} Thrown when the given `base`/`rebase` URL has search
+ *                     (query string) or hash (anchor), or its path does not
+ *                     end with a slash.
  */
 export function rebase(
   base: string | URL,
@@ -94,12 +97,21 @@ function relativePathToFileUrl(path: string | URL) {
 
 /**
  * Checks if the given `url` is based on the given `base` URL.
- * @param url The url to check.
+ * @param url The URL to check.
  * @param base The base URL.  Its `pathname` has to end with a slash.
  * @returns `true` iff the given `url is based on the given `base` URL.
+ * @throws {TypeError} Thrown when the given `base` URL has search
+ *                     (query string) or hash (anchor), or its path does not
+ *                     end with a slash.
  */
 export function isBasedOn(url: URL, base: URL): boolean {
-  if (!base.pathname.endsWith("/")) {
+  if (base.search !== "" || base.hash !== "") {
+    throw new TypeError(
+      `The base URL must not have search (query string) or hash (anchor): ${
+        JSON.stringify(base.toString())
+      }.`,
+    );
+  } else if (!base.pathname.endsWith("/")) {
     throw new TypeError(
       `The base URL must end with a slash (/): ${
         JSON.stringify(base.toString())
@@ -109,4 +121,28 @@ export function isBasedOn(url: URL, base: URL): boolean {
   return url.origin === base.origin && url.username === base.username &&
     url.password === base.password &&
     url.pathname.startsWith(base.pathname);
+}
+
+/**
+ * Removes the given `base` from the given `url`, and returns a relative path.
+ * @param url The URL to remove its `base`.
+ * @param base The base to be removed from the given `url`.
+ * @returns The path (with query string and anchor if exist) to the given `url`
+ *          relative to the `base` URL.
+ * @throws {TypeError} Thrown when the given `base` URL has search
+ *                     (query string) or hash (anchor), or its path does not
+ *                     end with a slash.
+ * @throws {TypeError} Thrown when the given `url` is not based on the given
+ *                     `base` URL.
+ */
+export function removeBase(url: URL, base: URL): string {
+  if (!isBasedOn(url, base)) {
+    throw new TypeError(
+      `${JSON.stringify(url.toString())} is not based on ${
+        JSON.stringify(base.toString())
+      }.`,
+    );
+  }
+
+  return url.pathname.substr(base.pathname.length) + url.search + url.hash;
 }

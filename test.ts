@@ -1,9 +1,10 @@
 import { walk } from "https://deno.land/std@0.99.0/fs/walk.ts";
 import { join, sep } from "https://deno.land/std@0.99.0/path/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.99.0/testing/asserts.ts";
-import { intoDirectory, rebase, scanFiles, writeFiles } from "./file.ts";
+import { scanFiles, writeFiles } from "./file.ts";
 import { withFixture } from "./fixtures.ts";
 import { frontMatter, markdown } from "./markdown.ts";
+import { intoDirectory, rebase } from "./path.ts";
 
 Deno.test("sample", () =>
   withFixture(

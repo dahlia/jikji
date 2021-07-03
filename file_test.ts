@@ -1,18 +1,9 @@
 import { join, sep } from "https://deno.land/std@0.99.0/path/mod.ts";
-import {
-  assertEquals,
-  assertThrows,
-} from "https://deno.land/std@0.97.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.97.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
-import {
-  extendMime,
-  intoDirectory,
-  Mime,
-  rebase,
-  scanFiles,
-  writeFiles,
-} from "./file.ts";
+import { extendMime, Mime, scanFiles, writeFiles } from "./file.ts";
 import { makeResources, withFixture, withTempDir } from "./fixtures.ts";
+import { rebase } from "./path.ts";
 import { Content, move, replace, Resource } from "./pipeline.ts";
 
 Deno.test("scanFiles()", () => {
@@ -48,100 +39,6 @@ Deno.test("scanFiles()", () => {
         .sort(comparePath);
       await assertEquals$(rs, expected);
     },
-  );
-});
-
-Deno.test("intoDirectory()", () => {
-  const f = intoDirectory();
-  assertEquals(
-    f(new URL("file:///tmp/foo/bar")),
-    new URL("file:///tmp/foo/bar/"),
-  );
-  assertEquals(
-    f(new URL("file:///tmp/foo/bar/")),
-    new URL("file:///tmp/foo/bar/"),
-  );
-  assertEquals(
-    f(new URL("file:///tmp/foo/bar.md")),
-    new URL("file:///tmp/foo/bar/"),
-  );
-  assertEquals(
-    f(new URL("file:///tmp/foo/bar.md/")),
-    new URL("file:///tmp/foo/bar.md/"),
-  );
-
-  const f2 = intoDirectory(false);
-  assertEquals(
-    f2(new URL("file:///tmp/foo/bar")),
-    new URL("file:///tmp/foo/bar/"),
-  );
-  assertEquals(
-    f2(new URL("file:///tmp/foo/bar/")),
-    new URL("file:///tmp/foo/bar/"),
-  );
-  assertEquals(
-    f2(new URL("file:///tmp/foo/bar.md")),
-    new URL("file:///tmp/foo/bar.md/"),
-  );
-  assertEquals(
-    f2(new URL("file:///tmp/foo/bar.md")),
-    new URL("file:///tmp/foo/bar.md/"),
-  );
-});
-
-Deno.test("rebase()", () => {
-  const r = rebase(new URL("file:///tmp/foo/"), new URL("http://example.com/"));
-  const r2 = rebase("/tmp/foo/", "/home/me/");
-
-  assertEquals(
-    r(new URL("file:///tmp/foo/index.html")),
-    new URL("http://example.com/index.html"),
-  );
-  assertEquals(
-    r2(new URL("file:///tmp/foo/index.html")),
-    new URL("file:///home/me/index.html"),
-  );
-  assertEquals(
-    r(new URL("file:///tmp/foo/bar/index.html")),
-    new URL("http://example.com/bar/index.html"),
-  );
-  assertEquals(
-    r2(new URL("file:///tmp/foo/bar/index.html")),
-    new URL("file:///home/me/bar/index.html"),
-  );
-
-  // If the input is not on the base it returns the input without change.
-  assertEquals(
-    r(new URL("file:///tmp/bar/index.html")),
-    new URL("file:///tmp/bar/index.html"),
-  );
-  assertEquals(
-    r2(new URL("file:///tmp/bar/index.html")),
-    new URL("file:///tmp/bar/index.html"),
-  );
-
-  // Throws TypeError if base URL does not end with a slash.
-  assertThrows(
-    () => rebase(new URL("file:///tmp/foo"), new URL("https://example.com/")),
-    TypeError,
-    "must end with a slash",
-  );
-  assertThrows(
-    () => rebase("./foo", new URL("https://example.com/")),
-    TypeError,
-    "must end with a slash",
-  );
-
-  // Throws TypeError if rebase URL does not end with a slash.
-  assertThrows(
-    () => rebase(new URL("file:///tmp/foo/"), new URL("https://example.com/x")),
-    TypeError,
-    "must end with a slash",
-  );
-  assertThrows(
-    () => rebase(new URL("file:///tmp/foo/"), "./foo"),
-    TypeError,
-    "must end with a slash",
   );
 });
 

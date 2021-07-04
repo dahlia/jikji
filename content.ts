@@ -334,6 +334,15 @@ export class ContentKeyError extends Error {
 }
 
 /**
+ * Represents functions to determine whether to filter out a {@link Content}
+ * or not.
+ * @param content A content to be determined if it is filtered or not.
+ * @returns `true` means to remain the given `content`, and `false` means to
+ *          exclude it.
+ */
+export type ContentPredicate = (content: Content) => boolean;
+
+/**
  * Represents criteria on {@link Content}s.  Each field represents a criterium,
  * and a {@link Content} satisfies a filter when it *all* criteria (fields) in
  * the filter are satisfied.
@@ -362,6 +371,26 @@ export interface ContentFilter {
 
   /** Similar to {@link language} filter, except it does exact match. */
   exactLanguage?: LanguageTag | string;
+}
+
+/**
+ * Represents any kind of content criterion.  `undefined` means to include
+ * the content.
+ */
+export type ContentCriterion = ContentFilter | ContentPredicate | undefined;
+
+/**
+ * Turns any kind of {@link ContentCriterion} into an equivalent
+ * {@link ContentPredicate} function.
+ * @param criterion Any kind of {@link ContentCriterion} to turn into
+ *                  a {@link ContentPredicate} function.
+ * @returns A predicate function equivalent to the given content `criterion`.
+ */
+export function toContentPredicate(
+  criterion: ContentCriterion,
+): ContentPredicate {
+  if (criterion instanceof Function) return criterion;
+  return (content: Content) => content.matches(criterion);
 }
 
 export default Content;

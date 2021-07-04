@@ -3,7 +3,12 @@ import map from "https://esm.sh/@async-generators/map@0.1.0";
 import filter from "https://esm.sh/@async-generators/filter@0.1.1";
 import { MediaType } from "./media_type.ts";
 import { LanguageTag } from "./language_tag.ts";
-import { Content, ContentFields, ContentFilter } from "./content.ts";
+import {
+  Content,
+  ContentCriterion,
+  ContentFields,
+  toContentPredicate,
+} from "./content.ts";
 import { Resource } from "./resource.ts";
 
 /** Represents a type `T` except for `undefined`. */
@@ -283,16 +288,16 @@ export class Pipeline implements AsyncIterable<Resource> {
    * method instead.
    * @param transformer A content transformer to apply to {@link Content}s in
    *                    {@link Resource}s.
-   * @param filter An optional filter to transform {@link Content}s.
-   *               {@link Content}s that do not satisfy the filter will not
-   *               be transformed, but will be as these are.
+   * @param criterion An optional criterion to transform {@link Content}s.
+   *                  {@link Content}s that do not satisfy the criterion will
+   *                  not be transformed, but will be as these are.
    * @returns A distinct pipeline with transformed {@link Content}s.
    */
   transform(
     transformer: ContentTransformer,
-    filter?: ContentFilter | ((content: Content) => boolean),
+    criterion?: ContentCriterion,
   ): Pipeline {
-    return this.map(transform(transformer, filter));
+    return this.map(transform(transformer, criterion));
   }
 
   /**
@@ -301,16 +306,16 @@ export class Pipeline implements AsyncIterable<Resource> {
    * {@link Content}s with maintaining existing {@link Content}s instead.
    * @param transformer A content transformer to apply to {@link Content}s in
    *                    {@link Resource}s.
-   * @param filter An optional filter to transform {@link Content}s.
-   *               {@link Content}s that do not satisfy the filter will not
-   *               be transformed.
+   * @param criterion An optional filter to transform {@link Content}s.
+   *                  {@link Content}s that do not satisfy the filter will not
+   *                  be transformed.
    * @returns A distinct pipeline with transformed {@link Content}s.
    */
   diversify(
     transformer: ContentTransformer,
-    filter?: ContentFilter | ((content: Content) => boolean),
+    criterion?: ContentCriterion,
   ): Pipeline {
-    return this.map(diversify(transformer, filter));
+    return this.map(diversify(transformer, criterion));
   }
 }
 
@@ -346,22 +351,19 @@ export function move(transformer: PathTransformer): ResourceTransformer {
  * Designed to work with {@link Pipeline#map} method.
  * @param transformer A content transformer to apply to {@link Content}s in
  *                    {@link Resource}s.
- * @param filter An optional filter to transform {@link Content}s.
- *               {@link Content}s that do not satisfy the filter will not
- *               be transformed, but will be as these are.
+ * @param criterion An optional criterion to transform {@link Content}s.
+ *                  {@link Content}s that do not satisfy the criterion will not
+ *                  be transformed, but will be as these are.
  * @returns A resource transformer turned from the given content transformer.
  */
 export function transform(
   transformer: ContentTransformer,
-  filter?: ContentFilter | ((content: Content) => boolean),
+  criterion?: ContentCriterion,
 ): ResourceTransformer {
+  const satisfies = toContentPredicate(criterion);
   function* transformRepresentations(resource: Resource) {
     for (const repr of resource) {
-      const inCriteria = filter == null ||
-        (typeof filter == "function"
-          ? filter(repr)
-          : repr.matches(filter as ContentFilter));
-      yield inCriteria ? transformer(repr) : repr;
+      yield satisfies(repr) ? transformer(repr) : repr;
     }
   }
   return (resource: Resource): Resource =>
@@ -376,25 +378,21 @@ export function transform(
  * Designed to work with {@link Pipeline#map} method.
  * @param transformer A content transformer to apply to {@link Content}s in
  *                    {@link Resource}s.
- * @param filter An optional filter to transform {@link Content}s.
- *               {@link Content}s that do not satisfy the filter will not
- *               be transformed.
+ * @param criterion An optional criterion to transform {@link Content}s.
+ *                  {@link Content}s that do not satisfy the criterion will not
+ *                  be transformed.
  * @returns A resource transformer which diversifies {@link Content}s in
  *          the given {@link Resource}.
  */
 export function diversify(
   transformer: ContentTransformer,
-  filter?: ContentFilter | ((content: Content) => boolean),
+  criterion?: ContentCriterion,
 ): ResourceTransformer {
+  const satisfies = toContentPredicate(criterion);
   function* diverseRepresentations(resource: Resource) {
     for (const repr of resource) {
       yield repr;
-      if (
-        filter == null ||
-        (typeof filter == "function"
-          ? filter(repr)
-          : repr.matches(filter as ContentFilter))
-      ) {
+      if (satisfies(repr)) {
         yield transformer(repr);
       }
     }

@@ -15,6 +15,7 @@ import {
   LanguageTagError,
   MediaType,
   MediaTypeError,
+  toContentPredicate,
 } from "./content.ts";
 
 const contentBodyTypes: [string, string | Uint8Array][] = [
@@ -424,4 +425,21 @@ Deno.test("ContentKeyError()", () => {
   const e2 = new ContentKeyError("error message");
   assertEquals(e2.message, "error message");
   assertEquals(e2.name, "ContentKeyError");
+});
+
+Deno.test("toContentCriterion()", () => {
+  const txt = new Content("", "text/plain");
+  const html = new Content("", "text/html");
+
+  const p1 = toContentPredicate({ type: "text/plain" });
+  assert(p1(txt));
+  assert(!p1(html));
+
+  const p2 = toContentPredicate((c) => c.type.matches("text/plain"));
+  assert(p2(txt));
+  assert(!p2(html));
+
+  const p3 = toContentPredicate(undefined);
+  assert(p3(txt));
+  assert(p3(html));
 });

@@ -18,6 +18,45 @@ import {
 import { Content } from "./content.ts";
 import { Resource } from "./resource.ts";
 
+async function setEquals(
+  actual?: Set<unknown>,
+  expected?: Set<unknown>,
+): Promise<boolean> {
+  if (actual != null && expected != null) {
+    if (actual.size != expected.size) return false;
+    for (const value of actual) {
+      if (!expected.has(value)) {
+        let eq = false;
+        for (const v of expected) {
+          if (await equals(value, v)) {
+            eq = true;
+            break;
+          }
+        }
+        return eq;
+      }
+    }
+    return true;
+  }
+
+  return actual === expected;
+}
+
+async function mapEquals(
+  actual?: Map<unknown, unknown>,
+  expected?: Map<unknown, unknown>,
+): Promise<boolean> {
+  if (actual != null && expected != null) {
+    if (actual.size != expected.size) return false;
+    for (const [key, value] of actual.entries()) {
+      if (!await equals(expected.get(key), value)) return false;
+    }
+    return true;
+  }
+
+  return actual === expected;
+}
+
 async function contentEquals(
   actual?: Content | null,
   expected?: Content | null,
@@ -108,7 +147,15 @@ async function equals(
   actual: unknown,
   expected: unknown,
 ): Promise<boolean> {
-  if (actual instanceof Content && expected instanceof Content) {
+  if (actual instanceof Set && expected instanceof Set) {
+    return await setEquals(actual, expected);
+  } else if (actual instanceof Set || expected instanceof Set) {
+    return false;
+  } else if (actual instanceof Map && expected instanceof Map) {
+    return await mapEquals(actual, expected);
+  } else if (actual instanceof Map || expected instanceof Map) {
+    return false;
+  } else if (actual instanceof Content && expected instanceof Content) {
     return await contentEquals(actual, expected);
   } else if (actual instanceof Content || expected instanceof Content) {
     return false;

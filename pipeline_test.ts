@@ -222,6 +222,64 @@ Deno.test("Pipeline#filter()", async () => {
   await assertEquals$(await toArray(p2), expected);
 });
 
+Deno.test("Pipeline#groupBy()", async () => {
+  const d = new Date();
+  const resources = () =>
+    makeResources({
+      "foo.md": "foo",
+      "bar.md": "bar",
+      "baz.txt": "baz",
+      "qux.txt": "qux",
+      "quux.html": "quux",
+    }, d);
+  const p = new Pipeline(resources());
+  const g1 = await p.groupBy((r) => r.path.pathname.match(/[^.]+$/)![0]);
+  await assertEquals$(
+    new Map([
+      ["md", new Set(makeResources({ "foo.md": "foo", "bar.md": "bar" }, d))],
+      [
+        "txt",
+        new Set(makeResources({ "baz.txt": "baz", "qux.txt": "qux" }, d)),
+      ],
+      ["html", new Set(makeResources({ "quux.html": "quux" }, d))],
+    ]),
+    g1,
+  );
+
+  const g2 = await p.groupBy((r) =>
+    r.path.pathname.match(/([^/.]+)\.[^.]+$/)![1].length
+  );
+  await assertEquals$(
+    new Map([
+      [
+        3,
+        new Set(
+          makeResources({
+            "foo.md": "foo",
+            "bar.md": "bar",
+            "baz.txt": "baz",
+            "qux.txt": "qux",
+          }, d),
+        ),
+      ],
+      [4, new Set(makeResources({ "quux.html": "quux" }, d))],
+    ]),
+    g2,
+  );
+
+  const g3 = await p.groupBy((r) => {
+    const ext = r.path.pathname.match(/[^.]+$/)![0];
+    return ext === "txt" ? undefined : ext;
+  });
+  await assertEquals$(
+    new Map([
+      ["md", new Set(makeResources({ "foo.md": "foo", "bar.md": "bar" }, d))],
+      ["html", new Set(makeResources({ "quux.html": "quux" }, d))],
+    ]),
+    g3,
+  );
+});
+
 Deno.test("Pipeline#forEach()", async () => {
   const resources = Array.from(makeResources({
     "foo.txt": "foo",

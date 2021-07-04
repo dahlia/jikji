@@ -6,6 +6,9 @@ import { LanguageTag } from "./language_tag.ts";
 import { Content, ContentFields, ContentFilter } from "./content.ts";
 import { Resource } from "./resource.ts";
 
+/** Represents a type `T` except for `undefined`. */
+export type NonUndefined<T> = T extends undefined ? never : T;
+
 /**
  * Represents functions to summarize {@link Resource}s in a `pipeline` into
  * {@link Resource}s.
@@ -202,6 +205,36 @@ export class Pipeline implements AsyncIterable<Resource> {
       resources = filter(resources, pred);
     }
     return new Pipeline(resources);
+  }
+
+  /**
+   * Organizes resources in the pipeline into a map of groups, where keys are
+   * common values among resources in each group and values are resources
+   * having their common group values.  Key is determined by a function passed
+   * through the parameter `grouper`.
+   *
+   * Note that keys cannot be `undefined`.
+   * @param grouper A function to extract the commons values from resources
+   *                to determine groups they belong to.  To exclude a resource
+   *                from any groups return `undefined`.
+   * @returns A map of groups, where keys are common values among resources
+   *          in each group and values are resources having their common group
+   *          values (which are determined by `grouper`).
+   */
+  async groupBy<T>(
+    grouper: (resource: Resource) => T | undefined,
+  ): Promise<Map<NonUndefined<T>, Set<Resource>>> {
+    const groups = new Map<NonUndefined<T>, Set<Resource>>();
+    await this.forEach((resource: Resource) => {
+      const groupKey: T | undefined = grouper(resource);
+      if (groupKey !== undefined) {
+        const key = groupKey as NonUndefined<T>;
+        const group = groups.get(key);
+        if (group === undefined) groups.set(key, new Set([resource]));
+        else group.add(resource);
+      }
+    });
+    return groups;
   }
 
   /**

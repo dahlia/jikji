@@ -86,7 +86,11 @@ function relativePathToFileUrl(path: string | URL) {
       return new URL(path);
     } catch (e) {
       if (e instanceof TypeError) {
-        return toFileUrl(isAbsolute(path) ? path : resolve(path));
+        return toFileUrl(
+          isAbsolute(path)
+            ? path
+            : resolve(path) + (path.endsWith("/") ? "/" : ""),
+        );
       } else {
         throw e;
       }

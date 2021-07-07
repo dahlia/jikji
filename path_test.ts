@@ -4,6 +4,7 @@ import {
   assertEquals,
   assertThrows,
 } from "https://deno.land/std@0.97.0/testing/asserts.ts";
+import { resolve, toFileUrl } from "https://deno.land/std@0.99.0/path/mod.ts";
 
 Deno.test("intoDirectory()", () => {
   const f = intoDirectory();
@@ -46,7 +47,6 @@ Deno.test("intoDirectory()", () => {
 Deno.test("rebase()", () => {
   const r = rebase(new URL("file:///tmp/foo/"), new URL("http://example.com/"));
   const r2 = rebase("/tmp/foo/", "/home/me/");
-
   assertEquals(
     r(new URL("file:///tmp/foo/index.html")),
     new URL("http://example.com/index.html"),
@@ -62,6 +62,12 @@ Deno.test("rebase()", () => {
   assertEquals(
     r2(new URL("file:///tmp/foo/bar/index.html")),
     new URL("file:///home/me/bar/index.html"),
+  );
+
+  const r3 = rebase("foo/bar/", "baz/qux/");
+  assertEquals(
+    r3(toFileUrl(resolve("foo/bar/abc.txt"))),
+    toFileUrl(resolve("baz/qux/abc.txt")),
   );
 
   // If the input is not on the base it returns the input without change.

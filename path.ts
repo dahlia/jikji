@@ -80,7 +80,14 @@ export function rebase(
   };
 }
 
-function relativePathToFileUrl(path: string | URL) {
+/**
+ * Similar to {@link toFileUrl} function, except that it takes relative paths
+ * besides absolute paths.
+ * @param path A file path to turn into a file URL.  If it is already
+ *             a {@link URL} instance, it is returned without any change.
+ * @returns A URL which corresponds to the given `path`.
+ */
+export function relativePathToFileUrl(path: string | URL) {
   if (typeof path == "string") {
     try {
       return new URL(path);

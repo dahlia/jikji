@@ -13,7 +13,7 @@ import {
   MimeTypeMap,
 } from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
-import { rebase } from "./path.ts";
+import { rebase, relativePathToFileUrl } from "./path.ts";
 import { Content, Pipeline, Resource } from "./pipeline.ts";
 
 async function* scanResources(
@@ -84,7 +84,7 @@ export function writeFiles(
   mime?: Mime,
 ): ((resource: Resource) => Promise<void>) {
   mime ??= defaultMime;
-  const pathUrl = toFileUrl(path);
+  const pathUrl = relativePathToFileUrl(path);
   if (!pathUrl.pathname.endsWith("/")) {
     pathUrl.pathname += "/";
   }

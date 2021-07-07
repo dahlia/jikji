@@ -1,4 +1,10 @@
-import { intoDirectory, isBasedOn, rebase, removeBase } from "./path.ts";
+import {
+  intoDirectory,
+  isBasedOn,
+  rebase,
+  relativePathToFileUrl,
+  removeBase,
+} from "./path.ts";
 import {
   assert,
   assertEquals,
@@ -102,6 +108,21 @@ Deno.test("rebase()", () => {
     () => rebase(new URL("file:///tmp/foo/"), "./foo"),
     TypeError,
     "must end with a slash",
+  );
+});
+
+Deno.test("relativePathToFileUrl()", () => {
+  assertEquals(
+    relativePathToFileUrl("foo/bar"),
+    toFileUrl(resolve("foo/bar")),
+  );
+  assertEquals(
+    relativePathToFileUrl("foo/"),
+    toFileUrl(resolve("foo") + "/"),
+  );
+  assertEquals(
+    relativePathToFileUrl(new URL("https://example/com/")),
+    new URL("https://example/com/"),
   );
 });
 

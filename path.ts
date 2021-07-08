@@ -157,3 +157,59 @@ export function removeBase(url: URL, base: URL): string {
 
   return url.pathname.substr(base.pathname.length) + url.search + url.hash;
 }
+
+/**
+ * Checks if the given `url` matches to the `pattern`, and extracts a matched
+ * string from it.
+ * @param url The URL to try to match.
+ * @param pattern The pattern to search.
+ * @param options Options.  If `options.base` is present, the `base` is removed
+ *                from the given `url` and the `pattern` is matched to it.
+ * @returns The whole matched string if the `url` matches to the `pattern`.
+ *          `null` if it does not match.
+ * @throws {TypeError} Thrown if `options.base` is present and it does not end
+ *         with a slash or the given `url` is not based on it.
+ */
+export function extractFromUrl(
+  url: URL,
+  pattern: RegExp,
+  options?: { base: URL },
+): string | null;
+
+/**
+ * Checks if the given `url` matches to the `pattern`, and extracts a matched
+ * string from it.
+ * @param url The URL to try to match.
+ * @param pattern The pattern to search.
+ * @param options Options.  If `options.base` is present, the `base` is removed
+ *                from the given `url` and the `pattern` is matched to it.
+ *                If `options.convert` is present, a match result is converted
+ *                (even if a match result is `null`) and returns the converted
+ *                value.
+ * @returns The converted match result if the `url` matches to the `pattern`.
+ * @throws {TypeError} Thrown if `options.base` is present and it does not end
+ *         with a slash or the given `url` is not based on it.
+ */
+export function extractFromUrl<T>(
+  url: URL,
+  pattern: RegExp,
+  options: { base?: URL; convert: (match: RegExpMatchArray | null) => T },
+): T;
+
+export function extractFromUrl<T>(
+  url: URL,
+  pattern: RegExp,
+  options?: { base: URL } | {
+    base?: URL;
+    convert: (match: RegExpMatchArray | null) => T;
+  },
+): string | null | T {
+  const path: string = options?.base != null
+    ? removeBase(url, options.base)
+    : url.toString();
+  const match: RegExpExecArray | null = pattern.exec(path);
+  if (options != null && "convert" in options && options.convert != null) {
+    return options?.convert(match);
+  }
+  return match && match[0];
+}

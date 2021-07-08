@@ -1,4 +1,5 @@
 import {
+  extractFromUrl,
   intoDirectory,
   isBasedOn,
   rebase,
@@ -173,4 +174,107 @@ Deno.test("removeBase()", () => {
   assertEquals(removeBase(exampleFooBar, example), "foo/bar?a=1&b=2");
   assertEquals(removeBase(exampleFooBaz, example), "foo/baz#hash");
   assertThrows(() => removeBase(example, exampleFoo), TypeError, "not based");
+});
+
+Deno.test("extractFromUrl()", () => {
+  assertEquals(
+    extractFromUrl(new URL("https://example.com/foo/bar"), /^\w+/),
+    "https",
+  );
+  assertEquals(
+    extractFromUrl(new URL("https://example.com/foo/bar"), /^\d+/),
+    null,
+  );
+
+  assertEquals(
+    extractFromUrl(
+      new URL("https://example.com/foo/bar"),
+      /^\w+/,
+      { base: new URL("https://example.com/") },
+    ),
+    "foo",
+  );
+  assertEquals(
+    extractFromUrl(
+      new URL("https://example.com/foo/bar"),
+      /^\d+/,
+      { base: new URL("https://example.com/") },
+    ),
+    null,
+  );
+  assertEquals(
+    extractFromUrl(
+      new URL("https://example.com/foo/bar"),
+      /^\w+/,
+      { base: new URL("https://example.com/foo/") },
+    ),
+    "bar",
+  );
+  assertEquals(
+    extractFromUrl(
+      new URL("https://example.com/foo/bar"),
+      /^\d+/,
+      { base: new URL("https://example.com/foo/") },
+    ),
+    null,
+  );
+  assertThrows(
+    () =>
+      extractFromUrl(
+        new URL("https://example.com/foo/bar"),
+        /^\w+/,
+        { base: new URL("file:///tmp") },
+      ),
+    TypeError,
+  );
+  assertThrows(
+    () =>
+      extractFromUrl(
+        new URL("https://example.com/foo/bar"),
+        /^\w+/,
+        { base: new URL("file:///tmp/") },
+      ),
+    TypeError,
+  );
+
+  assertEquals(
+    extractFromUrl(
+      new URL("https://example.com/foo/bar"),
+      /^\w+/,
+      { convert: (match) => match && match[0].toUpperCase() },
+    ),
+    "HTTPS",
+  );
+  assertEquals(
+    extractFromUrl(
+      new URL("https://example.com/foo/bar"),
+      /^\d+/,
+      { convert: (match) => match && match[0].toUpperCase() },
+    ),
+    null,
+  );
+  assertEquals(
+    extractFromUrl(
+      new URL("https://example.com/foo/bar"),
+      /^\w+/,
+      {
+        base: new URL("https://example.com/"),
+        convert: (match: RegExpMatchArray | null) =>
+          match && match[0].toUpperCase(),
+      },
+    ),
+    "FOO",
+  );
+  assertEquals(
+    extractFromUrl(
+      new URL("https://example.com/foo/bar"),
+      /^\d+/,
+      {
+        base: new URL("https://example.com/"),
+        convert: (match: RegExpMatchArray | null) =>
+          match && match[0].toUpperCase(),
+      },
+    ),
+    null,
+  );
 });

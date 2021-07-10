@@ -3,7 +3,7 @@ import {
   resolve,
   toFileUrl,
 } from "https://deno.land/std@0.99.0/path/mod.ts";
-import { PathTransformer } from "./pipeline.ts";
+import { PathTransformer, Resource } from "./pipeline.ts";
 
 /**
  * Create a path transformer which appends a slash to the given path
@@ -212,4 +212,67 @@ export function extractFromUrl<T>(
     return options?.convert(match);
   }
   return match && match[0];
+}
+
+/**
+ * Checks if given `resource`'s path matches to the `pattern`, and extracts
+ * a matched string from it.
+ *
+ * Works well with {@link Pipeline#groupBy} method.
+ * @param resource The resource to try to match its path.
+ * @param pattern The pattern to search.
+ * @param options Options.  If `options.base` is present, the `base` is removed
+ *                from given `resource`'s path and the `pattern` is matched
+ *                to it.
+ * @returns The whole matched string if the `resource`'s path matches to
+ *          the `pattern`.  `null` if it does not match.
+ * @throws {TypeError} Thrown if `options.base` is present and it does not end
+ *         with a slash or given `resource`'s path is not based on it.
+ */
+export function extractFromPath(
+  resource: Resource,
+  pattern: RegExp,
+  options?: { base: URL },
+): string;
+
+/**
+ * Checks if given `resource`'s path matches to the `pattern`, and extracts
+ * a matched string from it.
+ *
+ * Works well with {@link Pipeline#groupBy} method.
+ * @param resource The resource to try to match its path.
+ * @param pattern The pattern to search.
+ * @param options Options.  If `options.base` is present, the `base` is removed
+ *                from given `resource`'s path and the `pattern` is matched
+ *                to it.  If `options.convert` is present, a match result is
+ *                converted (even if a match result is `null`) and returns
+ *                the converted value.
+ * @returns The converted match result if `resource`'s path matches to
+ *          the `pattern`.
+ * @throws {TypeError} Thrown if `options.base` is present and it does not end
+ *         with a slash or given `resource`'s path is not based on it.
+ */
+export function extractFromPath<T>(
+  resource: Resource,
+  pattern: RegExp,
+  options: { base?: URL; convert: (match: RegExpMatchArray | null) => T },
+): T;
+
+export function extractFromPath<T>(
+  resource: Resource,
+  pattern: RegExp,
+  options?: { base: URL } | {
+    base?: URL;
+    convert: (match: RegExpMatchArray | null) => T;
+  },
+): string | null | T {
+  const path = resource.path;
+
+  if (options != null && "convert" in options && options.convert != null) {
+    return extractFromUrl(path, pattern, options);
+  } else if (options == null || options?.base == null) {
+    return extractFromUrl(path, pattern);
+  } else {
+    return extractFromUrl(path, pattern, { base: options.base });
+  }
 }

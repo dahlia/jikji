@@ -1,8 +1,4 @@
-import {
-  dirname,
-  fromFileUrl,
-  toFileUrl,
-} from "https://deno.land/std@0.99.0/path/mod.ts";
+import { dirname, fromFileUrl } from "https://deno.land/std@0.99.0/path/mod.ts";
 import {
   expandGlob,
   ExpandGlobOptions,

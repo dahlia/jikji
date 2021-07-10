@@ -1,4 +1,5 @@
 import {
+  extractFromPath,
   extractFromUrl,
   intoDirectory,
   isBasedOn,
@@ -6,6 +7,7 @@ import {
   relativePathToFileUrl,
   removeBase,
 } from "./path.ts";
+import { Content, Resource } from "./resource.ts";
 import {
   assert,
   assertEquals,
@@ -276,5 +278,32 @@ Deno.test("extractFromUrl()", () => {
       },
     ),
     null,
+  );
+});
+
+Deno.test("extractFromPath()", () => {
+  const r = new Resource("file:///tmp/foo/123/bar/", [
+    new Content("", "text/plain"),
+  ]);
+  assertEquals(extractFromPath(r, /(\w+)\W/), "file:");
+  assertEquals(
+    extractFromPath(r, /(\w+)\W/, { base: new URL("file:///tmp/") }),
+    "foo/",
+  );
+  assertEquals(
+    extractFromPath(r, /(\w+)\W/, {
+      base: new URL("file:///tmp/"),
+      convert: (match: RegExpMatchArray | null) =>
+        match == null ? "" : match[1],
+    }),
+    "foo",
+  );
+  assertEquals(
+    extractFromPath(r, /(\w+)\W/, {
+      base: new URL("file:///tmp/foo/"),
+      convert: (match: RegExpMatchArray | null) =>
+        match == null ? -1 : parseInt(match[1]),
+    }),
+    123,
   );
 });

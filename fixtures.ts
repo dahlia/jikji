@@ -50,7 +50,7 @@ export async function withTempDir(
 
 export function withFixture(
   files: Record<string, string> | string[],
-  fn: (path: string) => (void | Promise<void>),
+  fn: (path: string, tempDir: string) => (void | Promise<void>),
 ): Promise<void> {
   if (files instanceof Array) {
     files = Object.fromEntries(files.map((k) => [k, ""]));
@@ -58,16 +58,18 @@ export function withFixture(
   const encoder = new TextEncoder();
   return withTempDir({
     prefix: "jikji-t-",
-    suffix: "-fx",
     async fn(tempDir: string) {
+      const fxDir = join(tempDir, "fx");
       const promises = Object.entries(files)
         .map(async ([k, v]) => {
-          const fp = join(tempDir, k);
+          const fp = join(fxDir, k);
           await Deno.mkdir(dirname(fp), { recursive: true });
           await Deno.writeFile(fp, encoder.encode(v));
         });
       await Promise.all(promises);
-      const r = fn(tempDir);
+      const tempDir2 = join(tempDir, "tmp");
+      await Deno.mkdir(tempDir2, { recursive: true });
+      const r = fn(fxDir, tempDir2);
       if (r instanceof Promise) {
         await r;
       }

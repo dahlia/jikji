@@ -1,6 +1,6 @@
-import { walk } from "https://deno.land/std@0.99.0/fs/walk.ts";
-import { join, sep } from "https://deno.land/std@0.99.0/path/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.99.0/testing/asserts.ts";
+import { walk } from "https://deno.land/std@0.100.0/fs/walk.ts";
+import { join, sep } from "https://deno.land/std@0.100.0/path/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.100.0/testing/asserts.ts";
 import { renderTemplate } from "./ejs.ts";
 import { scanFiles, writeFiles } from "./file.ts";
 import { withFixture } from "./fixtures.ts";

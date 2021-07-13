@@ -1,8 +1,11 @@
-import { dirname, fromFileUrl } from "https://deno.land/std@0.99.0/path/mod.ts";
+import {
+  dirname,
+  fromFileUrl,
+} from "https://deno.land/std@0.100.0/path/mod.ts";
 import {
   expandGlob,
   ExpandGlobOptions,
-} from "https://deno.land/std@0.99.0/fs/expand_glob.ts";
+} from "https://deno.land/std@0.100.0/fs/expand_glob.ts";
 import {
   Mime,
   mime as defaultMime,

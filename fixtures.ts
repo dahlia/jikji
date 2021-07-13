@@ -1,4 +1,4 @@
-import { dirname, join } from "https://deno.land/std@0.99.0/path/mod.ts";
+import { dirname, join } from "https://deno.land/std@0.100.0/path/mod.ts";
 import { mime } from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
 import { Content, Resource } from "./resource.ts";
 

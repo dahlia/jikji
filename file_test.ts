@@ -1,5 +1,5 @@
-import { join, sep } from "https://deno.land/std@0.99.0/path/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.97.0/testing/asserts.ts";
+import { join, sep } from "https://deno.land/std@0.100.0/path/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.100.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { extendMime, Mime, scanFiles, writeFiles } from "./file.ts";
 import { makeResources, withFixture, withTempDir } from "./fixtures.ts";

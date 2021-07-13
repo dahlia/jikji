@@ -1,5 +1,5 @@
-import { join } from "https://deno.land/std@0.99.0/path/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.99.0/testing/asserts.ts";
+import { join } from "https://deno.land/std@0.100.0/path/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.100.0/testing/asserts.ts";
 import { Content, LanguageTag, MediaType } from "./content.ts";
 import { renderTemplate } from "./ejs.ts";
 import { withTempDir } from "./fixtures.ts";

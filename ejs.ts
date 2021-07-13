@@ -32,6 +32,7 @@ export function renderTemplate(
   type = typeof type === "string" ? MediaType.fromString(type) : type;
   let tpl: ((params: Record<string, unknown>) => Promise<string>) | undefined;
   const filePath = resolve(templateFile);
+  const tplMtime = Deno.statSync(filePath).mtime;
   return (content: Content) => {
     return content.replace({
       type: type,
@@ -53,6 +54,9 @@ export function renderTemplate(
           __dir__: dirname(filePath),
         });
       },
+      lastModified: tplMtime != null && tplMtime > content.lastModified
+        ? tplMtime
+        : content.lastModified,
     });
   };
 }

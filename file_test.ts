@@ -1,5 +1,8 @@
 import { join, sep } from "https://deno.land/std@0.100.0/path/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.100.0/testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+} from "https://deno.land/std@0.100.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { extendMime, Mime, scanFiles, writeFiles } from "./file.ts";
 import { makeResources, withFixture, withTempDir } from "./fixtures.ts";
@@ -53,10 +56,34 @@ Deno.test("writeFiles()", async () => {
     async fn(tempDir: string) {
       const write = writeFiles(tempDir, new URL("file:///tmp/site/"));
       await write(r);
-      const h = await Deno.readFile(join(tempDir, "foo", "bar", "index.html"));
+      const hp = join(tempDir, "foo", "bar", "index.html");
+      const hs = await Deno.stat(hp);
+      const h = await Deno.readFile(hp);
       assertEquals(h, new TextEncoder().encode("HTML content"));
-      const t = await Deno.readFile(join(tempDir, "foo", "bar", "index.txt"));
+      const tp = join(tempDir, "foo", "bar", "index.txt");
+      const ts = await Deno.stat(tp);
+      const t = await Deno.readFile(tp);
       assertEquals(t, new TextEncoder().encode("Plain text content"));
+
+      // If we write again without change, it should be a no-op.
+      await write(r);
+      const hs2 = await Deno.stat(hp);
+      const ts2 = await Deno.stat(tp);
+      assertEquals(hs2.mtime, hs.mtime);
+      assertEquals(ts2.mtime, ts.mtime);
+
+      // However, if rewriteAlways: true is set, it should rewrite.
+      const rewrite = writeFiles(
+        tempDir,
+        new URL("file:///tmp/site/"),
+        undefined,
+        true,
+      );
+      await rewrite(r);
+      const hs3 = await Deno.stat(hp)!;
+      const ts3 = await Deno.stat(tp);
+      assert(hs3.mtime! > hs.mtime!);
+      assert(ts3.mtime! > ts.mtime!);
     },
   });
   await withTempDir({

@@ -75,12 +75,16 @@ export function scanFiles(
  *             `bar/baz.html` in the configured output directory (`path`).
  * @param mime An optional MIME object to determine file extensions from
  *             media types.
+ * @param rewriteAlways Unless it's turned on, the output files are only
+ *                      written if the output file is newer than the input
+ *                      {@link Resource}'s `lastModified` time.
  * @returns A function to write the given resource's contents into files.
  */
 export function writeFiles(
   path: string,
   base: string | URL,
   mime?: Mime,
+  rewriteAlways = false,
 ): ((resource: Resource) => Promise<void>) {
   mime ??= defaultMime;
   const pathUrl = relativePathToFileUrl(path);
@@ -107,6 +111,16 @@ export function writeFiles(
         ? path
         : new URL(`${bareName}.${ext}${path.search}${path.hash}`, path);
       const targetPath = rebasePath(contentPath);
+      if (!rewriteAlways) {
+        let targetStat: Deno.FileInfo | undefined;
+        try {
+          targetStat = await Deno.stat(targetPath);
+        } catch (e) {
+          if (!(e instanceof Deno.errors.NotFound)) throw e;
+        }
+        const targetMtime = targetStat?.mtime;
+        if (targetMtime != null && targetMtime > content.lastModified) return;
+      }
       const contentBody = await content.getBody();
       const bodyBuffer = typeof contentBody == "string"
         ? new TextEncoder().encode(contentBody)

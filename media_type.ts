@@ -236,7 +236,7 @@ export class MediaType {
     return `${this.type}/${this.subtype.join(".")}${suffixes}${params}`;
   }
 
-  [Deno?.customInspect ?? Symbol("Deno.customInspect")](): string {
+  [Symbol.for("Deno.customInspect")](): string {
     return `MediaType(${this.toString()})`;
   }
 

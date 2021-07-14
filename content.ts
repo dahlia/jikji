@@ -224,7 +224,7 @@ export class Content {
     return true;
   }
 
-  [Deno?.customInspect ?? Symbol("Deno.customInspect")](): string {
+  [Symbol.for("Deno.customInspect")](): string {
     const body = this.#body;
     return "Content {\n" +
       `  body: ${body == null ? "(unloaded)" : Deno.inspect(body)},\n` +

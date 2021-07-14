@@ -119,7 +119,7 @@ export class LanguageTag {
     ].filter((t) => t != null).join("-");
   }
 
-  [Deno?.customInspect ?? Symbol("Deno.customInspect")](): string {
+  [Symbol.for("Deno.customInspect")](): string {
     return `LanguageTag(${this.toString()})`;
   }
 }

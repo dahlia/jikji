@@ -125,7 +125,7 @@ export class Resource implements Iterable<Content> {
     return this.#representations.values();
   }
 
-  [Deno?.customInspect ?? Symbol("Deno.customInspect")](): string {
+  [Symbol.for("Deno.customInspect")](): string {
     function indent(s: string): string {
       return "    " + s.replace(/\n/g, "\n    ");
     }

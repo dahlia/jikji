@@ -65,6 +65,41 @@ Deno.test("Pipeline(Iterable<Resource>)", async () => {
   await assertEquals$(await toArray(p2), resources);
 });
 
+Deno.test({
+  name: "Pipeline(() => AsyncIterable<Resource>, AsyncIterable<void>)",
+  async fn() {
+    let step = 0;
+    async function* getResources(): AsyncIterable<Resource> {
+      yield* makeResources({ "foo.md": "" });
+      if (step == 1) {
+        yield* makeResources({ "bar.md": "" });
+      } else if (step == 2) {
+        yield* makeResources({ "baz.md": "" });
+      }
+    }
+    async function* monitor(): AsyncIterable<void> {
+      yield;
+      yield;
+    }
+    const logs: { step: number; path: URL }[] = [];
+    function log(resource: Resource) {
+      logs.push({ step, path: resource.path });
+    }
+    await new Pipeline(getResources, monitor())
+      .move((p) =>
+        new URL(`file:///tmp/${basename(p.pathname).replace(/\.md$/, ".txt")}`)
+      )
+      .forEachWithReloading(log, () => step++);
+    assertEquals(logs, [
+      { step: 0, path: new URL("file:///tmp/foo.txt") },
+      { step: 1, path: new URL("file:///tmp/foo.txt") },
+      { step: 1, path: new URL("file:///tmp/bar.txt") },
+      { step: 2, path: new URL("file:///tmp/foo.txt") },
+      { step: 2, path: new URL("file:///tmp/baz.txt") },
+    ]);
+  },
+});
+
 Deno.test("Pipeline#union()", async () => {
   function pathCmp(a: Resource, b: Resource) {
     return a.path.toString() < b.path.toString() ? -1 : 1;

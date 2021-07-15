@@ -67,8 +67,9 @@ export type ContentTransformer = (content: Content) => Content;
  * There cannot be more {@link Resource}s than one with the duplicate `path`s.
  */
 export class Pipeline implements AsyncIterable<Resource> {
-  readonly #resources: AsyncIterable<Resource>;
+  readonly #getResources: () => AsyncIterable<Resource>;
   #buffer?: Resource[];
+  #resourcesMonitor?: AsyncIterable<void>;
 
   /**
    * Creates a new pipeline with the given asynchronous iterable of
@@ -79,14 +80,45 @@ export class Pipeline implements AsyncIterable<Resource> {
    *                  If there are more {@link Resource}s than one with
    *                  the duplicate `path`s, later one is ignored.
    */
-  constructor(resources: AsyncIterable<Resource> | Iterable<Resource>) {
-    this.#resources = Symbol.asyncIterator in resources
-      ? resources as AsyncIterable<Resource>
-      : toAsyncIterable(resources as Iterable<Resource>);
-    if (resources instanceof Array) {
-      this.#buffer = resources;
+  constructor(resources: AsyncIterable<Resource> | Iterable<Resource>);
+
+  /**
+   * Creates a new pipeline with the function to get {@link Resource}s and
+   * a monitor to signal when resources are updated.
+   * @param resourcesGetter A function to load {@link Resource}s.
+   *                        If there are more {@link Resource}s than one with
+   *                        the duplicate `path`s, later one is ignored.
+   * @param resourcesMonitor A monitor to signal when resources are updated.
+   *                         When this asynchronous iterable yields,
+   *                         resources in the pipeline are reloaded using
+   *                         `resourcesGetter` function.
+   */
+  constructor(
+    resourcesGetter: () => AsyncIterable<Resource>,
+    resourcesMonitor: AsyncIterable<void> | null,
+  );
+
+  constructor(
+    resourcesGetter:
+      | (() => AsyncIterable<Resource>)
+      | AsyncIterable<Resource>
+      | Iterable<Resource>,
+    resourcesMonitor?: AsyncIterable<void> | null,
+  ) {
+    this.#getResources = typeof resourcesGetter == "function"
+      ? resourcesGetter
+      : () =>
+        Symbol.asyncIterator in resourcesGetter
+          ? resourcesGetter as AsyncIterable<Resource>
+          : toAsyncIterable(resourcesGetter as Iterable<Resource>);
+    if (resourcesGetter instanceof Array) {
+      this.#buffer = resourcesGetter;
     }
-    Object.freeze(this);
+    if (resourcesMonitor != null) {
+      this.#resourcesMonitor = map(resourcesMonitor, (_) => {
+        this.#buffer = undefined;
+      });
+    }
   }
 
   /**
@@ -109,7 +141,7 @@ export class Pipeline implements AsyncIterable<Resource> {
     if (this.#buffer == null) {
       const buffer: Resource[] = [];
       const paths = new Set<string>();
-      for await (const resource of this.#resources) {
+      for await (const resource of this.#getResources()) {
         const path = resource.path.toString();
         if (paths.has(path)) continue;
         paths.add(path);
@@ -129,7 +161,10 @@ export class Pipeline implements AsyncIterable<Resource> {
    * @returns A distinct pipeline having all {@link Resource}s in two pipelines.
    */
   union(pipeline: Pipeline): Pipeline {
-    return new Pipeline(concat(this, pipeline));
+    return new Pipeline(
+      () => concat(this, pipeline),
+      this.#resourcesMonitor ?? null,
+    );
   }
 
   /**
@@ -140,7 +175,10 @@ export class Pipeline implements AsyncIterable<Resource> {
    *          ones.
    */
   add(resource: Resource): Pipeline {
-    return new Pipeline(concat([resource], this));
+    return new Pipeline(
+      () => concat([resource], this),
+      this.#resourcesMonitor ?? null,
+    );
   }
 
   /**
@@ -175,7 +213,10 @@ export class Pipeline implements AsyncIterable<Resource> {
       return this.add(summary);
     }
 
-    return new Pipeline(concat(summary, this));
+    return new Pipeline(
+      () => concat(summary, this),
+      this.#resourcesMonitor ?? null,
+    );
   }
 
   /**
@@ -188,11 +229,16 @@ export class Pipeline implements AsyncIterable<Resource> {
    * @returns A distinct pipeline with transformed {@link Resource}s.
    */
   map(...transformers: ResourceTransformer[]): Pipeline {
-    let resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
-    for (const transformer of transformers) {
-      resources = map(resources, transformer);
-    }
-    return new Pipeline(resources);
+    return new Pipeline(
+      () => {
+        let resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
+        for (const transformer of transformers) {
+          resources = map(resources, transformer);
+        }
+        return resources;
+      },
+      this.#resourcesMonitor ?? null,
+    );
   }
 
   /**
@@ -205,11 +251,16 @@ export class Pipeline implements AsyncIterable<Resource> {
    *          satisfy all given `predicates`.
    */
   filter(...predicates: ResourcePredicate[]): Pipeline {
-    let resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
-    for (const pred of predicates) {
-      resources = filter(resources, pred);
-    }
-    return new Pipeline(resources);
+    return new Pipeline(
+      () => {
+        let resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
+        for (const pred of predicates) {
+          resources = filter(resources, pred);
+        }
+        return resources;
+      },
+      this.#resourcesMonitor ?? null,
+    );
   }
 
   /**
@@ -316,6 +367,38 @@ export class Pipeline implements AsyncIterable<Resource> {
     criterion?: ContentCriterion,
   ): Pipeline {
     return this.map(diversify(transformer, criterion));
+  }
+
+  /**
+   * Similar to {@link Pipeline#forEach}, except that this monitors if resources
+   * are updated, and reloads them if they are.
+   * Unlike {@link Pipeline#forEach}, this usually does not terminate unless
+   * the monitor is terminated or the pipeline has no monitor.
+   * Its most common usage is to watch files in a directory for changes,
+   * and rebuild the pipeline when changes are detected.
+   * @param callback A callback function to be invoked with each
+   *                 {@link Resource}, and its index.
+   * @param onReloaded A callback function to be invoked when resource update
+   *                   is detected and it is to be reloaded.
+   */
+  async forEachWithReloading(
+    callback:
+      | ((resource: Resource, index: number) => Promise<void>)
+      | ((resource: Resource, index: number) => void)
+      | ((resource: Resource) => Promise<void>)
+      | ((resource: Resource) => void),
+    onReloaded?: ((() => Promise<void>) | (() => void)),
+  ): Promise<void> {
+    await this.forEach(callback);
+    if (this.#resourcesMonitor != null) {
+      for await (const _ of this.#resourcesMonitor) {
+        if (onReloaded != null) {
+          const p = onReloaded();
+          if (p instanceof Promise) await p;
+        }
+        await this.forEach(callback);
+      }
+    }
   }
 }
 

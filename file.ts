@@ -1,6 +1,11 @@
 import {
   dirname,
   fromFileUrl,
+  globToRegExp,
+  isAbsolute,
+  isGlob,
+  sep,
+  SEP_PATTERN,
 } from "https://deno.land/std@0.100.0/path/mod.ts";
 import {
   expandGlob,
@@ -49,6 +54,9 @@ async function* scanResources(
 /**
  * Scans files matched to the glob patterns, and returns a pipeline of scanned
  * files.  Each file is represented as a {@link Resource} with a single content.
+ *
+ * Note that the returned {@link Pipeline} monitors files (included non-existent
+ * files to be created) that match the `globs` patterns.
  * @param globs The glob patterns to scan files.
  * @param options Optional glob options and encoding option.
  * @param mime An optional MIME object to recognize files' media types.
@@ -59,15 +67,41 @@ export function scanFiles(
   options?: ExpandGlobOptions & { encoding?: string },
   mime?: Mime,
 ): Pipeline {
-  globs = typeof globs == "string" ? [globs] : globs;
-  const resources = scanResources(globs, options ?? {}, mime);
-  return new Pipeline(resources);
+  const globArray = typeof globs == "string" ? [globs] : globs;
+  const getResources = () => scanResources(globArray, options ?? {}, mime);
+  const fixedDirs = globArray.map(getFixedDirFromGlob);
+  const globPatterns = globArray.map((g) =>
+    [isAbsolute(g), globToRegExp(g, options)] as [boolean, RegExp]
+  );
+  async function* watchFileChanges(): AsyncIterable<void> {
+    let cwd = Deno.cwd();
+    if (!cwd.endsWith(sep)) cwd += sep;
+    for await (const event of Deno.watchFs(fixedDirs, { recursive: true })) {
+      const matched = event.paths.some((p) =>
+        globPatterns.some(([abs, re]) =>
+          abs ? re.test(p) : p.startsWith(cwd) && re.test(p.substr(cwd.length))
+        )
+      );
+      if (matched) yield;
+    }
+  }
+  return new Pipeline(getResources, watchFileChanges());
+}
+
+function getFixedDirFromGlob(glob: string): string {
+  let fixedDir = `.${sep}`;
+  for (const match of glob.matchAll(new RegExp(SEP_PATTERN, "g"))) {
+    if (isGlob(glob.substr(0, match.index ?? 0))) break;
+    fixedDir = glob.substr(0, (match.index ?? 0) + match[0].length);
+  }
+  return fixedDir;
 }
 
 /**
  * Creates a function to take a resource and write its contents to files.
  *
- * Designed to work with {@link Pipeline#forEach} method.
+ * Designed to work with {@link Pipeline#forEachWithReloading} and
+ * {@link Pipeline#forEach} methods.
  * @param path The path of output directory to place made files.
  * @param base The base URL of the resource.  For example, if a resource URL
  *             is `https://example.com/foo/bar/baz.html` and `base` is
@@ -128,6 +162,7 @@ export function writeFiles(
       await Deno.mkdir(dirname(fromFileUrl(targetPath)), { recursive: true });
       try {
         await Deno.writeFile(targetPath, bodyBuffer);
+        console.debug(targetPath.toString());
       } catch (e) {
         if (e instanceof Error) {
           e.message += `: ${targetPath.toString()}`;

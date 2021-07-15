@@ -12,8 +12,8 @@ import {
   assert,
   assertEquals,
   assertThrows,
-} from "https://deno.land/std@0.100.0/testing/asserts.ts";
-import { resolve, toFileUrl } from "https://deno.land/std@0.100.0/path/mod.ts";
+} from "https://deno.land/std@0.101.0/testing/asserts.ts";
+import { resolve, toFileUrl } from "https://deno.land/std@0.101.0/path/mod.ts";
 
 Deno.test("intoDirectory()", () => {
   const f = intoDirectory();

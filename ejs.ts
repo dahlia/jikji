@@ -1,4 +1,4 @@
-import { dirname, resolve } from "https://deno.land/std@0.100.0/path/mod.ts";
+import { dirname, resolve } from "https://deno.land/std@0.101.0/path/mod.ts";
 import { compile } from "https://deno.land/x/dejs@0.9.3/mod.ts";
 import { Content, MediaType } from "./content.ts";
 import { ContentTransformer } from "./pipeline.ts";

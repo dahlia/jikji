@@ -4,7 +4,7 @@ import attrs from "https://esm.sh/markdown-it-attrs@4.0.0";
 import deflist from "https://esm.sh/markdown-it-deflist@2.1.0";
 import footnote from "https://esm.sh/markdown-it-footnote@3.0.3";
 import title from "https://esm.sh/markdown-it-title@3.0.0";
-import * as yaml from "https://deno.land/std@0.100.0/encoding/yaml.ts";
+import * as yaml from "https://deno.land/std@0.101.0/encoding/yaml.ts";
 import { Content, ContentTransformer, MediaType } from "./pipeline.ts";
 
 /**

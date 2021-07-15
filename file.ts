@@ -6,11 +6,11 @@ import {
   isGlob,
   sep,
   SEP_PATTERN,
-} from "https://deno.land/std@0.100.0/path/mod.ts";
+} from "https://deno.land/std@0.101.0/path/mod.ts";
 import {
   expandGlob,
   ExpandGlobOptions,
-} from "https://deno.land/std@0.100.0/fs/expand_glob.ts";
+} from "https://deno.land/std@0.101.0/fs/expand_glob.ts";
 import {
   Mime,
   mime as defaultMime,

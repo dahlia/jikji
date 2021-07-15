@@ -1,8 +1,8 @@
-import { basename } from "https://deno.land/std@0.100.0/path/mod.ts";
+import { basename } from "https://deno.land/std@0.101.0/path/mod.ts";
 import {
   assertEquals,
   assertThrows,
-} from "https://deno.land/std@0.100.0/testing/asserts.ts";
+} from "https://deno.land/std@0.101.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { LanguageTag, LanguageTagError } from "./language_tag.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";

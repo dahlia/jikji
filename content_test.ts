@@ -335,10 +335,15 @@ Deno.test("Content#replace()", async () => {
     newLastModified,
     new Content("foo", t, "en", newDate, m),
   );
-  const newMeta = c.replace({ metadata: { bar: 3, baz: 4 } });
+  const replaceMeta = c.replace({ metadata: { bar: 3, baz: 4 } });
   await assertEquals$(
-    newMeta,
+    replaceMeta,
     new Content("foo", t, "en", d, { bar: 3, baz: 4 }),
+  );
+  const updateMeta = c.replace({ metadata: (m) => ({ ...m, bar: 3, baz: 4 }) });
+  await assertEquals$(
+    updateMeta,
+    new Content("foo", t, "en", d, { foo: 1, bar: 3, baz: 4 }),
   );
   const c2 = c.replace({
     type: "text/html",

@@ -178,7 +178,7 @@ export class Content {
           metadata == null
             ? await this.getMetadata()
             : typeof metadata == "function"
-            ? await metadata()
+            ? await metadata(await this.getMetadata())
             : metadata,
         ];
       },
@@ -242,10 +242,9 @@ export class Content {
  */
 export interface ContentFields {
   /**
-   * A new body of content, or an asynchronous function to load a new content of
-   * content.
+   * A new body of content, or a function to load a new content of content.
    */
-  body?: ContentBody | (() => Promise<ContentBody>);
+  body?: ContentBody | (() => Promise<ContentBody>) | (() => ContentBody);
 
   /** A new media type of content. */
   type?: MediaType | string;
@@ -261,10 +260,12 @@ export interface ContentFields {
   lastModified?: Date;
 
   /**
-   * New metadata of content, or an asynchronous function to load new metadata
-   * of content.
+   * New metadata of content, or a function to load new metadata of content.
    */
-  metadata?: ContentMetadata | (() => Promise<ContentMetadata>);
+  metadata?:
+    | ContentMetadata
+    | ((metadata: ContentMetadata) => Promise<ContentMetadata>)
+    | ((metadata: ContentMetadata) => ContentMetadata);
 }
 
 /**

@@ -6,7 +6,7 @@ import { Content, Resource } from "./resource.ts";
 export function makeResources(
   files: Record<string, string | [string, ContentMetadata]>,
   lastModified?: Date | null,
-): Iterable<Resource> {
+): Resource[] {
   const map = makeResourceMap(files, lastModified);
   return Object.entries(map)
     .sort(([a], [b]) => a.localeCompare(b))

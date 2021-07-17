@@ -27,7 +27,7 @@ async function toArray<T>(iterable: AsyncIterable<T>): Promise<T[]> {
 }
 
 Deno.test("Pipeline(AsyncIterable<Resource>)", async () => {
-  const resources = Array.from(makeResources({ "foo.txt": "", "bar.txt": "" }));
+  const resources = makeResources({ "foo.txt": "", "bar.txt": "" });
   const asyncIterable = {
     [Symbol.asyncIterator]: async function* () {
       yield* resources;
@@ -47,7 +47,7 @@ Deno.test("Pipeline(AsyncIterable<Resource>)", async () => {
 });
 
 Deno.test("Pipeline(Iterable<Resource>)", async () => {
-  const resources = Array.from(makeResources({ "foo.txt": "", "bar.txt": "" }));
+  const resources = makeResources({ "foo.txt": "", "bar.txt": "" });
   const iterable = {
     [Symbol.iterator]: function* () {
       yield* resources;
@@ -106,10 +106,10 @@ Deno.test("Pipeline#union()", async () => {
     return a.path.toString() < b.path.toString() ? -1 : 1;
   }
 
-  const r1 = Array.from(makeResources({ "foo.txt": "", "bar.txt": "" }))
+  const r1 = makeResources({ "foo.txt": "", "bar.txt": "" })
     .sort(pathCmp);
   const p1 = new Pipeline(r1);
-  const r2 = Array.from(makeResources({ "bar.txt": "dup", "baz.txt": "" }))
+  const r2 = makeResources({ "bar.txt": "dup", "baz.txt": "" })
     .sort(pathCmp);
   const p2 = new Pipeline(r2);
 
@@ -139,9 +139,9 @@ Deno.test("Pipeline#add()", async () => {
     return a.path.toString() < b.path.toString() ? -1 : 1;
   }
 
-  const resources = Array.from(makeResources({ "foo.txt": "", "bar.txt": "" }))
+  const resources = makeResources({ "foo.txt": "", "bar.txt": "" })
     .sort(pathCmp);
-  const [r1, r2] = Array.from(makeResources({ "baz.txt": "", "foo.txt": "dp" }))
+  const [r1, r2] = makeResources({ "baz.txt": "", "foo.txt": "dp" })
     .sort(pathCmp);
   const p1 = new Pipeline(resources);
 
@@ -216,11 +216,11 @@ for (const [typeName, castToType] of Object.entries(summarizerReturnTypes)) {
 }
 
 Deno.test("Pipeline#map()", async () => {
-  const resources = Array.from(makeResources({
+  const resources = makeResources({
     "foo.txt": "foo",
     "bar.txt": "bar",
     "baz.txt": "baz",
-  }));
+  });
   const p = new Pipeline(resources);
   await assertEquals$(await toArray(p), resources);
   const p2 = p.map((r) =>
@@ -339,11 +339,11 @@ Deno.test("ResourceSet#lastModified", () => {
 });
 
 Deno.test("Pipeline#forEach()", async () => {
-  const resources = Array.from(makeResources({
+  const resources = makeResources({
     "foo.txt": "foo",
     "bar.txt": "bar",
     "baz.txt": "baz",
-  }));
+  });
   const p = new Pipeline(resources);
   const rs: [Resource, number][] = [];
   await p.forEach((r: Resource, i: number) => rs.push([r, i]));
@@ -469,14 +469,11 @@ Deno.test("Pipeline#transform()", async () => {
   const transformed = p.transform(append$, { type: "text/plain" });
   await assertEquals$(
     await toArray(transformed),
-    Array.from(makeResources(
-      {
-        "foo.txt": "foo$",
-        "bar.md": "bar",
-        "baz.txt": "baz$",
-      },
-      d,
-    )),
+    makeResources({
+      "foo.txt": "foo$",
+      "bar.md": "bar",
+      "baz.txt": "baz$",
+    }, d),
   );
 });
 

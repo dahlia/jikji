@@ -37,7 +37,7 @@ Deno.test("scanFiles()", () => {
         for (const c of r) await c.getBody();
       }
       rs.sort(comparePath);
-      const expected = Array.from(makeResources(files, lastModified))
+      const expected = makeResources(files, lastModified)
         .map(move(rebase("/tmp/site/", path + sep)))
         .sort(comparePath);
       await assertEquals$(rs, expected);

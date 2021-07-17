@@ -1,4 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.101.0/testing/asserts.ts";
+import { assertEquals$ } from "./asserts.ts";
+import { makeResourceMap } from "./fixtures.ts";
 import {
   queryAll,
   queryEarliestDate,
@@ -6,8 +8,9 @@ import {
   queryPublished,
   queryString,
   queryTitle,
+  sortResources,
 } from "./metadata.ts";
-import { Content, Resource } from "./resource.ts";
+import { Content, ContentKey, Resource } from "./resource.ts";
 
 async function toArray<T>(iterable: AsyncIterable<T>): Promise<T[]> {
   const result: T[] = [];
@@ -80,4 +83,31 @@ Deno.test("queryTitle()", async () => {
   assertEquals(await queryTitle(fixture), "Title");
   assertEquals(await queryTitle(fixture, { type: "text/html" }), "Title");
   assertEquals(await queryTitle(fixture, { type: "text/plain" }), null);
+});
+
+Deno.test("sortResources()", async () => {
+  const resources = makeResourceMap({
+    "a.txt": ["a", { published: new Date(1200000000000) }],
+    "b.txt": ["b", { published: new Date(1300000000000) }],
+    "c.txt": ["c", { published: new Date(1000000000000) }],
+  });
+  const sortedByBody = await sortResources(
+    Object.values(resources),
+    async (r) =>
+      await r.getRepresentation(ContentKey.get("text/plain; charset=utf-8"))!
+        .getBody() as string,
+  );
+  assertEquals$(
+    sortedByBody,
+    [resources["a.txt"], resources["b.txt"], resources["c.txt"]],
+  );
+  const sortedByPublished = await sortResources(
+    Object.values(resources),
+    queryPublished,
+    true,
+  );
+  assertEquals$(
+    sortedByPublished,
+    [resources["b.txt"], resources["a.txt"], resources["c.txt"]],
+  );
 });

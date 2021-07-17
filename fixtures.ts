@@ -1,15 +1,28 @@
 import { dirname, join } from "https://deno.land/std@0.101.0/path/mod.ts";
 import { mime } from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
+import { ContentMetadata } from "./content.ts";
 import { Content, Resource } from "./resource.ts";
 
-export function* makeResources(
-  files: Record<string, string>,
+export function makeResources(
+  files: Record<string, string | [string, ContentMetadata]>,
   lastModified?: Date | null,
 ): Iterable<Resource> {
+  const map = makeResourceMap(files, lastModified);
+  return Object.entries(map)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, v]) => v);
+}
+
+export function makeResourceMap(
+  files: Record<string, string | [string, ContentMetadata]>,
+  lastModified?: Date | null,
+): Record<string, Resource> {
   const paths = Object.keys(files);
-  paths.sort();
+  const result: Record<string, Resource> = {};
   for (const path of paths) {
-    const body = files[path];
+    const pair = files[path];
+    const body = typeof pair === "string" ? pair : pair[0];
+    const metadata = typeof pair === "string" ? {} : pair[1];
     const pathWithoutQs = path.replace(/(\?[^#]*)?(#.*)?$/, "");
     let type = mime.getType(pathWithoutQs);
     if (type == null) {
@@ -17,10 +30,11 @@ export function* makeResources(
     } else {
       type += "; charset=utf-8";
     }
-    const content = new Content(body, type, null, lastModified);
+    const content = new Content(body, type, null, lastModified, metadata);
     const resource = new Resource("file:///tmp/site/" + path, [content]);
-    yield resource;
+    result[path] = resource;
   }
+  return result;
 }
 
 export async function withTempDir(

@@ -128,3 +128,57 @@ export function queryTitle(
 ): Promise<string | null> {
   return queryString(resource, "title", criterion, true);
 }
+
+/**
+ * Sorts the given `resources` by the specified `key` function.
+ * @param resources An asynchronous/synchronous iterable of resources to sort.
+ * @param key A function to extract the key to sort by.
+ * @param reverse Whether to sort in descending order.  Sorts in ascending order
+ *                by default.
+ * @returns An array of sorted {@link Resource}s.
+ */
+export async function sortResources(
+  resources: AsyncIterable<Resource> | Iterable<Resource>,
+  key:
+    | ((resource: Resource) => number | null | undefined)
+    | ((resource: Resource) => string | null | undefined)
+    | ((resource: Resource) => Date | null | undefined)
+    | ((resource: Resource) => Promise<number | null | undefined>)
+    | ((resource: Resource) => Promise<string | null | undefined>)
+    | ((resource: Resource) => Promise<Date | null | undefined>),
+  reverse = false,
+): Promise<Resource[]> {
+  const promises: Promise<
+    [Resource, number | string | Date | null | undefined]
+  >[] = [];
+  for await (const r of resources) {
+    const p = key(r);
+    promises.push(
+      p instanceof Promise ? p.then((k) => [r, k]) : Promise.resolve([r, p]),
+    );
+  }
+  const array: [Resource, number | string | Date | null | undefined][] =
+    await Promise.all(promises);
+
+  const one = reverse ? -1 : 1;
+  array.sort(([, aKey], [, bKey]) => {
+    const aType = typeof aKey;
+    const bType = typeof bKey;
+    if (aType == "undefined") {
+      return bType == "undefined" ? 0 : bKey === null ? one : -one;
+    } else if (aKey === null) {
+      return bType == "undefined" ? -one : bKey === null ? 0 : one;
+    } else if (aType == "number") {
+      return bKey == null ? -one : one * ((aKey as number) - (bKey as number));
+    } else if (aType == "string") {
+      return bKey == null
+        ? -one
+        : (aKey as string).localeCompare(bKey as string);
+    } else {
+      return bKey == null
+        ? -one
+        : one * ((aKey as Date).getTime() - (bKey as Date).getTime());
+    }
+  });
+  return array.map(([r]) => r);
+}

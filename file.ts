@@ -1,9 +1,11 @@
 import {
+  basename,
   dirname,
   fromFileUrl,
   globToRegExp,
   isAbsolute,
   isGlob,
+  join,
   sep,
   SEP_PATTERN,
 } from "https://deno.land/std@0.101.0/path/mod.ts";
@@ -98,6 +100,27 @@ function getFixedDirFromGlob(glob: string): string {
 }
 
 /**
+ * Options for {@link writeFiles} function.
+ */
+interface WriteFilesOptions {
+  /** An optional MIME object to determine file extensions from media types. */
+  mime?: Mime;
+
+  /**
+   * Unless it's turned on, the output files are only written if the output
+   * file is outdated.  Turned off by default.
+   */
+  rewriteAlways?: boolean;
+
+  /**
+   * A filename pattern of a sidecar file which is used to store
+   * {@link Content#extraFingerprint}.  By default, `.*.cache` is used.
+   * Ignored if `rewriteAlways` is turned on.
+   */
+  sidecarFilename?: (filename: string) => string;
+}
+
+/**
  * Creates a function to take a resource and write its contents to files.
  *
  * Designed to work with {@link Pipeline#forEachWithReloading} and
@@ -107,25 +130,39 @@ function getFixedDirFromGlob(glob: string): string {
  *             is `https://example.com/foo/bar/baz.html` and `base` is
  *             configured to `https://example.com/foo/`, the file is written to
  *             `bar/baz.html` in the configured output directory (`path`).
- * @param mime An optional MIME object to determine file extensions from
- *             media types.
- * @param rewriteAlways Unless it's turned on, the output files are only
- *                      written if the output file is newer than the input
- *                      {@link Resource}'s `lastModified` time.
+ * @param options Additional options.
  * @returns A function to write the given resource's contents into files.
  */
 export function writeFiles(
   path: string,
   base: string | URL,
-  mime?: Mime,
-  rewriteAlways = false,
+  options?: WriteFilesOptions,
 ): ((resource: Resource) => Promise<void>) {
-  mime ??= defaultMime;
+  const mime = options?.mime ?? defaultMime;
+  const rewriteAlways = options?.rewriteAlways ?? false;
+  const sidecarFilename = options?.sidecarFilename ??
+    ((f: string) => `.${f}.cache`);
   const pathUrl = relativePathToFileUrl(path);
   if (!pathUrl.pathname.endsWith("/")) {
     pathUrl.pathname += "/";
   }
   const rebasePath = rebase(base, pathUrl);
+
+  function getSidecarPath(path: string | URL): string {
+    if (path instanceof URL) path = fromFileUrl(path);
+    return join(dirname(path), sidecarFilename(basename(path)));
+  }
+
+  async function loadSidecar(path: string | URL): Promise<string | null> {
+    const sidecarPath = getSidecarPath(path);
+    try {
+      return await Deno.readTextFile(sidecarPath);
+    } catch (e) {
+      if (e instanceof Deno.errors.NotFound) return null;
+      throw e;
+    }
+  }
+
   return async (resource: Resource) => {
     const representations = [...resource];
     const promises = representations.map(async (content) => {
@@ -145,6 +182,7 @@ export function writeFiles(
         ? path
         : new URL(`${bareName}.${ext}${path.search}${path.hash}`, path);
       const targetPath = rebasePath(contentPath);
+      let sidecar = null;
       if (!rewriteAlways) {
         let targetStat: Deno.FileInfo | undefined;
         try {
@@ -153,8 +191,15 @@ export function writeFiles(
           if (!(e instanceof Deno.errors.NotFound)) throw e;
         }
         const targetMtime = targetStat?.mtime;
-        if (targetMtime != null && targetMtime > content.lastModified) return;
+        if (
+          targetMtime != null &&
+          targetMtime > content.lastModified &&
+          (sidecar = await loadSidecar(targetPath)) === content.extraFingerprint
+        ) {
+          return;
+        }
       }
+
       const contentBody = await content.getBody();
       const bodyBuffer = typeof contentBody == "string"
         ? new TextEncoder().encode(contentBody)
@@ -162,7 +207,18 @@ export function writeFiles(
       await Deno.mkdir(dirname(fromFileUrl(targetPath)), { recursive: true });
       try {
         await Deno.writeFile(targetPath, bodyBuffer);
+        // TODO: use proper logging framework
         console.debug(targetPath.toString());
+        if (!rewriteAlways) {
+          if (content.extraFingerprint != null) {
+            await Deno.writeTextFile(
+              getSidecarPath(targetPath),
+              content.extraFingerprint,
+            );
+          } else if (sidecar != null) {
+            await Deno.remove(getSidecarPath(targetPath));
+          }
+        }
       } catch (e) {
         if (e instanceof Error) {
           e.message += `: ${targetPath.toString()}`;

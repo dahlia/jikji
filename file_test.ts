@@ -76,8 +76,7 @@ Deno.test("writeFiles()", async () => {
       const rewrite = writeFiles(
         tempDir,
         new URL("file:///tmp/site/"),
-        undefined,
-        true,
+        { rewriteAlways: true },
       );
       await rewrite(r);
       const hs3 = await Deno.stat(hp)!;

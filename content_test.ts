@@ -318,41 +318,47 @@ Deno.test("Content#replace()", async () => {
   const t = "text/plain";
   const d = new Date(Date.UTC(2000, 0, 1));
   const m = { foo: 1, bar: 2 };
-  const c = new Content("foo", t, "en", d, m);
+  const c = new Content("foo", t, "en", d, m, "abc");
   const newBody = c.replace({ body: "bar" });
-  await assertEquals$(newBody, new Content("bar", t, "en", d, m));
-  await assertEquals$(c, new Content("foo", t, "en", d, m));
+  await assertEquals$(newBody, new Content("bar", t, "en", d, m, "abc"));
+  await assertEquals$(c, new Content("foo", t, "en", d, m, "abc"));
   const newType = c.replace({ type: "text/html" });
   await assertEquals$(
     newType,
-    new Content("foo", "text/html", "en", d, m),
+    new Content("foo", "text/html", "en", d, m, "abc"),
   );
   const newLang = c.replace({ language: null });
-  await assertEquals$(newLang, new Content("foo", t, null, d, m));
+  await assertEquals$(newLang, new Content("foo", t, null, d, m, "abc"));
   const newDate = new Date();
   const newLastModified = c.replace({ lastModified: newDate });
   await assertEquals$(
     newLastModified,
-    new Content("foo", t, "en", newDate, m),
+    new Content("foo", t, "en", newDate, m, "abc"),
   );
   const replaceMeta = c.replace({ metadata: { bar: 3, baz: 4 } });
   await assertEquals$(
     replaceMeta,
-    new Content("foo", t, "en", d, { bar: 3, baz: 4 }),
+    new Content("foo", t, "en", d, { bar: 3, baz: 4 }, "abc"),
   );
   const updateMeta = c.replace({ metadata: (m) => ({ ...m, bar: 3, baz: 4 }) });
   await assertEquals$(
     updateMeta,
-    new Content("foo", t, "en", d, { foo: 1, bar: 3, baz: 4 }),
+    new Content("foo", t, "en", d, { foo: 1, bar: 3, baz: 4 }, "abc"),
+  );
+  const newExtraFingerprint = c.replace({ extraFingerprint: "xyz" });
+  await assertEquals$(
+    newExtraFingerprint,
+    new Content("foo", t, "en", d, m, "xyz"),
   );
   const c2 = c.replace({
     type: "text/html",
     language: "ko",
     lastModified: newDate,
+    extraFingerprint: "xyz",
   });
   await assertEquals(
     c2,
-    new Content("foo", "text/html", "ko", newDate, m),
+    new Content("foo", "text/html", "ko", newDate, m, "xyz"),
   );
 });
 

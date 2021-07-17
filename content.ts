@@ -17,8 +17,8 @@ export type ContentLoader = () => Promise<
 /**
  * The content with metadata.  It can be a source content, or also can be
  * a target content, or even can be an intermediate content.  Although it
- * is in-memory representation, its body is lazily loaded on memory when it
- * is actually necessary.
+ * is in-memory representation, its body and metadata are lazily loaded
+ * on memory when it is actually necessary.
  *
  * Note that a content in itself is unaware of its filename or URI.
  * Names are given to resources.
@@ -33,9 +33,10 @@ export class Content {
   readonly type: MediaType;
   /** An optional hint of the content's natural language. */
   readonly language: LanguageTag | null;
+  readonly extraFingerprint: string | null;
 
   /**
-   *
+   * Creates a new {@link Content} instance.
    * @param loader A function to load the actual content body and metadata.
    *               It can be invoked a while after the instance is created,
    *               or even can be never invoked if it is unnecessary.
@@ -49,6 +50,9 @@ export class Content {
    *                     is set if omitted.
    * @param metadata Additional metadata about the content.  The entries can
    *                 be partly overwritten by metadata that `loader` returns.
+   * @param extraFingerprint Extra token to determine if cache should be
+   *                         invalidated.  It's optional and only required when
+   *                         `lastModified` is not enough.
    * @throws {MediaTypeError} Thrown when the `type` is an invalid IANA media
    *                          type.
    * @throws {LanguageTagError} Thrown when the `language` is an invalid
@@ -60,6 +64,7 @@ export class Content {
     language?: LanguageTag | string | null,
     lastModified?: Date | null,
     metadata?: ContentMetadata,
+    extraFingerprint?: string | null,
   ) {
     if (typeof loader == "string" || loader instanceof Uint8Array) {
       const body = loader instanceof Uint8Array ? loader.slice(0) : loader;
@@ -75,6 +80,7 @@ export class Content {
       ? new Date()
       : new Date(lastModified);
     this.#metadata = { ...metadata };
+    this.extraFingerprint = extraFingerprint || null;
   }
 
   private async load(): Promise<ContentBody> {
@@ -162,7 +168,8 @@ export class Content {
       fields.type == null &&
       typeof fields.language == "undefined" &&
       fields.lastModified == null &&
-      metadata == null
+      metadata == null &&
+      typeof fields.extraFingerprint == "undefined"
     ) {
       return this;
     }
@@ -185,6 +192,10 @@ export class Content {
       fields.type ?? this.type,
       typeof fields.language == "undefined" ? this.language : fields.language,
       fields.lastModified ?? this.lastModified,
+      undefined,
+      typeof fields.extraFingerprint == "undefined"
+        ? this.extraFingerprint
+        : fields.extraFingerprint,
     );
   }
 
@@ -231,7 +242,8 @@ export class Content {
       `  type: ${Deno.inspect(this.type)},\n` +
       `  language: ${Deno.inspect(this.language)},\n` +
       `  lastModified: ${Deno.inspect(this.lastModified)},\n` +
-      `  metadata: ${Deno.inspect(this.#metadata)}\n` +
+      `  metadata: ${Deno.inspect(this.#metadata)},\n` +
+      `  extraFingerprint: ${Deno.inspect(this.extraFingerprint)}\n` +
       "}";
   }
 }
@@ -266,6 +278,11 @@ export interface ContentFields {
     | ContentMetadata
     | ((metadata: ContentMetadata) => Promise<ContentMetadata>)
     | ((metadata: ContentMetadata) => ContentMetadata);
+
+  /**
+   * New extra fingerprint of content.
+   */
+  extraFingerprint?: string | null;
 }
 
 /**

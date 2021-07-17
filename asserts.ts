@@ -89,7 +89,8 @@ async function contentEquals(
       actual.language === expected.language &&
       equal(actual.lastModified, expected.lastModified) &&
       equal(aBody, eBody) &&
-      equal(await actual.getMetadata(), await expected.getMetadata());
+      equal(await actual.getMetadata(), await expected.getMetadata()) &&
+      equal(actual.extraFingerprint, expected.extraFingerprint);
   }
 
   return actual === expected;

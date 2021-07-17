@@ -14,6 +14,7 @@ import {
   Pipeline,
   replace,
   Resource,
+  ResourceSet,
   transform,
 } from "./pipeline.ts";
 
@@ -271,12 +272,17 @@ Deno.test("Pipeline#groupBy()", async () => {
   const g1 = await p.groupBy((r) => r.path.pathname.match(/[^.]+$/)![0]);
   await assertEquals$(
     new Map([
-      ["md", new Set(makeResources({ "foo.md": "foo", "bar.md": "bar" }, d))],
+      [
+        "md",
+        new ResourceSet(makeResources({ "foo.md": "foo", "bar.md": "bar" }, d)),
+      ],
       [
         "txt",
-        new Set(makeResources({ "baz.txt": "baz", "qux.txt": "qux" }, d)),
+        new ResourceSet(
+          makeResources({ "baz.txt": "baz", "qux.txt": "qux" }, d),
+        ),
       ],
-      ["html", new Set(makeResources({ "quux.html": "quux" }, d))],
+      ["html", new ResourceSet(makeResources({ "quux.html": "quux" }, d))],
     ]),
     g1,
   );
@@ -288,7 +294,7 @@ Deno.test("Pipeline#groupBy()", async () => {
     new Map([
       [
         3,
-        new Set(
+        new ResourceSet(
           makeResources({
             "foo.md": "foo",
             "bar.md": "bar",
@@ -297,7 +303,7 @@ Deno.test("Pipeline#groupBy()", async () => {
           }, d),
         ),
       ],
-      [4, new Set(makeResources({ "quux.html": "quux" }, d))],
+      [4, new ResourceSet(makeResources({ "quux.html": "quux" }, d))],
     ]),
     g2,
   );
@@ -308,11 +314,28 @@ Deno.test("Pipeline#groupBy()", async () => {
   });
   await assertEquals$(
     new Map([
-      ["md", new Set(makeResources({ "foo.md": "foo", "bar.md": "bar" }, d))],
-      ["html", new Set(makeResources({ "quux.html": "quux" }, d))],
+      [
+        "md",
+        new ResourceSet(makeResources({ "foo.md": "foo", "bar.md": "bar" }, d)),
+      ],
+      ["html", new ResourceSet(makeResources({ "quux.html": "quux" }, d))],
     ]),
     g3,
   );
+});
+
+Deno.test("ResourceSet#lastModified", () => {
+  const d1 = new Date(1000000000000);
+  const d2 = new Date(1200000000000);
+  const d3 = new Date(1300000000000);
+  const d4 = new Date(400000000000);
+  const set = new ResourceSet([
+    new Resource("file:///tmp/a", [new Content("", "text/plain", null, d1)]),
+    new Resource("file:///tmp/b", [new Content("", "text/plain", null, d2)]),
+    new Resource("file:///tmp/c", [new Content("", "text/plain", null, d3)]),
+    new Resource("file:///tmp/d", [new Content("", "text/plain", null, d4)]),
+  ]);
+  assertEquals(set.lastModified, d3);
 });
 
 Deno.test("Pipeline#forEach()", async () => {

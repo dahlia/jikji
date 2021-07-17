@@ -279,14 +279,14 @@ export class Pipeline implements AsyncIterable<Resource> {
    */
   async groupBy<T>(
     grouper: (resource: Resource) => T | undefined,
-  ): Promise<Map<NonUndefined<T>, Set<Resource>>> {
-    const groups = new Map<NonUndefined<T>, Set<Resource>>();
+  ): Promise<Map<NonUndefined<T>, ResourceSet>> {
+    const groups = new Map<NonUndefined<T>, ResourceSet>();
     await this.forEach((resource: Resource) => {
       const groupKey: T | undefined = grouper(resource);
       if (groupKey !== undefined) {
         const key = groupKey as NonUndefined<T>;
         const group = groups.get(key);
-        if (group === undefined) groups.set(key, new Set([resource]));
+        if (group === undefined) groups.set(key, new ResourceSet([resource]));
         else group.add(resource);
       }
     });
@@ -399,6 +399,24 @@ export class Pipeline implements AsyncIterable<Resource> {
         await this.forEach(callback);
       }
     }
+  }
+}
+
+/**
+ * {@link Set} of {@link Resource}s, with an additional property
+ * {@link #lastModified}.
+ */
+export class ResourceSet extends Set<Resource> {
+  /**
+   * The last modified time of the {@link Resource}s in this set.
+   */
+  get lastModified(): Date {
+    let maxTime = 0;
+    for (const resource of this) {
+      const time = resource.lastModified.getTime();
+      if (time > maxTime) maxTime = time;
+    }
+    return new Date(maxTime);
   }
 }
 

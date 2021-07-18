@@ -1,6 +1,7 @@
 import {
   extractFromPath,
   extractFromUrl,
+  havingExtension,
   identity,
   intoDirectory,
   isBasedOn,
@@ -71,6 +72,20 @@ Deno.test("when()", () => {
     mayAppendQueryOrAnchor(new URL("file:///tmp/foo/bar.html")),
     new URL("file:///tmp/foo/bar.html?appended"),
   );
+});
+
+Deno.test("havingExtension()", () => {
+  const endsWithTsOrTsx = havingExtension("ts", "tsx");
+  assert(!endsWithTsOrTsx(new URL("https://example.com/")));
+  assert(!endsWithTsOrTsx(new URL("https://example.com/foo/")));
+  assert(!endsWithTsOrTsx(new URL("https://example.com/foo/bar.php")));
+  assert(endsWithTsOrTsx(new URL("https://example.com/foo/bar.ts")));
+  assert(endsWithTsOrTsx(new URL("https://example.com/foo/bar.tsx")));
+  assert(!endsWithTsOrTsx(new URL("file:///tmp/foo/")));
+  assert(!endsWithTsOrTsx(new URL("file:///tmp/foo/bar.html")));
+  assert(endsWithTsOrTsx(new URL("file:///tmp/foo/bar.ts")));
+  assert(endsWithTsOrTsx(new URL("file:///tmp/foo/bar.tsx")));
+  assert(!endsWithTsOrTsx(new URL("mailto:someone@example.com")));
 });
 
 Deno.test("intoDirectory()", () => {

@@ -43,6 +43,24 @@ export function when(
 }
 
 /**
+ * Creates a {@link PathPredicate} that returns `true` iff the given `path` does
+ * not end with a slash and its basename has one of the given `extensions`.
+ * @param extensions Extensions to check.  The first period (.) can be omitted.
+ * @returns A {@link PathPredicate} to check if the file that `path` points to
+ *          has one of the given `extensions`.
+ */
+export function havingExtension(...extensions: string[]): PathPredicate {
+  const suffixes = extensions.map((ext) =>
+    ext.startsWith(".") ? ext : `.${ext}`
+  );
+  return (path: URL) => {
+    if (path.pathname.endsWith("/")) return false;
+    const suffix = path.pathname.substr(path.pathname.lastIndexOf("."));
+    return suffixes.includes(suffix);
+  };
+}
+
+/**
  * Create a path transformer which appends a slash to the given path
  * if it does not end with a slash.
  *

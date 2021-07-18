@@ -1,11 +1,13 @@
 import {
   extractFromPath,
   extractFromUrl,
+  identity,
   intoDirectory,
   isBasedOn,
   rebase,
   relativePathToFileUrl,
   removeBase,
+  when,
 } from "./path.ts";
 import { Content, Resource } from "./resource.ts";
 import {
@@ -14,6 +16,62 @@ import {
   assertThrows,
 } from "https://deno.land/std@0.101.0/testing/asserts.ts";
 import { resolve, toFileUrl } from "https://deno.land/std@0.101.0/path/mod.ts";
+
+Deno.test("identity()", () => {
+  const p1 = new URL("https://example.com/foo/bar.php?baz=1#qux");
+  assertEquals(identity(p1), p1);
+  const p2 = new URL("file:///tmp/foo/bar.html");
+  assertEquals(identity(p2), p2);
+});
+
+Deno.test("when()", () => {
+  function appendAnchor(path: URL) {
+    path.hash = "#appended";
+    return path;
+  }
+  let append = true;
+  const mayAppendAnchor = when(() => append, appendAnchor);
+  assertEquals(
+    mayAppendAnchor(new URL("https://example.com/")),
+    new URL("https://example.com/#appended"),
+  );
+  assertEquals(
+    mayAppendAnchor(new URL("file:///tmp/foo/bar.html")),
+    new URL("file:///tmp/foo/bar.html#appended"),
+  );
+  append = false;
+  assertEquals(
+    mayAppendAnchor(new URL("https://example.com/")),
+    new URL("https://example.com/"),
+  );
+  assertEquals(
+    mayAppendAnchor(new URL("file:///tmp/foo/bar.html")),
+    new URL("file:///tmp/foo/bar.html"),
+  );
+  function appendQuery(path: URL) {
+    path.search = "?appended";
+    return path;
+  }
+  let anchor = true;
+  const mayAppendQueryOrAnchor = when(() => anchor, appendAnchor, appendQuery);
+  assertEquals(
+    mayAppendQueryOrAnchor(new URL("https://example.com/")),
+    new URL("https://example.com/#appended"),
+  );
+  assertEquals(
+    mayAppendQueryOrAnchor(new URL("file:///tmp/foo/bar.html")),
+    new URL("file:///tmp/foo/bar.html#appended"),
+  );
+  anchor = false;
+  assertEquals(
+    mayAppendQueryOrAnchor(new URL("https://example.com/")),
+    new URL("https://example.com/?appended"),
+  );
+  assertEquals(
+    mayAppendQueryOrAnchor(new URL("file:///tmp/foo/bar.html")),
+    new URL("file:///tmp/foo/bar.html?appended"),
+  );
+});
 
 Deno.test("intoDirectory()", () => {
   const f = intoDirectory();

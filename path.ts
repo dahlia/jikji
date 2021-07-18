@@ -6,6 +6,43 @@ import {
 import { PathTransformer, Resource } from "./pipeline.ts";
 
 /**
+ * An identity {@link PathTransformer} that does nothing.
+ * @param path The path (not) to transform.
+ * @returns The given `path` as-is.
+ */
+export function identity(path: URL) {
+  return path;
+}
+
+/**
+ * Represents functions to determine if a given `path` meets a certain criteria.
+ * @param path The path to check.
+ * @returns `true` if the `path` meets the criteria, `false` otherwise.
+ */
+export type PathPredicate = (path: URL) => boolean;
+
+/**
+ * Creates a conditional {@link PathTransformer} that applies a given
+ * `trueTransformer` if the `predicate` returns `true`, and a given
+ * `falseTransformer` otherwise.
+ * @param predicate A predicate function that determines whether a given
+ *                  `trueTransformer` should be applied.
+ * @param trueTransformer A {@link PathTransformer} to apply if `predicate`
+ *                        returns `true`.
+ * @param falseTransformer A {@link PathTransformer} to apply if `predicate`
+ *                         returns `false`.
+ *                         By default, this is an {@link identity} transformer.
+ */
+export function when(
+  predicate: PathPredicate,
+  trueTransformer: PathTransformer,
+  falseTransformer: PathTransformer = identity,
+): PathTransformer {
+  return (path: URL) =>
+    predicate(path) ? trueTransformer(path) : falseTransformer(path);
+}
+
+/**
  * Create a path transformer which appends a slash to the given path
  * if it does not end with a slash.
  *

@@ -13,6 +13,7 @@ import {
   expandGlob,
   ExpandGlobOptions,
 } from "https://deno.land/std@0.102.0/fs/expand_glob.ts";
+import * as log from "https://deno.land/std@0.102.0/log/mod.ts";
 import {
   Mime,
   mime,
@@ -21,6 +22,10 @@ import {
 import { MediaType, MediaTypeError } from "./media_type.ts";
 import { rebase, relativePathToFileUrl } from "./path.ts";
 import { Content, Pipeline, Resource } from "./pipeline.ts";
+
+function getLogger() {
+  return log.getLogger("file");
+}
 
 async function* scanResources(
   globs: string[],
@@ -76,15 +81,20 @@ export function scanFiles(
     [isAbsolute(g), globToRegExp(g, options)] as [boolean, RegExp]
   );
   async function* watchFileChanges(): AsyncIterable<void> {
+    const logger = getLogger();
     let cwd = Deno.cwd();
     if (!cwd.endsWith(sep)) cwd += sep;
     for await (const event of Deno.watchFs(fixedDirs, { recursive: true })) {
+      if (event.kind == "access") continue;
       const matched = event.paths.some((p) =>
         globPatterns.some(([abs, re]) =>
           abs ? re.test(p) : p.startsWith(cwd) && re.test(p.substr(cwd.length))
         )
       );
-      if (matched) yield;
+      if (matched) {
+        logger.info(`Detected file ${event.kind}.`);
+        yield;
+      }
     }
   }
   return new Pipeline(getResources, watchFileChanges());
@@ -138,6 +148,7 @@ export function writeFiles(
   base: string | URL,
   options?: WriteFilesOptions,
 ): ((resource: Resource) => Promise<void>) {
+  const logger = getLogger();
   const mime = options?.mime ?? defaultMime;
   const rewriteAlways = options?.rewriteAlways ?? false;
   const sidecarFilename = options?.sidecarFilename ??
@@ -207,8 +218,7 @@ export function writeFiles(
       await Deno.mkdir(dirname(fromFileUrl(targetPath)), { recursive: true });
       try {
         await Deno.writeFile(targetPath, bodyBuffer);
-        // TODO: use proper logging framework
-        console.debug(targetPath.toString());
+        logger.info(targetPath.toString());
         if (!rewriteAlways) {
           if (content.extraFingerprint != null) {
             await Deno.writeTextFile(

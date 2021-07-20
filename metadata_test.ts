@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.101.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.102.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { makeResourceMap } from "./fixtures.ts";
 import {

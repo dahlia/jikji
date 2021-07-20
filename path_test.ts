@@ -16,8 +16,8 @@ import {
   assert,
   assertEquals,
   assertThrows,
-} from "https://deno.land/std@0.101.0/testing/asserts.ts";
-import { resolve, toFileUrl } from "https://deno.land/std@0.101.0/path/mod.ts";
+} from "https://deno.land/std@0.102.0/testing/asserts.ts";
+import { resolve, toFileUrl } from "https://deno.land/std@0.102.0/path/mod.ts";
 
 Deno.test("identity()", () => {
   const p1 = new URL("https://example.com/foo/bar.php?baz=1#qux");

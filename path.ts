@@ -61,6 +61,33 @@ export function havingExtension(...extensions: string[]): PathPredicate {
 }
 
 /**
+ * Creates a {@link PathTransformer} that replace a given `pattern` with a
+ * given `replacement` in a given `path`'s basename.
+ * @param pattern The pattern to replace.  This can be a string or a regular
+ *                expression.
+ * @param replacement The string to replace the `pattern` with.
+ *                    This can contain backreferences like `$1`, `$2`, etc to
+ *                    the captured groups of the `pattern` (if it is a regular
+ *                    expression).
+ * @returns A {@link PathTransformer} that replaces the `pattern` with the
+ *          `replacement` in the basename of the `path`.
+ */
+export function replaceBasename(
+  pattern: RegExp | string,
+  replacement: string,
+): PathTransformer {
+  return (path: URL): URL => {
+    if (path.pathname.endsWith("/")) return path;
+    const offset = path.pathname.lastIndexOf("/");
+    const result = new URL(path.toString());
+    const basename = path.pathname.substr(offset + 1);
+    result.pathname = path.pathname.substr(0, offset) + "/" +
+      basename.replace(pattern, replacement);
+    return result;
+  };
+}
+
+/**
  * Create a path transformer which appends a slash to the given path
  * if it does not end with a slash.
  *

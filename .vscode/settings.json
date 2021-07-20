@@ -11,6 +11,7 @@
     "editor.defaultFormatter": "denoland.vscode-deno"
   },
   "cSpell.words": [
+    "backreferences",
     "deno",
     "repr",
     "typedoc"

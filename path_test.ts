@@ -8,6 +8,7 @@ import {
   rebase,
   relativePathToFileUrl,
   removeBase,
+  replaceBasename,
   when,
 } from "./path.ts";
 import { Content, Resource } from "./resource.ts";
@@ -86,6 +87,43 @@ Deno.test("havingExtension()", () => {
   assert(endsWithTsOrTsx(new URL("file:///tmp/foo/bar.ts")));
   assert(endsWithTsOrTsx(new URL("file:///tmp/foo/bar.tsx")));
   assert(!endsWithTsOrTsx(new URL("mailto:someone@example.com")));
+});
+
+Deno.test("replaceBasename", () => {
+  const markdownToTxt = replaceBasename(/\.(md|markdown)$/, ".txt");
+  assertEquals(
+    markdownToTxt(new URL("https://example.com/")),
+    new URL("https://example.com/"),
+  );
+  assertEquals(
+    markdownToTxt(new URL("https://example.md")),
+    new URL("https://example.md"),
+  );
+  assertEquals(
+    markdownToTxt(new URL("https://example.com/foo.md?bar=1")),
+    new URL("https://example.com/foo.txt?bar=1"),
+  );
+  assertEquals(
+    markdownToTxt(new URL("https://example.com/foo.markdown#baz")),
+    new URL("https://example.com/foo.txt#baz"),
+  );
+  assertEquals(
+    markdownToTxt(new URL("https://example.com/foo.html")),
+    new URL("https://example.com/foo.html"),
+  );
+  const removeLang = replaceBasename(/\.([a-z][a-z])\.(html?|txt)$/, ".$2");
+  assertEquals(
+    removeLang(new URL("https://example.com/foo.en.html")),
+    new URL("https://example.com/foo.html"),
+  );
+  assertEquals(
+    removeLang(new URL("https://example.com/foo.ko.htm")),
+    new URL("https://example.com/foo.htm"),
+  );
+  assertEquals(
+    removeLang(new URL("https://example.com/foo.hi.txt")),
+    new URL("https://example.com/foo.txt"),
+  );
 });
 
 Deno.test("intoDirectory()", () => {

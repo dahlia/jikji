@@ -15,7 +15,7 @@ import {
 } from "https://deno.land/std@0.101.0/fs/expand_glob.ts";
 import {
   Mime,
-  mime as defaultMime,
+  mime,
   MimeTypeMap,
 } from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
@@ -246,5 +246,10 @@ export function extendMime(mime: Mime, ...typeMaps: MimeTypeMap[]): Mime {
 
   return new Mime(mimeTypes, ...typeMaps);
 }
+
+/**
+ * Default {@link Mime} instance.
+ */
+const defaultMime = extendMime(mime);
 
 export { defaultMime, Mime };

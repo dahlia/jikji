@@ -1,5 +1,5 @@
 #!/bin/bash
 set -e
-deno test --allow-read --allow-write --jobs=4
+deno test --allow-read --allow-write --allow-run --jobs=4
 deno lint
 deno fmt --check --ignore=.vscode/

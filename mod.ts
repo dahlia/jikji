@@ -1,3 +1,7 @@
+/**
+ * @copyright 2021 Hong Minhee
+ * @license LGPL-3.0-only
+ */
 export { Content, ContentKey, ContentKeyError } from "./content.ts";
 export { scanFiles, writeFiles } from "./file.ts";
 export { LanguageTag, LanguageTagError } from "./language_tag.ts";

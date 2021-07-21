@@ -1,3 +1,7 @@
+/**
+ * @copyright 2021 Hong Minhee
+ * @license LGPL-3.0-only
+ */
 import { join } from "https://deno.land/std@0.102.0/path/mod.ts";
 import {
   assert,

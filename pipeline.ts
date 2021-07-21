@@ -1,3 +1,7 @@
+/**
+ * @copyright 2021 Hong Minhee
+ * @license LGPL-3.0-only
+ */
 import concat from "https://esm.sh/@async-generators/concat@0.1.0";
 import map from "https://esm.sh/@async-generators/map@0.1.0";
 import filter from "https://esm.sh/@async-generators/filter@0.1.1";

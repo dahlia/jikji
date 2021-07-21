@@ -1,3 +1,7 @@
+/**
+ * @copyright 2021 Hong Minhee
+ * @license LGPL-3.0-only
+ */
 import {
   isAbsolute,
   resolve,

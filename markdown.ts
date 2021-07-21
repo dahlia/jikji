@@ -1,3 +1,7 @@
+/**
+ * @copyright 2021 Hong Minhee
+ * @license LGPL-3.0-only
+ */
 import MarkdownIt from "https://esm.sh/markdown-it@12.0.6";
 import abbr from "https://esm.sh/markdown-it-abbr@1.0.4";
 import attrs from "https://esm.sh/markdown-it-attrs@4.0.0";

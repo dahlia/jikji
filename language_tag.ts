@@ -4,7 +4,9 @@
  * It guarantees all instances are interned and only single instance is made
  * for each language tag, which means, `===` operator can be used for testing
  * structural equality of two {@link LanguageTag} operands.
-*/
+ * @copyright 2021 Hong Minhee
+ * @license LGPL-3.0-only
+ */
 export class LanguageTag {
   /** An ISO 639 code which consists of two or three letters. */
   readonly language: string;

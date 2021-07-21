@@ -1,3 +1,7 @@
+/**
+ * @copyright 2021 Hong Minhee
+ * @license LGPL-3.0-only
+ */
 import { assertEquals$ } from "./asserts.ts";
 import { abbr, frontMatter, markdown, MarkdownIt, title } from "./markdown.ts";
 import { Content } from "./content.ts";

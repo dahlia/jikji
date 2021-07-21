@@ -1,3 +1,7 @@
+/**
+ * @copyright 2021 Hong Minhee
+ * @license LGPL-3.0-only
+ */
 import { MediaType, MediaTypeError } from "./media_type.ts";
 import { Content, ContentTransformer } from "./pipeline.ts";
 

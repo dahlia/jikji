@@ -177,12 +177,17 @@ export function writeFiles(
   return async (resource: Resource) => {
     const representations = [...resource];
     const promises = representations.map(async (content) => {
-      const ext = mime?.getExtension(content.type.toString());
+      let ext = mime?.getExtension(content.type.toString());
       if (ext == null) {
         throw new MediaTypeError(
           "Failed to determine filename suffix for the media type " +
             content.type.toString() + ".",
         );
+      }
+      let lang = "";
+      if (content.language != null) {
+        lang = `${content.language.toString().toLowerCase()}.`;
+        ext = `${lang}${ext}`;
       }
       const path = resource.path;
       const pathType = mime?.getType(path.pathname);
@@ -190,7 +195,12 @@ export function writeFiles(
       const contentPath = path.pathname.endsWith("/")
         ? new URL(`./index.${ext}`, path)
         : pathType != null && content.type.matches(pathType)
-        ? path
+        ? new URL(
+          `${bareName}.${lang}${
+            path.pathname.match(/[^.]+$/)![0]
+          }${path.search}${path.hash}`,
+          path,
+        )
         : new URL(`${bareName}.${ext}${path.search}${path.hash}`, path);
       const targetPath = rebasePath(contentPath);
       let sidecar = null;

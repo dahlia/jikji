@@ -47,7 +47,8 @@ Deno.test("scanFiles()", () => {
 
 Deno.test("writeFiles()", async () => {
   const r = new Resource("file:///tmp/site/foo/bar/", [
-    new Content("HTML content", "text/html"),
+    new Content("HTML content", "text/html", "en"),
+    new Content("HTML 內容", "text/html", "zh"),
     new Content("Plain text content", "text/plain"),
   ]);
   await withTempDir({
@@ -56,10 +57,14 @@ Deno.test("writeFiles()", async () => {
     async fn(tempDir: string) {
       const write = writeFiles(tempDir, new URL("file:///tmp/site/"));
       await write(r);
-      const hp = join(tempDir, "foo", "bar", "index.html");
-      const hs = await Deno.stat(hp);
-      const h = await Deno.readFile(hp);
-      assertEquals(h, new TextEncoder().encode("HTML content"));
+      const enHp = join(tempDir, "foo", "bar", "index.en.html");
+      const enHs = await Deno.stat(enHp);
+      const enH = await Deno.readFile(enHp);
+      assertEquals(enH, new TextEncoder().encode("HTML content"));
+      const zhHp = join(tempDir, "foo", "bar", "index.zh.html");
+      const zhHs = await Deno.stat(zhHp);
+      const zhH = await Deno.readFile(zhHp);
+      assertEquals(zhH, new TextEncoder().encode("HTML 內容"));
       const tp = join(tempDir, "foo", "bar", "index.txt");
       const ts = await Deno.stat(tp);
       const t = await Deno.readFile(tp);
@@ -67,9 +72,11 @@ Deno.test("writeFiles()", async () => {
 
       // If we write again without change, it should be a no-op.
       await write(r);
-      const hs2 = await Deno.stat(hp);
+      const enHs2 = await Deno.stat(enHp);
+      const zhHs2 = await Deno.stat(zhHp);
       const ts2 = await Deno.stat(tp);
-      assertEquals(hs2.mtime, hs.mtime);
+      assertEquals(enHs2.mtime, enHs.mtime);
+      assertEquals(zhHs2.mtime, zhHs.mtime);
       assertEquals(ts2.mtime, ts.mtime);
 
       // However, if rewriteAlways: true is set, it should rewrite.
@@ -79,9 +86,11 @@ Deno.test("writeFiles()", async () => {
         { rewriteAlways: true },
       );
       await rewrite(r);
-      const hs3 = await Deno.stat(hp)!;
+      const enHs3 = await Deno.stat(enHp)!;
+      const zhHs3 = await Deno.stat(zhHp)!;
       const ts3 = await Deno.stat(tp);
-      assert(hs3.mtime! > hs.mtime!);
+      assert(enHs3.mtime! > enHs.mtime!);
+      assert(zhHs3.mtime! > zhHs.mtime!);
       assert(ts3.mtime! > ts.mtime!);
     },
   });
@@ -92,8 +101,10 @@ Deno.test("writeFiles()", async () => {
       const write = writeFiles(tempDir, new URL("file:///tmp/site/"));
       const r2 = r.move("file:///tmp/site/foo/bar");
       await write(r2);
-      const h = await Deno.readFile(join(tempDir, "foo", "bar.html"));
-      assertEquals(h, new TextEncoder().encode("HTML content"));
+      const enH = await Deno.readFile(join(tempDir, "foo", "bar.en.html"));
+      assertEquals(enH, new TextEncoder().encode("HTML content"));
+      const zhH = await Deno.readFile(join(tempDir, "foo", "bar.zh.html"));
+      assertEquals(zhH, new TextEncoder().encode("HTML 內容"));
       const t = await Deno.readFile(join(tempDir, "foo", "bar.txt"));
       assertEquals(t, new TextEncoder().encode("Plain text content"));
     },
@@ -105,8 +116,10 @@ Deno.test("writeFiles()", async () => {
       const write = writeFiles(tempDir, new URL("file:///tmp/site/"));
       const r3 = r.move("file:///tmp/site/foo/bar.htm");
       await write(r3);
-      const h = await Deno.readFile(join(tempDir, "foo", "bar.htm"));
-      assertEquals(h, new TextEncoder().encode("HTML content"));
+      const enH = await Deno.readFile(join(tempDir, "foo", "bar.en.htm"));
+      assertEquals(enH, new TextEncoder().encode("HTML content"));
+      const zhH = await Deno.readFile(join(tempDir, "foo", "bar.zh.htm"));
+      assertEquals(zhH, new TextEncoder().encode("HTML 內容"));
       const t = await Deno.readFile(join(tempDir, "foo", "bar.txt"));
       assertEquals(t, new TextEncoder().encode("Plain text content"));
     },

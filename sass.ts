@@ -121,7 +121,7 @@ async function checkCommand(command: string): Promise<string | null> {
   const proc = Deno.run({
     cmd: Deno.build.os == "windows"
       ? ["where", `${command}.exe`]
-      : ["command", "-v", command],
+      : ["which", command],
     stdout: "piped",
     stderr: "null",
   });

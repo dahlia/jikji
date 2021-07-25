@@ -25,6 +25,8 @@ import { ContentTransformer, Resource } from "./pipeline.ts";
  * Designed to be used with {@link Pipeline#transform} and
  * {@link Pipeline#diversify} methods.
  * @param templateFile The path to the template file.
+ * @param context The contextual variables to be passed to the template.  These
+ *                override any predefined variables if any are overlapped.
  * @param type The media type.
  * @returns A function that can be used to transform the content.
  * @throws {MediaTypeError} Thrown if the given `type` is not a valid IANA media
@@ -32,6 +34,7 @@ import { ContentTransformer, Resource } from "./pipeline.ts";
  */
 export function renderTemplate(
   templateFile: string,
+  context: Record<string, unknown> = {},
   type: MediaType | string = "text/html",
 ): ContentTransformer {
   type = typeof type === "string" ? MediaType.fromString(type) : type;
@@ -52,6 +55,7 @@ export function renderTemplate(
           metadata: await content.getMetadata(),
           __file__: filePath,
           __dir__: dirname(filePath),
+          ...context,
         });
       },
       lastModified: tplMtime != null && tplMtime > content.lastModified
@@ -77,7 +81,8 @@ export function renderTemplate(
  * and these keys can override the above variables.
  * @param templateFile The path to the template file.
  * @param list The list of {@link Resource}s to render.
- * @param context The contextual variables to be passed to the template.
+ * @param context The contextual variables to be passed to the template.  These
+ *                override any predefined variables if any are overlapped.
  * @param type The media type.
  * @param language The language tag.
  * @returns A {@link Content} with the rendered content.
@@ -85,7 +90,7 @@ export function renderTemplate(
 export async function renderListTemplate(
   templateFile: string,
   list: AsyncIterable<Resource> | Iterable<Resource>,
-  context?: Record<string, unknown>,
+  context: Record<string, unknown> = {},
   type: MediaType | string = "text/html",
   language: LanguageTag | string | null = null,
 ): Promise<Content> {

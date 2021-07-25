@@ -22,9 +22,9 @@ Deno.test("renderTemplate()", () =>
       await Deno.writeTextFile(
         tpl,
         "<h1><%= metadata.title %></h1><p><%- body %></p><p>" +
-          "<%= __file__ %><br><%= __dir__ %></p>",
+          "<%= __file__ %><br><%= __dir__ %><br><%= foo %></p>",
       );
-      const transformer = renderTemplate(tpl);
+      const transformer = renderTemplate(tpl, { foo: "bar" });
       const ds = [new Date(0), new Date(new Date().getTime() + 10000000)];
       for (const d of ds) {
         const content = new Content("Content body", "text/plain", "en", d, {
@@ -40,7 +40,8 @@ Deno.test("renderTemplate()", () =>
         }
         assertEquals(
           await transformed.getBody(),
-          `<h1>Content title</h1><p>Content body</p><p>${tpl}<br>${path}</p>`,
+          "<h1>Content title</h1><p>Content body</p><p>" +
+            `${tpl}<br>${path}<br>bar</p>`,
         );
         assertEquals(
           await transformed.getMetadata(),

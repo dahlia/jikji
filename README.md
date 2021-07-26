@@ -17,7 +17,11 @@ Currently, it provides the below *composable building blocks*:
  -  EJS/ETS template engine (powered by [dejs])
  -  [Sass/SCSS] stylesheet preprocessor (through subprocess)
 
+[Deno]: https://deno.land/
 [content negotiation]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation
+[markdown-it]: https://github.com/markdown-it/markdown-it
+[dejs]: https://github.com/syumai/dejs
+[Sass/SCSS]: https://sass-lang.com/
 
 
 Example
@@ -58,41 +62,54 @@ Key concepts
 
 Building blocks that Jikji provides are based on the following concepts:
 
- -  `Pipeline` represents the entire steps from the input to the output.
+ -  [`Pipeline`] represents the entire steps from the input to the output.
     It's like a stream of zero or more `Resource`s.  Its whole process is
     lazy so that if some parts don't need to be generated again they are even
     not loaded at all.
     (In the above example, a new `Pipeline` is acquired using `scanFiles()`
     function, but `scanFiles()` does not immediately list files nor load
     their contents.)
- -  `Resource` represents an abstract resource which is mapped to a unique
+ -  [`Resource`] represents an abstract resource which is mapped to a unique
     `path`.  Its `path` is a rather URL than a filesystem path, which means
     it has a scheme like `https` or `file` and can end with a slash.
     (Note that `intoDirectory()` function turns *posts/foobar.md* into
     *posts/foobar/* in the above example.) `Resource` also can has multiple
     representations for [content negotiation] on type and language.
- -  `Content` represents an actual content which can belong to `Resource`s
+ -  [`Content`] represents an actual content which can belong to `Resource`s
     as a representation.  The `ContentBody` can be lazily loaded and either
     a Unicode text or binary data.  They are typed through IANA `MediaType`s
     (formerly known as MIME types).  Optionally, they can have their
     RFC 5656 `LanguageTag` to describe their natural language.  If you want
     you can put additional `metadata` like `title` or `published` as well.
- -  `ResourceTransformer` transforms a `Resource` into a modified `Resource`.
+ -  [`ResourceTransformer`] transforms a `Resource` into a modified `Resource`.
     It purposes to change multiple `Resources` into new ones in immutable style
     by being passed to `Pipeline#map()` method.
- -  `PathTransformer` transforms a `URL` into a modified `URL`.  It purposes to
-    change multiple `Resource`s `path`s into new ones in immutable style by
+ -  [`PathTransformer`] transforms a `URL` into a modified `URL`.  It purposes
+    to change multiple `Resource`s `path`s into new ones in immutable style by
     being passed to `Pipeline#move()` method.
     (In the above example, `intoDirectory()` and `rebase()` functions return
     `PathTransformer`s.)
- -  `ContentTransformer` transforms a `Content` into a modified `Content`.
+ -  [`ContentTransformer`] transforms a `Content` into a modified `Content`.
     It purposes to change multiple representations of `Resource`s into new ones
     in immutable style by being passed to `Pipeline#transform()` method.
     (In the above example, `markdown()` function returns a
     `ContentTransformer`.)
 
+See also [API docs].
 
-[Deno]: https://deno.land/
-[markdown-it]: https://github.com/markdown-it/markdown-it
-[dejs]: https://github.com/syumai/dejs
-[Sass/SCSS]: https://sass-lang.com/
+
+[`Pipeline`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#Pipeline
+[`Resource`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#Resource
+[`Content`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#Content
+[`ResourceTransformer`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fpipeline.ts#ResourceTransformer
+[`PathTransformer`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fpipeline.ts#PathTransformer
+[`ContentTransformer`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fpipeline.ts#ContentTransformer
+[API docs]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts
+
+
+License
+-------
+
+Distributed under [LGPL 3.0].
+
+[LGPL 3.0]: https://www.gnu.org/licenses/lgpl-3.0.html

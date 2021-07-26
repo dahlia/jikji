@@ -349,16 +349,16 @@ Deno.test("Content#replace()", async () => {
     updateMeta,
     new Content("foo", t, "en", d, { foo: 1, bar: 3, baz: 4 }, "abc"),
   );
-  const newExtraFingerprint = c.replace({ extraFingerprint: "xyz" });
+  const newETag = c.replace({ eTag: "xyz" });
   await assertEquals$(
-    newExtraFingerprint,
+    newETag,
     new Content("foo", t, "en", d, m, "xyz"),
   );
   const c2 = c.replace({
     type: "text/html",
     language: "ko",
     lastModified: newDate,
-    extraFingerprint: "xyz",
+    eTag: "xyz",
   });
   await assertEquals(
     c2,

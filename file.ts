@@ -128,7 +128,7 @@ interface WriteFilesOptions {
 
   /**
    * A filename pattern of a sidecar file which is used to store
-   * {@link Content#extraFingerprint}.  By default, `.*.cache` is used.
+   * {@link Content#eTag}.  By default, `.*.etag` is used.
    * Ignored if `rewriteAlways` is turned on.
    */
   sidecarFilename?: (filename: string) => string;
@@ -156,7 +156,7 @@ export function writeFiles(
   const mime = options?.mime ?? defaultMime;
   const rewriteAlways = options?.rewriteAlways ?? false;
   const sidecarFilename = options?.sidecarFilename ??
-    ((f: string) => `.${f}.cache`);
+    ((f: string) => `.${f}.etag`);
   const pathUrl = relativePathToFileUrl(path);
   if (!pathUrl.pathname.endsWith("/")) {
     pathUrl.pathname += "/";
@@ -219,7 +219,7 @@ export function writeFiles(
         if (
           targetMtime != null &&
           targetMtime > content.lastModified &&
-          (sidecar = await loadSidecar(targetPath)) === content.extraFingerprint
+          (sidecar = await loadSidecar(targetPath)) === content.eTag
         ) {
           return;
         }
@@ -234,10 +234,10 @@ export function writeFiles(
         await Deno.writeFile(targetPath, bodyBuffer);
         logger.info(targetPath.toString());
         if (!rewriteAlways) {
-          if (content.extraFingerprint != null) {
+          if (content.eTag != null) {
             await Deno.writeTextFile(
               getSidecarPath(targetPath),
-              content.extraFingerprint,
+              content.eTag,
             );
           } else if (sidecar != null) {
             await Deno.remove(getSidecarPath(targetPath));

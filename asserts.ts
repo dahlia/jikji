@@ -94,7 +94,7 @@ async function contentEquals(
       equal(actual.lastModified, expected.lastModified) &&
       equal(aBody, eBody) &&
       equal(await actual.getMetadata(), await expected.getMetadata()) &&
-      equal(actual.extraFingerprint, expected.extraFingerprint);
+      equal(actual.eTag, expected.eTag);
   }
 
   return actual === expected;

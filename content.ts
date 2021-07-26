@@ -37,7 +37,7 @@ export class Content {
   readonly type: MediaType;
   /** An optional hint of the content's natural language. */
   readonly language: LanguageTag | null;
-  readonly extraFingerprint: string | null;
+  readonly eTag: string | null;
 
   /**
    * Creates a new {@link Content} instance.
@@ -54,9 +54,9 @@ export class Content {
    *                     is set if omitted.
    * @param metadata Additional metadata about the content.  The entries can
    *                 be partly overwritten by metadata that `loader` returns.
-   * @param extraFingerprint Extra token to determine if cache should be
-   *                         invalidated.  It's optional and only required when
-   *                         `lastModified` is not enough.
+   * @param eTag Extra validator to determine if cache should be invalidated.
+   *             It's optional and only required when `lastModified` is not
+   *             enough.
    * @throws {MediaTypeError} Thrown when the `type` is an invalid IANA media
    *                          type.
    * @throws {LanguageTagError} Thrown when the `language` is an invalid
@@ -68,7 +68,7 @@ export class Content {
     language?: LanguageTag | string | null,
     lastModified?: Date | null,
     metadata?: ContentMetadata,
-    extraFingerprint?: string | null,
+    eTag?: string | null,
   ) {
     if (typeof loader == "string" || loader instanceof Uint8Array) {
       const body = loader instanceof Uint8Array ? loader.slice(0) : loader;
@@ -84,7 +84,7 @@ export class Content {
       ? new Date()
       : new Date(lastModified);
     this.#metadata = { ...metadata };
-    this.extraFingerprint = extraFingerprint || null;
+    this.eTag = eTag || null;
   }
 
   private async load(): Promise<ContentBody> {
@@ -173,7 +173,7 @@ export class Content {
       typeof fields.language == "undefined" &&
       fields.lastModified == null &&
       metadata == null &&
-      typeof fields.extraFingerprint == "undefined"
+      typeof fields.eTag == "undefined"
     ) {
       return this;
     }
@@ -197,9 +197,7 @@ export class Content {
       typeof fields.language == "undefined" ? this.language : fields.language,
       fields.lastModified ?? this.lastModified,
       undefined,
-      typeof fields.extraFingerprint == "undefined"
-        ? this.extraFingerprint
-        : fields.extraFingerprint,
+      typeof fields.eTag == "undefined" ? this.eTag : fields.eTag,
     );
   }
 
@@ -247,7 +245,7 @@ export class Content {
       `  language: ${Deno.inspect(this.language)},\n` +
       `  lastModified: ${Deno.inspect(this.lastModified)},\n` +
       `  metadata: ${Deno.inspect(this.#metadata)},\n` +
-      `  extraFingerprint: ${Deno.inspect(this.extraFingerprint)}\n` +
+      `  eTag: ${Deno.inspect(this.eTag)}\n` +
       "}";
   }
 }
@@ -284,9 +282,9 @@ export interface ContentFields {
     | ((metadata: ContentMetadata) => ContentMetadata);
 
   /**
-   * New extra fingerprint of content.
+   * New ETag validator of content.
    */
-  extraFingerprint?: string | null;
+  eTag?: string | null;
 }
 
 /**

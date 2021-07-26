@@ -96,7 +96,7 @@ Deno.test("renderListTemplate()", () =>
       assertEquals(content2.type, MediaType.fromString("text/html"));
       assertEquals(content2.language, LanguageTag.fromString("en-US"));
       assertEquals(content.lastModified, content2.lastModified);
-      assertNotEquals(content.extraFingerprint, content2.extraFingerprint);
+      assertNotEquals(content.eTag, content2.eTag);
 
       await Deno.writeTextFile(tpl, tplBody);
       const content3 = await renderListTemplate(

@@ -54,7 +54,7 @@ await scanFiles(["posts/**/*.md"])
   // .forEachWithReloading(writeFiles(outDir, baseUrl));
 ~~~~
 
-More realistic examples are placed in the *examples/* directory.
+More realistic examples are placed in the [*examples/* directory](examples/).
 
 
 Key concepts

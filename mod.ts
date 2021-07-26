@@ -26,5 +26,9 @@ export {
   replaceBasename,
   when,
 } from "./path.ts";
-export { Pipeline } from "./pipeline.ts";
+export {
+  allRepresentations,
+  anyRepresentations,
+  Pipeline,
+} from "./pipeline.ts";
 export { Resource, ResourceError } from "./resource.ts";

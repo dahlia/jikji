@@ -4,6 +4,7 @@
  */
 import { basename } from "https://deno.land/std@0.102.0/path/mod.ts";
 import {
+  assert,
   assertEquals,
   assertThrows,
 } from "https://deno.land/std@0.102.0/testing/asserts.ts";
@@ -12,6 +13,8 @@ import { LanguageTag, LanguageTagError } from "./language_tag.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
 import { makeResources } from "./fixtures.ts";
 import {
+  allRepresentations,
+  anyRepresentations,
   Content,
   diversify,
   move,
@@ -572,4 +575,77 @@ Deno.test("replace()", async () => {
 
   assertThrows(() => replace({ type: "invalid" }), MediaTypeError);
   assertThrows(() => replace({ language: "invalid" }), LanguageTagError);
+});
+
+const htmlRepr = new Content("<h1>foo</h1>", "text/html", "en");
+const textRepr = new Content("foo", "text/plain");
+const mdRepr = new Content("甲", "text/markdown", "zh");
+
+Deno.test("anyRepresentations(undefined)", () => {
+  const alwaysTrue = anyRepresentations(undefined);
+  assert(
+    alwaysTrue(
+      new Resource("https://example.com/", [htmlRepr, textRepr, mdRepr]),
+    ),
+  );
+  assert(alwaysTrue(new Resource("file:///tmp/foo.html", [htmlRepr])));
+  assert(alwaysTrue(new Resource("file:///tmp/foo.md", [mdRepr])));
+});
+
+Deno.test("anyRepresentations(ContentFilter)", () => {
+  const hasHtml = anyRepresentations({ type: "text/html" });
+  assert(
+    hasHtml(
+      new Resource("https://example.com/", [htmlRepr, textRepr, mdRepr]),
+    ),
+  );
+  assert(hasHtml(new Resource("file:///tmp/foo.html", [htmlRepr])));
+  assert(!hasHtml(new Resource("file:///tmp/foo.md", [mdRepr])));
+});
+
+Deno.test("anyRepresentations(ContentPredicate)", () => {
+  const hasLang = anyRepresentations((c: Content) => c.language != null);
+  assert(
+    hasLang(
+      new Resource("https://example.com/", [htmlRepr, textRepr, mdRepr]),
+    ),
+  );
+  assert(hasLang(new Resource("file:///tmp/foo.html", [htmlRepr])));
+  assert(!hasLang(new Resource("file:///tmp/foo.txt", [textRepr])));
+});
+
+Deno.test("allRepresentations(undefined)", () => {
+  const alwaysTrue = allRepresentations(undefined);
+  assert(
+    alwaysTrue(
+      new Resource("https://example.com/", [htmlRepr, textRepr, mdRepr]),
+    ),
+  );
+  assert(alwaysTrue(new Resource("file:///tmp/foo.html", [htmlRepr])));
+  assert(alwaysTrue(new Resource("file:///tmp/foo.md", [mdRepr])));
+});
+
+Deno.test("allRepresentations(ContentFilter)", () => {
+  const hasHtml = allRepresentations({ type: "text/html" });
+  assert(
+    !hasHtml(
+      new Resource("https://example.com/", [htmlRepr, textRepr, mdRepr]),
+    ),
+  );
+  assert(hasHtml(new Resource("file:///tmp/foo.html", [htmlRepr])));
+  assert(!hasHtml(new Resource("file:///tmp/foo.md", [mdRepr])));
+});
+
+Deno.test("allRepresentations(ContentPredicate)", () => {
+  const hasLang = allRepresentations((c: Content) => c.language != null);
+  assert(
+    !hasLang(
+      new Resource("https://example.com/", [htmlRepr, textRepr, mdRepr]),
+    ),
+  );
+  assert(hasLang(new Resource("https://example.com/", [htmlRepr, mdRepr])));
+  assert(!hasLang(new Resource("https://example.com/", [htmlRepr, textRepr])));
+  assert(hasLang(new Resource("file:///tmp/foo.txt", [htmlRepr])));
+  assert(hasLang(new Resource("file:///tmp/foo.md", [mdRepr])));
+  assert(!hasLang(new Resource("file:///tmp/foo.txt", [textRepr])));
 });

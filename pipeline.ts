@@ -532,5 +532,66 @@ export function replace(fields: ContentFields): ContentTransformer {
   return (content: Content): Content => content.replace(fields);
 }
 
+/**
+ * Gets a {@link ResourcePredicate} which checks whether a given
+ * {@link Resource} has any representations satisfying the given
+ * `contentCriterion`.
+ *
+ * Designed to work with {@link Pipeline#filter} method.
+ * @param contentCriterion A criterion to check resource's representations.
+ * @returns A function which checks whether a given {@link Resource} has any
+ *          representations satisfying the given `contentCriterion`.
+ */
+export function anyRepresentations(
+  contentCriterion: ContentCriterion,
+): ResourcePredicate {
+  if (typeof contentCriterion === "undefined") return (_) => true;
+  else if (typeof contentCriterion === "function") {
+    return (resource: Resource): boolean => {
+      for (const repr of resource) {
+        if (contentCriterion(repr)) return true;
+      }
+      return false;
+    };
+  } else {
+    return (resource: Resource): boolean => {
+      for (const repr of resource) {
+        if (repr.matches(contentCriterion)) return true;
+      }
+      return false;
+    };
+  }
+}
+
+/**
+ * Gets a {@link ResourcePredicate} which checks whether a given
+ * {@link Resource}'s all representations satisfy the given `contentCriterion`.
+ *
+ * Designed to work with {@link Pipeline#filter} method.
+ * @param contentCriterion A criterion to check resource's representations.
+ * @returns A function which checks whether a given {@link Resource}'s all
+ *          representations satisfy the given `contentCriterion`.
+ */
+export function allRepresentations(
+  contentCriterion: ContentCriterion,
+): ResourcePredicate {
+  if (typeof contentCriterion === "undefined") return (_) => true;
+  else if (typeof contentCriterion === "function") {
+    return (resource: Resource): boolean => {
+      for (const repr of resource) {
+        if (!contentCriterion(repr)) return false;
+      }
+      return true;
+    };
+  } else {
+    return (resource: Resource): boolean => {
+      for (const repr of resource) {
+        if (!repr.matches(contentCriterion)) return false;
+      }
+      return true;
+    };
+  }
+}
+
 export { Content, LanguageTag, MediaType, Resource };
 export default Pipeline;

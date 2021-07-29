@@ -6,7 +6,7 @@ Jikji changelog
 Version 0.1.1
 -------------
 
-To be released.
+Released on July 30, 2021.
 
  -  Fixed bugs that `rebase()` function and other functions dependent on it
     in _path.ts_ and _file.ts_ modules had not properly deal with Windows-style

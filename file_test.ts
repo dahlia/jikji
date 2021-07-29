@@ -7,6 +7,7 @@ import {
   assert,
   assertEquals,
 } from "https://deno.land/std@0.102.0/testing/asserts.ts";
+import { sleep } from "https://deno.land/x/sleep@v1.2.0/sleep.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { extendMime, Mime, scanFiles, writeFiles } from "./file.ts";
 import { makeResources, withFixture, withTempDir } from "./fixtures.ts";
@@ -59,7 +60,15 @@ Deno.test("writeFiles()", async () => {
     prefix: "jikji-t-",
     suffix: "-fx",
     async fn(tempDir: string) {
-      const write = writeFiles(tempDir, new URL("file:///tmp/site/"));
+      const options = {};
+      let writeLog: { path: string; content: unknown; target: unknown }[] = [];
+      (options as { onWrite: unknown }).onWrite = (
+        path: URL,
+        content: unknown,
+        target: unknown,
+      ) => writeLog.push({ path: path.href, content, target });
+      const write = writeFiles(tempDir, new URL("file:///tmp/site/"), options);
+      if (Deno.build.os === "linux") await sleep(1);
       await write(r);
       const enHp = join(tempDir, "foo", "bar", "index.en.html");
       const enHs = await Deno.stat(enHp);
@@ -75,7 +84,9 @@ Deno.test("writeFiles()", async () => {
       assertEquals(t, new TextEncoder().encode("Plain text content"));
 
       // If we write again without change, it should be a no-op.
+      writeLog = [];
       await write(r);
+      assertEquals(writeLog, []);
       const enHs2 = await Deno.stat(enHp);
       const zhHs2 = await Deno.stat(zhHp);
       const ts2 = await Deno.stat(tp);

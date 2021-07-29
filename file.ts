@@ -157,6 +157,16 @@ export function writeFiles(
   const rewriteAlways = options?.rewriteAlways ?? false;
   const sidecarFilename = options?.sidecarFilename ??
     ((f: string) => `.${f}.etag`);
+  // FIXME: The hidden "onWrite" event should be documented and added to the
+  // WriteFileOptions interface in the next minor version.
+  const onWrite = options != null && "onWrite" in options &&
+      typeof options["onWrite"] === "function"
+    ? (options["onWrite"] as (
+      path: URL,
+      content: unknown,
+      target: unknown,
+    ) => (void | Promise<void>))
+    : null;
   const pathUrl = relativePathToFileUrl(path);
   if (!pathUrl.pathname.endsWith("/")) {
     pathUrl.pathname += "/";
@@ -208,6 +218,7 @@ export function writeFiles(
         : new URL(`${bareName}.${ext}${path.search}${path.hash}`, path);
       const targetPath = rebasePath(contentPath);
       let sidecar = null;
+      let targetMtime;
       if (!rewriteAlways) {
         let targetStat: Deno.FileInfo | undefined;
         try {
@@ -215,7 +226,7 @@ export function writeFiles(
         } catch (e) {
           if (!(e instanceof Deno.errors.NotFound)) throw e;
         }
-        const targetMtime = targetStat?.mtime;
+        targetMtime = targetStat?.mtime;
         if (
           targetMtime != null &&
           targetMtime > content.lastModified &&
@@ -232,6 +243,19 @@ export function writeFiles(
       await Deno.mkdir(dirname(fromFileUrl(targetPath)), { recursive: true });
       try {
         await Deno.writeFile(targetPath, bodyBuffer);
+        if (onWrite != null) {
+          const p = onWrite(
+            targetPath,
+            {
+              lastModified: content.lastModified,
+              eTag: content.eTag,
+            },
+            targetMtime == null && sidecar == null
+              ? null
+              : { lastModified: targetMtime ?? null, eTag: sidecar },
+          );
+          if (p instanceof Promise) await p;
+        }
         logger.info(targetPath.toString());
         if (!rewriteAlways) {
           if (content.eTag != null) {

@@ -111,6 +111,12 @@ See also [API docs].
 [API docs]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts
 
 
+Changelog
+---------
+
+See [*CHANGES.md*](CHANGES.md).
+
+
 License
 -------
 

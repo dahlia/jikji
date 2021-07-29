@@ -5,6 +5,7 @@
 import {
   isAbsolute,
   resolve,
+  SEP_PATTERN,
   toFileUrl,
 } from "https://deno.land/std@0.102.0/path/mod.ts";
 import { PathTransformer, Resource } from "./pipeline.ts";
@@ -130,6 +131,9 @@ export function rebase(
   base: string | URL,
   rebase: string | URL,
 ): PathTransformer {
+  // FIXME: As this module is not file.ts, we should remove the assumption
+  // that a string means a file path.  We should instead a separate rebasePath()
+  // function in the fs.ts module.
   const baseUrl = relativePathToFileUrl(base);
   if (baseUrl.search !== "" || baseUrl.hash !== "") {
     throw new TypeError(
@@ -174,20 +178,26 @@ export function rebase(
  * @returns A URL which corresponds to the given `path`.
  */
 export function relativePathToFileUrl(path: string | URL) {
+  // FIXME: As this module is not file.ts, we should move this function to
+  // the file.ts module.
   if (typeof path == "string") {
-    try {
-      return new URL(path);
-    } catch (e) {
-      if (e instanceof TypeError) {
-        return toFileUrl(
-          isAbsolute(path)
-            ? path
-            : resolve(path) + (path.endsWith("/") ? "/" : ""),
-        );
-      } else {
-        throw e;
+    if (Deno.build.os !== "windows" || path.indexOf("\\") < 0) {
+      try {
+        return new URL(path);
+      } catch (e) {
+        if (!(e instanceof TypeError)) {
+          throw e;
+        }
       }
     }
+    const url = toFileUrl(isAbsolute(path) ? path : resolve(path));
+    if (
+      path.charAt(path.length - 1).match(SEP_PATTERN) &&
+      !url.pathname.endsWith("/")
+    ) {
+      url.pathname += "/";
+    }
+    return url;
   }
   return path;
 }

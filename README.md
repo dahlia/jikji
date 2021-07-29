@@ -1,5 +1,5 @@
 <!-- deno-fmt-ignore-file -->
-<img src="jikji.png" width="95" height="190" align="left">
+<img src="jikji.png" width="95" height="190" align="right" alt="">
 
 Jikji: small static site generator toolkit
 ==========================================

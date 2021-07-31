@@ -12,12 +12,12 @@ import {
   join,
   sep,
   SEP_PATTERN,
-} from "https://deno.land/std@0.102.0/path/mod.ts";
+} from "https://deno.land/std@0.103.0/path/mod.ts";
 import {
   expandGlob,
   ExpandGlobOptions,
-} from "https://deno.land/std@0.102.0/fs/expand_glob.ts";
-import * as log from "https://deno.land/std@0.102.0/log/mod.ts";
+} from "https://deno.land/std@0.103.0/fs/expand_glob.ts";
+import * as log from "https://deno.land/std@0.103.0/log/mod.ts";
 import {
   Mime,
   mime,

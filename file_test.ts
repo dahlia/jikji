@@ -2,11 +2,11 @@
  * @copyright 2021 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { join, sep } from "https://deno.land/std@0.102.0/path/mod.ts";
+import { join, sep } from "https://deno.land/std@0.103.0/path/mod.ts";
 import {
   assert,
   assertEquals,
-} from "https://deno.land/std@0.102.0/testing/asserts.ts";
+} from "https://deno.land/std@0.103.0/testing/asserts.ts";
 import { sleep } from "https://deno.land/x/sleep@v1.2.0/sleep.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { extendMime, Mime, scanFiles, writeFiles } from "./file.ts";

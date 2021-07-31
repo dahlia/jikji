@@ -2,12 +2,12 @@
  * @copyright 2021 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { join } from "https://deno.land/std@0.102.0/path/mod.ts";
+import { join } from "https://deno.land/std@0.103.0/path/mod.ts";
 import {
   assert,
   assertEquals,
   assertNotEquals,
-} from "https://deno.land/std@0.102.0/testing/asserts.ts";
+} from "https://deno.land/std@0.103.0/testing/asserts.ts";
 import { Content, LanguageTag, MediaType } from "./content.ts";
 import { renderListTemplate, renderTemplate } from "./ejs.ts";
 import { makeResources, withTempDir } from "./fixtures.ts";

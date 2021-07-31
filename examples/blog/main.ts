@@ -1,6 +1,6 @@
-import { parse } from "https://deno.land/std@0.102.0/flags/mod.ts";
-import { serve } from "https://deno.land/std@0.102.0/http/server.ts";
-import { info } from "https://deno.land/std@0.102.0/log/mod.ts";
+import { parse } from "https://deno.land/std@0.103.0/flags/mod.ts";
+import { serve } from "https://deno.land/std@0.103.0/http/server.ts";
+import { info } from "https://deno.land/std@0.103.0/log/mod.ts";
 import staticFiles from "https://deno.land/x/static_files@1.1.0/mod.ts";
 import { renderListTemplate, renderTemplate } from "../../ejs.ts";
 import { frontMatter, markdown } from "../../markdown.ts";

@@ -23,3 +23,15 @@ jobs:
           deno-version: v1.x
       - run: deno lint
       - run: deno fmt --check --ignore=.vscode/
+  test-examples:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+      - run: npm install -g sass
+      - run: |
+          set -e
+          cd examples/blog/
+          deno run -A main.ts

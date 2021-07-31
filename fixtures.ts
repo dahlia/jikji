@@ -4,11 +4,14 @@
  */
 import { dirname, join } from "https://deno.land/std@0.102.0/path/mod.ts";
 import { mime } from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
-import { ContentMetadata } from "./content.ts";
+import { ContentMetadata, MediaType } from "./content.ts";
 import { Content, Resource } from "./resource.ts";
 
 export function makeResources(
-  files: Record<string, string | [string, ContentMetadata]>,
+  files: Record<
+    string,
+    string | [string, ContentMetadata] | [string, string | MediaType]
+  >,
   lastModified?: Date | null,
 ): Resource[] {
   const map = makeResourceMap(files, lastModified);
@@ -18,7 +21,10 @@ export function makeResources(
 }
 
 export function makeResourceMap(
-  files: Record<string, string | [string, ContentMetadata]>,
+  files: Record<
+    string,
+    string | [string, ContentMetadata] | [string, string | MediaType]
+  >,
   lastModified?: Date | null,
 ): Record<string, Resource> {
   const paths = Object.keys(files);
@@ -26,13 +32,20 @@ export function makeResourceMap(
   for (const path of paths) {
     const pair = files[path];
     const body = typeof pair === "string" ? pair : pair[0];
-    const metadata = typeof pair === "string" ? {} : pair[1];
+    const metadata = typeof pair === "string" || typeof pair[1] === "string" ||
+        pair[1] instanceof MediaType
+      ? {}
+      : pair[1];
     const pathWithoutQs = path.replace(/(\?[^#]*)?(#.*)?$/, "");
-    let type = mime.getType(pathWithoutQs);
-    if (type == null) {
-      type = "application/octet-stream";
+    let type: MediaType | string;
+    if (
+      typeof pair !== "string" &&
+      (typeof pair[1] === "string" || pair[1] instanceof MediaType)
+    ) {
+      type = pair[1];
     } else {
-      type += "; charset=utf-8";
+      const t = mime.getType(pathWithoutQs);
+      type = t == null ? "application/octet-stream" : `${t}; charset=utf-8`;
     }
     const content = new Content(body, type, null, lastModified, metadata);
     const resource = new Resource("file:///tmp/site/" + path, [content]);

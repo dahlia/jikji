@@ -114,6 +114,10 @@ async function contentsEqual(
   return true;
 }
 
+function contentKeyCmp(a: Content, b: Content): number {
+  return a.key.toString().localeCompare(b.key.toString());
+}
+
 async function resourceEquals(
   actual?: Resource | null,
   expected?: Resource | null,
@@ -127,7 +131,9 @@ async function resourceEquals(
       return false;
     }
 
-    return await contentsEqual([...actual], [...expected]);
+    const actualContents = [...actual].sort(contentKeyCmp);
+    const expectedContents = [...expected].sort(contentKeyCmp);
+    return await contentsEqual(actualContents, expectedContents);
   }
 
   return actual === expected;

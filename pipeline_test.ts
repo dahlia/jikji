@@ -7,15 +7,16 @@ import {
   assert,
   assertEquals,
   assertThrows,
+  assertThrowsAsync,
 } from "https://deno.land/std@0.102.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
+import { Content, ContentKeyError } from "./content.ts";
 import { LanguageTag, LanguageTagError } from "./language_tag.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
 import { makeResources } from "./fixtures.ts";
 import {
   allRepresentations,
   anyRepresentations,
-  Content,
   diversify,
   move,
   Pipeline,
@@ -34,7 +35,7 @@ async function toArray<T>(iterable: AsyncIterable<T>): Promise<T[]> {
 }
 
 Deno.test("Pipeline(AsyncIterable<Resource>)", async () => {
-  const resources = makeResources({ "foo.txt": "", "bar.txt": "" });
+  const resources = makeResources({ "abc.txt": "", "def.txt": "" });
   const asyncIterable = {
     [Symbol.asyncIterator]: async function* () {
       yield* resources;
@@ -43,18 +44,34 @@ Deno.test("Pipeline(AsyncIterable<Resource>)", async () => {
   const p = new Pipeline(asyncIterable);
   await assertEquals$(await toArray(p), resources);
 
+  const d = new Date();
+  const overlapIterable = {
+    [Symbol.asyncIterator]: async function* () {
+      yield* resources;
+      yield* makeResources({ "abc.txt": ["dup", "text/markdown"] }, d);
+    },
+  };
+  const p2 = new Pipeline(overlapIterable);
+  await assertEquals$(await toArray(p2), [
+    new Resource(resources[0].path, [
+      ...resources[0],
+      new Content("dup", "text/markdown", null, d),
+    ]),
+    resources[1],
+  ]);
+
   const dupIterable = {
     [Symbol.asyncIterator]: async function* () {
       yield* resources;
-      yield* makeResources({ "foo.txt": "dup" });
+      yield* makeResources({ "def.txt": "dup" });
     },
   };
-  const p2 = new Pipeline(dupIterable);
-  await assertEquals$(await toArray(p2), resources);
+  const p3 = new Pipeline(dupIterable);
+  await assertThrowsAsync(() => toArray(p3), ContentKeyError);
 });
 
 Deno.test("Pipeline(Iterable<Resource>)", async () => {
-  const resources = makeResources({ "foo.txt": "", "bar.txt": "" });
+  const resources = makeResources({ "abc.txt": "", "def.txt": "" });
   const iterable = {
     [Symbol.iterator]: function* () {
       yield* resources;
@@ -63,14 +80,30 @@ Deno.test("Pipeline(Iterable<Resource>)", async () => {
   const p = new Pipeline(iterable);
   await assertEquals$(await toArray(p), resources);
 
+  const d = new Date();
+  const overlapIterable = {
+    [Symbol.iterator]: function* () {
+      yield* resources;
+      yield* makeResources({ "abc.txt": ["dup", "text/markdown"] }, d);
+    },
+  };
+  const p2 = new Pipeline(overlapIterable);
+  await assertEquals$(await toArray(p2), [
+    new Resource(resources[0].path, [
+      ...resources[0],
+      new Content("dup", "text/markdown", null, d),
+    ]),
+    resources[1],
+  ]);
+
   const dupIterable = {
     [Symbol.iterator]: function* () {
       yield* resources;
-      yield* makeResources({ "foo.txt": "dup" });
+      yield* makeResources({ "def.txt": "dup" });
     },
   };
-  const p2 = new Pipeline(dupIterable);
-  await assertEquals$(await toArray(p2), resources);
+  const p3 = new Pipeline(dupIterable);
+  await assertThrowsAsync(() => toArray(p3), ContentKeyError);
 });
 
 Deno.test({
@@ -82,16 +115,16 @@ Deno.test({
       if (step == 1) {
         yield* makeResources({ "bar.md": "" });
       } else if (step == 2) {
-        yield* makeResources({ "baz.md": "" });
+        yield* makeResources({ "baz.md": "", "baz.txt": "" });
       }
     }
     async function* monitor(): AsyncIterable<void> {
       yield;
       yield;
     }
-    const logs: { step: number; path: URL }[] = [];
+    const logs: { step: number; path: URL; size: number }[] = [];
     function log(resource: Resource) {
-      logs.push({ step, path: resource.path });
+      logs.push({ step, path: resource.path, size: resource.size });
     }
     await new Pipeline(getResources, monitor())
       .move((p) =>
@@ -99,11 +132,11 @@ Deno.test({
       )
       .forEachWithReloading(log, () => step++);
     assertEquals(logs, [
-      { step: 0, path: new URL("file:///tmp/foo.txt") },
-      { step: 1, path: new URL("file:///tmp/foo.txt") },
-      { step: 1, path: new URL("file:///tmp/bar.txt") },
-      { step: 2, path: new URL("file:///tmp/foo.txt") },
-      { step: 2, path: new URL("file:///tmp/baz.txt") },
+      { step: 0, path: new URL("file:///tmp/foo.txt"), size: 1 },
+      { step: 1, path: new URL("file:///tmp/foo.txt"), size: 1 },
+      { step: 1, path: new URL("file:///tmp/bar.txt"), size: 1 },
+      { step: 2, path: new URL("file:///tmp/foo.txt"), size: 1 },
+      { step: 2, path: new URL("file:///tmp/baz.txt"), size: 2 },
     ]);
   },
 });
@@ -113,21 +146,26 @@ Deno.test("Pipeline#union()", async () => {
     return a.path.toString() < b.path.toString() ? -1 : 1;
   }
 
-  const r1 = makeResources({ "foo.txt": "", "bar.txt": "" })
+  const r1 = makeResources({ "abc.txt": "", "def.txt": "" })
     .sort(pathCmp);
   const p1 = new Pipeline(r1);
-  const r2 = makeResources({ "bar.txt": "dup", "baz.txt": "" })
-    .sort(pathCmp);
+  const r2 = makeResources({
+    "abc.txt": ["dup", "text/markdown"],
+    "ghi.txt": "",
+  }).sort(pathCmp);
   const p2 = new Pipeline(r2);
 
   const p12 = p1.union(p2);
   await assertEquals$(
     (await toArray(p12)).sort(pathCmp),
-    [r1[0], r2[1], r1[1]],
+    [new Resource(r1[0].path, [...r1[0], ...r2[0]]), r1[1], r2[1]],
   );
 
   const p21 = p2.union(p1);
-  await assertEquals$((await toArray(p21)).sort(pathCmp), [...r2, r1[1]]);
+  await assertEquals$(
+    (await toArray(p12)).sort(pathCmp),
+    (await toArray(p21)).sort(pathCmp),
+  );
 });
 
 Deno.test("Pipeline#getLastModified()", async () => {
@@ -139,6 +177,12 @@ Deno.test("Pipeline#getLastModified()", async () => {
   const d2 = new Date();
   const p2 = p1.union(new Pipeline(makeResources({ "baz.txt": "" }, d2)));
   assertEquals(await p2.getLastModified(), d2);
+
+  const d3 = new Date();
+  const p3 = p1.union(
+    new Pipeline(makeResources({ "foo.txt": ["", "text/markdown"] }, d3)),
+  );
+  assertEquals(await p3.getLastModified(), d3);
 });
 
 Deno.test("Pipeline#add()", async () => {
@@ -146,20 +190,32 @@ Deno.test("Pipeline#add()", async () => {
     return a.path.toString() < b.path.toString() ? -1 : 1;
   }
 
-  const resources = makeResources({ "foo.txt": "", "bar.txt": "" })
+  const resources = makeResources({ "abc.txt": "", "def.txt": "" })
     .sort(pathCmp);
-  const [r1, r2] = makeResources({ "baz.txt": "", "foo.txt": "dp" })
-    .sort(pathCmp);
+  const [abcMd, efg] = makeResources({
+    "abc.txt": ["dp", "text/markdown"],
+    "ghi.txt": "",
+  }).sort(pathCmp);
+  const [def] = makeResources({ "def.txt": "dup content key" });
   const p1 = new Pipeline(resources);
 
-  const p2 = p1.add(r1);
+  const p2 = p1.add(abcMd);
   await assertEquals$(
     (await toArray(p2)).sort(pathCmp),
-    [resources[0], r1, resources[1]],
+    [new Resource(abcMd.path, [...resources[0], ...abcMd]), resources[1]],
   );
 
-  const p3 = p1.add(r2);
-  await assertEquals$((await toArray(p3)).sort(pathCmp), [resources[0], r2]);
+  const p3 = p1.add(efg);
+  await assertEquals$(
+    (await toArray(p3)).sort(pathCmp),
+    [...resources, efg],
+  );
+
+  const p4 = p1.add(def);
+  await assertThrowsAsync(
+    () => toArray(p4),
+    ContentKeyError,
+  );
 });
 
 const summarizerReturnTypes: Record<
@@ -371,29 +427,33 @@ Deno.test("move()", async () => {
 
 Deno.test("Pipeline#move()", async () => {
   const d = new Date();
-  const p = new Pipeline(
+  const resources = makeResources({
+    "abc.txt": "foo",
+    "def.md": "bar",
+    "ghi.html": "baz",
+  }, d);
+  const p = new Pipeline(resources);
+
+  const p2 = p.move((path) => new URL(path.href + "?qs"));
+  await assertEquals$(
+    await toArray(p2),
     makeResources(
       {
-        "foo.txt": "foo",
-        "bar.txt": "bar",
-        "baz.txt": "baz",
+        "abc.txt?qs": "foo",
+        "def.md?qs": "bar",
+        "ghi.html?qs": "baz",
       },
       d,
     ),
   );
-  const p2 = p.move((path) => new URL(path.toString() + "?qs"));
+
+  const p3 = p.move((path) => new URL(path.href.replace("abc.txt", "def.md")));
   await assertEquals$(
-    await toArray(p2),
-    Array.from(
-      makeResources(
-        {
-          "foo.txt?qs": "foo",
-          "bar.txt?qs": "bar",
-          "baz.txt?qs": "baz",
-        },
-        d,
-      ),
-    ),
+    await toArray(p3),
+    [
+      new Resource(resources[1].path, [...resources[0], ...resources[1]]),
+      resources[2],
+    ],
   );
 });
 

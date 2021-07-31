@@ -8,6 +8,9 @@ Version 0.2.0
 
 To be released.
 
+ -  `Pipeline` became to merge its representations into the existing `Resource`
+    when a `Resource` having duplicate `path` is added.
+
 
 Version 0.1.1
 -------------

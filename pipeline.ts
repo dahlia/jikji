@@ -69,10 +69,13 @@ export type ContentTransformer = (content: Content) => Content;
  *
  * Note that it as a data structure works as like sets rather than lists.
  * There cannot be more {@link Resource}s than one with the duplicate `path`s.
+ * When a {@link Resource} having a duplicate `path` is added, its
+ * representations are merged into the existing {@link Resource}.
  */
 export class Pipeline implements AsyncIterable<Resource> {
   readonly #getResources: () => AsyncIterable<Resource>;
   #buffer?: Resource[];
+  #merged: boolean;
   #resourcesMonitor?: AsyncIterable<void>;
 
   /**
@@ -121,8 +124,10 @@ export class Pipeline implements AsyncIterable<Resource> {
     if (resourcesMonitor != null) {
       this.#resourcesMonitor = map(resourcesMonitor, (_) => {
         this.#buffer = undefined;
+        this.#merged = false;
       });
     }
+    this.#merged = false;
   }
 
   /**
@@ -132,7 +137,7 @@ export class Pipeline implements AsyncIterable<Resource> {
    */
   async getLastModified(): Promise<Date | null> {
     let result: Date | null = null;
-    for await (const r of this) {
+    for await (const r of this.getResources()) {
       const modified = r.lastModified;
       if (result == null || modified > result) {
         result = modified;
@@ -141,14 +146,10 @@ export class Pipeline implements AsyncIterable<Resource> {
     return result;
   }
 
-  async *[Symbol.asyncIterator](): AsyncIterableIterator<Resource> {
+  private async *getResources(): AsyncIterableIterator<Resource> {
     if (this.#buffer == null) {
       const buffer: Resource[] = [];
-      const paths = new Set<string>();
       for await (const resource of this.#getResources()) {
-        const path = resource.path.toString();
-        if (paths.has(path)) continue;
-        paths.add(path);
         buffer.push(resource);
         yield resource;
       }
@@ -156,6 +157,39 @@ export class Pipeline implements AsyncIterable<Resource> {
     } else {
       yield* this.#buffer;
     }
+  }
+
+  async *[Symbol.asyncIterator](): AsyncIterableIterator<Resource> {
+    if (this.#merged) {
+      yield* this.getResources();
+      return;
+    }
+
+    const resources = new Map<string, Resource[]>();
+    for await (const resource of this.getResources()) {
+      const path = resource.path.href;
+      const array = resources.get(path);
+      if (array == null) resources.set(path, [resource]);
+      else array.push(resource);
+    }
+
+    const buffer: Resource[] = [];
+    for (const array of resources.values()) {
+      let resource: Resource = array[0];
+      if (array.length > 1) {
+        const contents: Content[] = [];
+        for (const r of array) {
+          for (const c of r) contents.push(c);
+        }
+        resource = new Resource(resource.path, contents);
+      }
+
+      yield resource;
+      buffer.push(resource);
+    }
+
+    this.#buffer = buffer;
+    this.#merged = true;
   }
 
   /**
@@ -166,7 +200,7 @@ export class Pipeline implements AsyncIterable<Resource> {
    */
   union(pipeline: Pipeline): Pipeline {
     return new Pipeline(
-      () => concat(this, pipeline),
+      () => concat(this.getResources(), pipeline.getResources()),
       this.#resourcesMonitor ?? null,
     );
   }
@@ -180,7 +214,7 @@ export class Pipeline implements AsyncIterable<Resource> {
    */
   add(resource: Resource): Pipeline {
     return new Pipeline(
-      () => concat([resource], this),
+      () => concat([resource], this.getResources()),
       this.#resourcesMonitor ?? null,
     );
   }
@@ -218,7 +252,7 @@ export class Pipeline implements AsyncIterable<Resource> {
     }
 
     return new Pipeline(
-      () => concat(summary, this),
+      () => concat(summary, this.getResources()),
       this.#resourcesMonitor ?? null,
     );
   }
@@ -241,6 +275,13 @@ export class Pipeline implements AsyncIterable<Resource> {
         }
         return resources;
       },
+      this.#resourcesMonitor ?? null,
+    );
+  }
+
+  private mapWithoutMerge(transformer: ResourceTransformer): Pipeline {
+    return new Pipeline(
+      () => map(this.getResources(), transformer),
       this.#resourcesMonitor ?? null,
     );
   }
@@ -330,7 +371,7 @@ export class Pipeline implements AsyncIterable<Resource> {
    * @returns A distinct pipeline with `path`-transformed {@link Resource}s.
    */
   move(transformer: PathTransformer): Pipeline {
-    return this.map(move(transformer));
+    return this.mapWithoutMerge(move(transformer));
   }
 
   /**
@@ -352,7 +393,7 @@ export class Pipeline implements AsyncIterable<Resource> {
     transformer: ContentTransformer,
     criterion?: ContentCriterion,
   ): Pipeline {
-    return this.map(transform(transformer, criterion));
+    return this.mapWithoutMerge(transform(transformer, criterion));
   }
 
   /**
@@ -370,7 +411,7 @@ export class Pipeline implements AsyncIterable<Resource> {
     transformer: ContentTransformer,
     criterion?: ContentCriterion,
   ): Pipeline {
-    return this.map(diversify(transformer, criterion));
+    return this.mapWithoutMerge(diversify(transformer, criterion));
   }
 
   /**

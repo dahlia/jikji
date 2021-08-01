@@ -10,6 +10,9 @@ To be released.
 
  -  `Pipeline` became to merge its representations into the existing `Resource`
     when a `Resource` having duplicate `path` is added.
+ -  Added `ScanFilesOptions` interface in _file.ts_ module.
+ -  Removed the optional `mime` parameter from `scanFiles()`, and instead
+    `options` parameter became to have the optional `mime` field.
 
 
 Version 0.1.1

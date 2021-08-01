@@ -63,21 +63,30 @@ async function* scanResources(
 }
 
 /**
+ * Options for {@link scanFiles} function.
+ */
+export interface ScanFilesOptions extends ExpandGlobOptions {
+  /** Explicitly configure text encoding. */
+  encoding?: string;
+  /** An optional MIME object to recognize files' media types. */
+  mime?: Mime;
+}
+
+/**
  * Scans files matched to the glob patterns, and returns a pipeline of scanned
  * files.  Each file is represented as a {@link Resource} with a single content.
  *
  * Note that the returned {@link Pipeline} monitors files (included non-existent
  * files to be created) that match the `globs` patterns.
  * @param globs The glob patterns to scan files.
- * @param options Optional glob options and encoding option.
- * @param mime An optional MIME object to recognize files' media types.
+ * @param options Options.  See also {@link ScanFilesOptions}.
  * @returns A pipeline of scanned files.
  */
 export function scanFiles(
   globs: string[] | string,
-  options?: ExpandGlobOptions & { encoding?: string },
-  mime?: Mime,
+  options?: ScanFilesOptions,
 ): Pipeline {
+  const mime = options?.mime ?? defaultMime;
   const globArray = typeof globs == "string" ? [globs] : globs;
   const getResources = () => scanResources(globArray, options ?? {}, mime);
   const fixedDirs = globArray.map(getFixedDirFromGlob);

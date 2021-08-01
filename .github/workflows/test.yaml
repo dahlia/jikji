@@ -8,12 +8,19 @@ jobs:
         os: [macos-10.15, ubuntu-20.04, windows-2019]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    env:
+      OS: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
-      - run: deno test --allow-read --allow-write --allow-run --jobs=4
+      - run: deno test --allow-read --allow-write --allow-run --jobs=4 --coverage=.cov
+      - run: deno coverage --lcov .cov > .cov.lcov
+      - uses: codecov/codecov-action@v2
+        with:
+          files: .cov.lcov
+          env_vars: OS
   lint:
     runs-on: ubuntu-20.04
     steps:

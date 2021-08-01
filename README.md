@@ -7,6 +7,7 @@ Jikji: small static site generator toolkit
 [![Latest version][Tag badge]][Deno module]
 [![LGPL 3.0][License badge]](./LICENSE)
 [![GitHub Actions][GitHub Actions status badge]][GitHub Actions]
+[![Codecov][Codecov badge]][Codecov]
 
 Jikji is a small toolkit for building your own static site generators on [Deno].
 
@@ -26,6 +27,8 @@ Currently, it provides the below *composable building blocks*:
 [License badge]: https://img.shields.io/github/license/dahlia/jikji
 [GitHub Actions]: https://github.com/dahlia/jikji/actions/workflows/test.yaml
 [GitHub Actions status badge]: https://github.com/dahlia/jikji/actions/workflows/test.yaml/badge.svg
+[Codecov badge]: https://codecov.io/gh/dahlia/jikji/branch/main/graph/badge.svg?token=UBDX4Inrz6
+[Codecov]: https://codecov.io/gh/dahlia/jikji
 [Deno]: https://deno.land/
 [content negotiation]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation
 [markdown-it]: https://github.com/markdown-it/markdown-it

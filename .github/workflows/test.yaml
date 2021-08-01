@@ -15,6 +15,12 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
+      - if: "runner.os == 'Linux'"
+        run: sudo apt-get install -y sassc
+      - if: "runner.os == 'macOS'"
+        run: brew install sass/sass/sass
+      - if: "runner.os == 'Windows'"
+        run: choco install sass
       - run: deno test --allow-read --allow-write --allow-run --jobs=4 --coverage=.cov
       - run: deno coverage --lcov .cov > .cov.lcov
       - uses: codecov/codecov-action@v2
@@ -37,7 +43,7 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
-      - run: npm install -g sass
+      - run: sudo apt-get install -y sassc
       - run: |
           set -e
           cd examples/blog/

@@ -89,9 +89,9 @@ Building blocks that Jikji provides are based on the following concepts:
     representations for [content negotiation] on type and language.
  -  [`Content`] represents an actual content which can belong to `Resource`s
     as a representation.  The `ContentBody` can be lazily loaded and either
-    a Unicode text or binary data.  They are typed through IANA `MediaType`s
+    a Unicode text or binary data.  They are typed through IANA [`MediaType`s]
     (formerly known as MIME types).  Optionally, they can have their
-    RFC 5656 `LanguageTag` to describe their natural language.  If you want
+    RFC 5656 [`LanguageTag`] to describe their natural language.  If you want
     you can put additional `metadata` like `title` or `published` as well.
  -  [`ResourceTransformer`] transforms a `Resource` into a modified `Resource`.
     It purposes to change multiple `Resources` into new ones in immutable style
@@ -113,6 +113,8 @@ See also [API docs].
 [`Pipeline`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#Pipeline
 [`Resource`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#Resource
 [`Content`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#Content
+[`MediaType`s]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#MediaType
+[`LanguageTag`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#LanguageTag
 [`ResourceTransformer`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fpipeline.ts#ResourceTransformer
 [`PathTransformer`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fpipeline.ts#PathTransformer
 [`ContentTransformer`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fpipeline.ts#ContentTransformer

@@ -3,7 +3,7 @@
  * @license LGPL-3.0-only
  */
 export { Content, ContentKey, ContentKeyError } from "./content.ts";
-export { scanFiles, writeFiles } from "./file.ts";
+export { rebase, scanFiles, writeFiles } from "./file.ts";
 export { LanguageTag, LanguageTagError } from "./language_tag.ts";
 export { setupConsoleLog } from "./log.ts";
 export { MediaType, MediaTypeError } from "./media_type.ts";
@@ -21,7 +21,6 @@ export {
   extractFromUrl,
   havingExtension,
   intoDirectory,
-  rebase,
   removeBase,
   replaceBasename,
   when,

@@ -10,8 +10,10 @@ import {
   isAbsolute,
   isGlob,
   join,
+  resolve,
   sep,
   SEP_PATTERN,
+  toFileUrl,
 } from "https://deno.land/std@0.103.0/path/mod.ts";
 import {
   expandGlob,
@@ -24,11 +26,67 @@ import {
   MimeTypeMap,
 } from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
-import { rebase, relativePathToFileUrl } from "./path.ts";
-import { Content, Pipeline, Resource } from "./pipeline.ts";
+import { Content, PathTransformer, Pipeline, Resource } from "./pipeline.ts";
+import { rebase as rebaseUrl } from "./path.ts";
 
 function getLogger() {
   return log.getLogger("file");
+}
+
+/**
+ * Creates a path transformer which replace the `base` of the given URL or
+ * file path with a new base (`rebase`) with maintaining other parts.
+ *
+ * Designed to work with {@link Pipeline#move} method.
+ * @param base The base URL to be replaced.  This must end with a slash and
+ *             does not have any query string (`search`) or fragment (`hash`).
+ * @param rebase The URL to replace the `base` of the given URL.  This must
+ *               end with a slash and does not have any query string (`search`)
+ *               or fragment (`hash`).
+ * @returns A function to replace the `base` of the given URL with a new
+ *          base (`rebase`).
+ * @throws {TypeError} Thrown when the given `base`/`rebase` URL has search
+ *                     (query string) or hash (anchor), or its path does not
+ *                     end with a slash.
+ */
+export function rebase(
+  base: string | URL,
+  rebase: string | URL,
+): PathTransformer {
+  return rebaseUrl(
+    relativePathToFileUrl(base),
+    relativePathToFileUrl(rebase),
+  );
+}
+
+/**
+ * Similar to {@link toFileUrl} function, except that it takes relative paths
+ * besides absolute paths.
+ * @param path A file path to turn into a file URL.  If it is already
+ *             a {@link URL} instance, it is returned without any change.
+ * @returns A URL which corresponds to the given `path`.
+ */
+export function relativePathToFileUrl(path: string | URL) {
+  if (typeof path == "string") {
+    if (Deno.build.os !== "windows" || path.indexOf("\\") < 0) {
+      try {
+        return new URL(path);
+      } catch (e) {
+        if (!(e instanceof TypeError)) {
+          throw e;
+        }
+      }
+    }
+    const url = toFileUrl(isAbsolute(path) ? path : resolve(path));
+    if (
+      path.charAt(path.length - 1).match(SEP_PATTERN) &&
+      !url.pathname.endsWith("/")
+    ) {
+      url.pathname += "/";
+    }
+    return url;
+  }
+  return path;
 }
 
 async function* scanResources(

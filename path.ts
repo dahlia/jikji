@@ -2,12 +2,6 @@
  * @copyright 2021 Hong Minhee
  * @license LGPL-3.0-only
  */
-import {
-  isAbsolute,
-  resolve,
-  SEP_PATTERN,
-  toFileUrl,
-} from "https://deno.land/std@0.103.0/path/mod.ts";
 import { PathTransformer, Resource } from "./pipeline.ts";
 
 /**
@@ -127,79 +121,39 @@ export function intoDirectory(stripExtension = true): PathTransformer {
  *                     (query string) or hash (anchor), or its path does not
  *                     end with a slash.
  */
-export function rebase(
-  base: string | URL,
-  rebase: string | URL,
-): PathTransformer {
-  // FIXME: As this module is not file.ts, we should remove the assumption
-  // that a string means a file path.  We should instead a separate rebasePath()
-  // function in the fs.ts module.
-  const baseUrl = relativePathToFileUrl(base);
-  if (baseUrl.search !== "" || baseUrl.hash !== "") {
+export function rebase(base: URL, rebase: URL): PathTransformer {
+  if (base.search !== "" || base.hash !== "") {
     throw new TypeError(
       `The base URL must not have search (query string) or hash (anchor): ${
-        JSON.stringify(baseUrl.toString())
+        JSON.stringify(base.toString())
       }.`,
     );
-  } else if (!baseUrl.pathname.endsWith("/")) {
+  } else if (!base.pathname.endsWith("/")) {
     throw new TypeError(
-      `The base path/URL's path must end with a slash (/): ${
-        JSON.stringify(baseUrl.toString())
+      `The base URL's path must end with a slash (/): ${
+        JSON.stringify(base.toString())
       }.`,
     );
   }
-  const rebaseUrl = relativePathToFileUrl(rebase);
-  if (rebaseUrl.search !== "" || rebaseUrl.hash !== "") {
+  if (rebase.search !== "" || rebase.hash !== "") {
     throw new TypeError(
       `The rebase URL must not have search (query string) or hash (anchor): ${
-        JSON.stringify(rebaseUrl.toString())
+        JSON.stringify(rebase.toString())
       }.`,
     );
-  } else if (!rebaseUrl.pathname.endsWith("/")) {
+  } else if (!rebase.pathname.endsWith("/")) {
     throw new TypeError(
-      `The rebase path/URL's path must end with a slash (/): ${
-        JSON.stringify(rebaseUrl.toString())
+      `The rebase URL's path must end with a slash (/): ${
+        JSON.stringify(rebase.toString())
       }.`,
     );
   }
   return (path: URL) => {
-    if (!isBasedOn(path, baseUrl)) return path;
-    const pathname = path.pathname.substr(baseUrl.pathname.length) +
+    if (!isBasedOn(path, base)) return path;
+    const pathname = path.pathname.substr(base.pathname.length) +
       path.search + path.hash;
-    return new URL(pathname, rebaseUrl);
+    return new URL(pathname, rebase);
   };
-}
-
-/**
- * Similar to {@link toFileUrl} function, except that it takes relative paths
- * besides absolute paths.
- * @param path A file path to turn into a file URL.  If it is already
- *             a {@link URL} instance, it is returned without any change.
- * @returns A URL which corresponds to the given `path`.
- */
-export function relativePathToFileUrl(path: string | URL) {
-  // FIXME: As this module is not file.ts, we should move this function to
-  // the file.ts module.
-  if (typeof path == "string") {
-    if (Deno.build.os !== "windows" || path.indexOf("\\") < 0) {
-      try {
-        return new URL(path);
-      } catch (e) {
-        if (!(e instanceof TypeError)) {
-          throw e;
-        }
-      }
-    }
-    const url = toFileUrl(isAbsolute(path) ? path : resolve(path));
-    if (
-      path.charAt(path.length - 1).match(SEP_PATTERN) &&
-      !url.pathname.endsWith("/")
-    ) {
-      url.pathname += "/";
-    }
-    return url;
-  }
-  return path;
 }
 
 /**

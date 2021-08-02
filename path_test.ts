@@ -10,7 +10,6 @@ import {
   intoDirectory,
   isBasedOn,
   rebase,
-  relativePathToFileUrl,
   removeBase,
   replaceBasename,
   when,
@@ -21,12 +20,6 @@ import {
   assertEquals,
   assertThrows,
 } from "https://deno.land/std@0.103.0/testing/asserts.ts";
-import {
-  join,
-  resolve,
-  sep,
-  toFileUrl,
-} from "https://deno.land/std@0.103.0/path/mod.ts";
 
 Deno.test("identity()", () => {
   const p1 = new URL("https://example.com/foo/bar.php?baz=1#qux");
@@ -173,182 +166,38 @@ Deno.test("intoDirectory()", () => {
   );
 });
 
-Deno.test({
-  name: "rebase() [non-Windows]",
-  ignore: Deno.build.os === "windows",
-  fn() {
-    const r = rebase(
-      new URL("file:///tmp/foo/"),
-      new URL("http://example.com/"),
-    );
-    const r2 = rebase("/tmp/foo/", "/home/me/");
-    assertEquals(
-      r(new URL("file:///tmp/foo/index.html")),
-      new URL("http://example.com/index.html"),
-    );
-    assertEquals(
-      r2(new URL("file:///tmp/foo/index.html")),
-      new URL("file:///home/me/index.html"),
-    );
-    assertEquals(
-      r(new URL("file:///tmp/foo/bar/index.html")),
-      new URL("http://example.com/bar/index.html"),
-    );
-    assertEquals(
-      r2(new URL("file:///tmp/foo/bar/index.html")),
-      new URL("file:///home/me/bar/index.html"),
-    );
-
-    const r3 = rebase("foo/bar/", "baz/qux/");
-    assertEquals(
-      r3(toFileUrl(resolve("foo/bar/abc.txt"))),
-      toFileUrl(resolve("baz/qux/abc.txt")),
-    );
-
-    // If the input is not on the base it returns the input without change.
-    assertEquals(
-      r(new URL("file:///tmp/bar/index.html")),
-      new URL("file:///tmp/bar/index.html"),
-    );
-    assertEquals(
-      r2(new URL("file:///tmp/bar/index.html")),
-      new URL("file:///tmp/bar/index.html"),
-    );
-
-    // Throws TypeError if base URL does not end with a slash.
-    assertThrows(
-      () => rebase(new URL("file:///tmp/foo"), new URL("https://example.com/")),
-      TypeError,
-      "must end with a slash",
-    );
-    assertThrows(
-      () => rebase("./foo", new URL("https://example.com/")),
-      TypeError,
-      "must end with a slash",
-    );
-
-    // Throws TypeError if rebase URL does not end with a slash.
-    assertThrows(
-      () =>
-        rebase(new URL("file:///tmp/foo/"), new URL("https://example.com/x")),
-      TypeError,
-      "must end with a slash",
-    );
-    assertThrows(
-      () => rebase(new URL("file:///tmp/foo/"), "./foo"),
-      TypeError,
-      "must end with a slash",
-    );
-  },
-});
-
-Deno.test({
-  name: "rebase() [Windows]",
-  ignore: Deno.build.os !== "windows",
-  fn() {
-    const r = rebase(
-      new URL("file:///C:/temp/foo/"),
-      new URL("http://example.com/"),
-    );
-    const r2 = rebase("C:\\temp\\foo\\", "C:\\Users\\me\\");
-    assertEquals(
-      r(new URL("file:///C:/temp/foo/index.html")),
-      new URL("http://example.com/index.html"),
-    );
-    assertEquals(
-      r2(new URL("file:///C:/temp/foo/index.html")),
-      new URL("file:///C:/Users/me/index.html"),
-    );
-    assertEquals(
-      r(new URL("file:///C:/temp/foo/bar/index.html")),
-      new URL("http://example.com/bar/index.html"),
-    );
-    assertEquals(
-      r2(new URL("file:///C:/temp/foo/bar/index.html")),
-      new URL("file:///C:/Users/me/bar/index.html"),
-    );
-
-    const r3 = rebase("foo\\bar\\", "baz\\qux\\");
-    assertEquals(
-      r3(toFileUrl(resolve("foo\\bar\\abc.txt"))),
-      toFileUrl(resolve("baz\\qux\\abc.txt")),
-    );
-
-    // If the input is not on the base it returns the input without change.
-    assertEquals(
-      r(new URL("file:///C:/temp/bar/index.html")),
-      new URL("file:///C:/temp/bar/index.html"),
-    );
-    assertEquals(
-      r2(new URL("file:///C:/temp/bar/index.html")),
-      new URL("file:///C:/temp/bar/index.html"),
-    );
-
-    // Throws TypeError if base URL does not end with a slash.
-    assertThrows(
-      () =>
-        rebase(
-          new URL("file:///C:/temp/foo"),
-          new URL("https://example.com/"),
-        ),
-      TypeError,
-      "must end with a slash",
-    );
-    assertThrows(
-      () => rebase(".\\foo", new URL("https://example.com/")),
-      TypeError,
-      "must end with a slash",
-    );
-
-    // Throws TypeError if rebase URL does not end with a slash.
-    assertThrows(
-      () =>
-        rebase(
-          new URL("file:///C:/temp/foo/"),
-          new URL("https://example.com/x"),
-        ),
-      TypeError,
-      "must end with a slash",
-    );
-    assertThrows(
-      () => rebase(new URL("file:///C:/temp/foo/"), ".\\foo"),
-      TypeError,
-      "must end with a slash",
-    );
-  },
-});
-
-Deno.test("relativePathToFileUrl()", () => {
-  assertEquals(
-    relativePathToFileUrl(join("foo", "bar")),
-    toFileUrl(resolve(join("foo", "bar"))),
+Deno.test("rebase()", () => {
+  const r = rebase(
+    new URL("file:///tmp/foo/"),
+    new URL("http://example.com/"),
   );
   assertEquals(
-    relativePathToFileUrl("foo" + sep),
-    toFileUrl(resolve("foo") + sep),
+    r(new URL("file:///tmp/foo/index.html")),
+    new URL("http://example.com/index.html"),
   );
-  if (Deno.build.os === "windows") {
-    assertEquals(
-      relativePathToFileUrl("C:\\foo\\bar"),
-      new URL("file:///C:/foo/bar"),
-    );
-    assertEquals(
-      relativePathToFileUrl("C:\\foo\\bar\\"),
-      new URL("file:///C:/foo/bar/"),
-    );
-  } else {
-    assertEquals(
-      relativePathToFileUrl("/foo/bar"),
-      new URL("file:///foo/bar"),
-    );
-    assertEquals(
-      relativePathToFileUrl("/foo/bar/"),
-      new URL("file:///foo/bar/"),
-    );
-  }
   assertEquals(
-    relativePathToFileUrl(new URL("https://example/com/")),
-    new URL("https://example/com/"),
+    r(new URL("file:///tmp/foo/bar/index.html")),
+    new URL("http://example.com/bar/index.html"),
+  );
+
+  // If the input is not on the base it returns the input without change.
+  assertEquals(
+    r(new URL("file:///tmp/bar/index.html")),
+    new URL("file:///tmp/bar/index.html"),
+  );
+
+  // Throws TypeError if base URL does not end with a slash.
+  assertThrows(
+    () => rebase(new URL("file:///tmp/foo"), new URL("https://example.com/")),
+    TypeError,
+    "must end with a slash",
+  );
+
+  // Throws TypeError if rebase URL does not end with a slash.
+  assertThrows(
+    () => rebase(new URL("file:///tmp/foo/"), new URL("https://example.com/x")),
+    TypeError,
+    "must end with a slash",
   );
 });
 

@@ -13,6 +13,12 @@ To be released.
  -  Added `ScanFilesOptions` interface in _file.ts_ module.
  -  Removed the optional `mime` parameter from `scanFiles()`, and instead
     `options` parameter became to have the optional `mime` field.
+ -  Moved `relativePathToFileUrl()` function from _path.ts_ module to
+    _file.ts_ module.
+ -  Changed `rebase()` function's signature so that it does not take
+    strings anymore but only `URL` objects.
+ -  Added `rebase()` function, which takes both `URL`s and strings,
+    to _file.ts_ module.
 
 
 Version 0.1.1

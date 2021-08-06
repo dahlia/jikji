@@ -2,7 +2,8 @@
  * @copyright 2021 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { PathTransformer, Resource } from "./pipeline.ts";
+import { LanguageTag, LanguageTagError } from "./language_tag.ts";
+import { PathTransformer, Resource, ResourceTransformer } from "./pipeline.ts";
 
 /**
  * An identity {@link PathTransformer} that does nothing.
@@ -325,4 +326,109 @@ export function extractFromPath<T>(
   } else {
     return extractFromUrl(path, pattern, { base: options.base });
   }
+}
+
+/**
+ * Options for {@link detectLanguage} function to extract language from
+ * a URL path.
+ */
+export interface DetectLanguagePathnameOptions {
+  /** Indicates that the language is extracted from the pathname. */
+  from: "pathname";
+  /**
+   * The pattern to find a language tag in the pathname. The captured group
+   * #1 (not the #0) is used to extract the language tag.  The whole matched
+   * range is stripped from the pathname if `strip` is `true`.  If there is
+   * no capture group or the captured group #1 is not a valid language tag,
+   * the transformer does nothing and returns the {@link Resource} unchanged.
+   * By default, the pattern matches to the language tag right before the
+   * file extension, e.g., `en` from `foo/bar.en.html`.
+   */
+  pattern?: RegExp;
+  /**
+   * Whether to strip the matched language tag from the pathname.
+   * @default false
+   */
+  strip?: boolean;
+}
+
+/***
+ * Options for {@link detectLanguage} function to extract language from
+ * a URL query string.
+ */
+export interface DetectLanguageSearchParamsOptions {
+  /** Indicates that the language is extracted from the query string. */
+  from: "searchParams";
+  /** The query parameter name to extract language tag from. */
+  param: string;
+  /**
+   * Whether to strip the query parameter from the URL.
+   * @default false
+   */
+  strip?: boolean;
+}
+
+/**
+ * Options for {@link detectLanguage} function.
+ *
+ * Can be either {@link DetectLanguagePathnameOptions} or
+ * {@link DetectLanguageSearchParamsOptions}.
+ */
+export type DetectLanguageOptions =
+  | DetectLanguagePathnameOptions
+  | DetectLanguageSearchParamsOptions;
+
+/**
+ * Creates a {@link ResourceTransformer} that detects the language of the given
+ * {@link Resource} from its path, and configures their contents' language to
+ * the detected language.  If detection fails, the transformer does nothing
+ * and returns the given {@link Resource} unchanged.
+ * @param options Options.  See {@link DetectLanguageOptions} for details.
+ * @returns A {@link ResourceTransformer} that detects the language of the given
+ *          {@link Resource} from its path, and configures their contents'
+ *         language to the detected language.
+ */
+export function detectLanguage(
+  options: DetectLanguageOptions = { from: "pathname" },
+): ResourceTransformer {
+  const strip = options.strip ?? false;
+  function setLanguage(
+    resource: Resource,
+    strippedPath: URL,
+    language?: string | null,
+  ): Resource {
+    if (language == null) return resource;
+    let languageTag;
+    try {
+      languageTag = LanguageTag.fromString(language);
+    } catch (e) {
+      if (e instanceof LanguageTagError) return resource;
+      throw e;
+    }
+    const contents = [];
+    for (const r of resource) {
+      contents.push(r.replace({ language: languageTag }));
+    }
+    return new Resource(strip ? strippedPath : resource.path, contents);
+  }
+
+  if (options.from == "pathname") {
+    const pattern = options.pattern ??
+      /\.([A-Za-z]{2,3}([-_][A-Za-z]{4})?([-_][A-Za-z]{2,3})?)(?=\.[^.]+$)/;
+    return (resource: Resource): Resource => {
+      const path = resource.path;
+      const result = pattern.exec(path.pathname);
+      if (result == null || result[1] == null) return resource;
+      path.pathname = path.pathname.substr(0, result.index) +
+        path.pathname.substr(result.index + result[0].length);
+      return setLanguage(resource, path, result[1].replace("_", "-"));
+    };
+  }
+
+  return (resource: Resource): Resource => {
+    const path = resource.path;
+    const language = path.searchParams.get(options.param);
+    path.searchParams.delete(options.param);
+    return setLanguage(resource, path, language);
+  };
 }

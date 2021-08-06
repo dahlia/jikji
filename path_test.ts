@@ -3,6 +3,7 @@
  * @license LGPL-3.0-only
  */
 import {
+  detectLanguage,
   extractFromPath,
   extractFromUrl,
   havingExtension,
@@ -20,6 +21,7 @@ import {
   assertEquals,
   assertThrows,
 } from "https://deno.land/std@0.103.0/testing/asserts.ts";
+import { assertEquals$ } from "./asserts.ts";
 
 Deno.test("identity()", () => {
   const p1 = new URL("https://example.com/foo/bar.php?baz=1#qux");
@@ -377,5 +379,96 @@ Deno.test("extractFromPath()", () => {
         match == null ? -1 : parseInt(match[1]),
     }),
     123,
+  );
+});
+
+Deno.test("detectLanguage({ from: 'pathname' })", async () => {
+  const d = new Date();
+  const input = new Resource(
+    "file:///tmp/foo/bar.ko-Hang-KP.html",
+    [
+      new Content("", "text/html", null, d),
+      new Content("", "application/xhtml+xml", "en", d),
+    ],
+  );
+  const expected = new Resource(
+    "file:///tmp/foo/bar.ko-Hang-KP.html",
+    [
+      new Content("", "text/html", "ko-Hang-KP", d),
+      new Content("", "application/xhtml+xml", "ko-Hang-KP", d),
+    ],
+  );
+  const pattern2 = /\b(ko)-Hang-KP\.(?=html$)/;
+  const expected2 = new Resource(
+    "file:///tmp/foo/bar.ko-Hang-KP.html",
+    [
+      new Content("", "text/html", "ko", d),
+      new Content("", "application/xhtml+xml", "ko", d),
+    ],
+  );
+  for (
+    const options of [
+      { from: "pathname" as const, strip: false },
+      { from: "pathname" as const },
+      undefined,
+    ]
+  ) {
+    const noStrip = detectLanguage(options);
+    await assertEquals$(noStrip(input), expected);
+    if (options != null) {
+      const noStrip2 = detectLanguage({ ...options, pattern: pattern2 });
+      await assertEquals$(noStrip2(input), expected2);
+    }
+  }
+  for (
+    const [pattern, expectedResult] of [
+      [pattern2, expected2],
+      [undefined, expected],
+    ] as [RegExp, Resource][]
+  ) {
+    const strip = detectLanguage({
+      from: "pathname",
+      strip: true,
+      pattern,
+    });
+    await assertEquals$(
+      strip(input),
+      new Resource("file:///tmp/foo/bar.html", expectedResult),
+    );
+  }
+});
+
+Deno.test("detectLanguage({ from: 'searchParams' })", async () => {
+  const d = new Date();
+  const input = new Resource(
+    "https://example.com/foo/?lang=zh-hant-hk",
+    [
+      new Content("", "text/html", null, d),
+      new Content("", "text/plain", "en", d),
+    ],
+  );
+  const expected = new Resource(
+    "https://example.com/foo/?lang=zh-hant-hk",
+    [
+      new Content("", "text/html", "zh-Hant-HK", d),
+      new Content("", "text/plain", "zh-Hant-HK", d),
+    ],
+  );
+  for (const optionValue of [false, undefined]) {
+    const noStrip = detectLanguage({
+      from: "searchParams",
+      param: "lang",
+      strip: optionValue,
+    });
+    await assertEquals$(noStrip(input), expected);
+  }
+  const strip = detectLanguage({
+    from: "searchParams",
+    param: "lang",
+    strip: true,
+  });
+  await assertEquals$(
+    strip(input),
+    new Resource("https://example.com/foo/", expected),
   );
 });

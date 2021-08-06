@@ -19,6 +19,9 @@ To be released.
     strings anymore but only `URL` objects.
  -  Added `rebase()` function, which takes both `URL`s and strings,
     to _file.ts_ module.
+ -  Added `detectLanguage()` function, `DetectLanguageOptions` type,
+    `DetectLanguagePathnameOptions` interface, and
+    `DetectLanguageSearchParamsOptions` interface to _path.ts_ module.
 
 
 Version 0.1.1

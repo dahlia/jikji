@@ -122,6 +122,18 @@ Deno.test("Resource#add()", async () => {
   assertThrows(() => r.add(c), ContentKeyError);
 });
 
+Deno.test("Resource#keys()", async () => {
+  await assertEquals$(
+    fixture.keys(),
+    new Set([
+      ContentKey.get("text/plain; charset=utf8", "en"),
+      ContentKey.get("text/html; charset=utf8", "en"),
+      ContentKey.get("text/plain; charset=utf8", "ko"),
+      ContentKey.get("text/html; charset=utf8", "ko"),
+    ]),
+  );
+});
+
 Deno.test("Resource#move()", async () => {
   const bar = fixture.move(new URL("file:///tmp/site/bar.txt"));
   assertEquals(bar.path, new URL("file:///tmp/site/bar.txt"));

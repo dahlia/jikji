@@ -109,6 +109,14 @@ export class Resource implements Iterable<Content> {
   }
 
   /**
+   * Gets the set of all {@link ContentKey}s in the resource.
+   * @returns The set of all {@link ContentKey}s.
+   */
+  keys(): Set<ContentKey> {
+    return new Set(this.#representations.keys());
+  }
+
+  /**
    * Changes the {@link Resource}'s path.  Note that it does not manipulate
    * in place, but returns a distinct {@link Resource} instance with the new
    * `path`.

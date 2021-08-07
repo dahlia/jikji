@@ -25,6 +25,7 @@ To be released.
  -  Renamed `Resource#hasRepresentation()` method to `has()`.
  -  Renamed `Resource#getRepresentation()` method to `get()`.
  -  Renamed `Resource#addRepresentation()` method to `add()`.
+ -  Added `Resource#keys()` method.
 
 
 Version 0.1.1

@@ -24,6 +24,7 @@ To be released.
     `DetectLanguageSearchParamsOptions` interface to _path.ts_ module.
  -  Renamed `Resource#hasRepresentation()` method to `has()`.
  -  Renamed `Resource#getRepresentation()` method to `get()`.
+ -  Renamed `Resource#addRepresentation()` method to `add()`.
 
 
 Version 0.1.1

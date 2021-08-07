@@ -570,9 +570,7 @@ Deno.test("diversify()", async () => {
   const r3 = addContentsEndingWith$ToResource(r);
   await assertEquals$(
     r3,
-    r.addRepresentation(
-      md.replace({ type: "text/markdown; transformed=1", body: "bar$" }),
-    ),
+    r.add(md.replace({ type: "text/markdown; transformed=1", body: "bar$" })),
   );
 
   const addContentsEndingWith$ToResource2 = diversify(
@@ -599,13 +597,9 @@ Deno.test("Pipeline#diversify()", async () => {
     { type: "text/plain" },
   );
   await assertEquals$(await toArray(p2), [
-    resources[0].addRepresentation(
-      new Content("foo$", "text/markdown", null, d),
-    ),
+    resources[0].add(new Content("foo$", "text/markdown", null, d)),
     resources[1],
-    resources[2].addRepresentation(
-      new Content("baz$", "text/markdown", null, d),
-    ),
+    resources[2].add(new Content("baz$", "text/markdown", null, d)),
   ]);
 });
 

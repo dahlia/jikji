@@ -114,12 +114,12 @@ Deno.test("Resource#get()", async () => {
   assertStrictEquals(fixture.get(ContentKey.get("text/html", "ko")), null);
 });
 
-Deno.test("Resource#addRepresentation()", async () => {
+Deno.test("Resource#add()", async () => {
   const c = new Content("甲", "text/plain; charset=utf-8", "zh", new Date(1));
-  const r = fixture.addRepresentation(c);
+  const r = fixture.add(c);
   await assertEquals$(r, new Resource(r.path, [...fixture, c]));
 
-  assertThrows(() => r.addRepresentation(c), ContentKeyError);
+  assertThrows(() => r.add(c), ContentKeyError);
 });
 
 Deno.test("Resource#move()", async () => {

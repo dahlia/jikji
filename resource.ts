@@ -104,7 +104,7 @@ export class Resource implements Iterable<Content> {
    * @throws {ContentKeyError} Thrown when there is a duplicate key of
    *         the given `representation` in the existing `representations`.
    */
-  addRepresentation(representation: Content): Resource {
+  add(representation: Content): Resource {
     return new Resource(this.#path, [...this, representation]);
   }
 

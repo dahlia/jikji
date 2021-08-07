@@ -91,39 +91,27 @@ Deno.test("Resource#has()", () => {
   assert(!fixture.has(ContentKey.get("text/html", "ko")));
 });
 
-Deno.test("Resource#getRepresentation()", async () => {
+Deno.test("Resource#get()", async () => {
   await assertEquals$(
-    fixture.getRepresentation(ContentKey.get("text/plain; charset=utf8", "en")),
+    fixture.get(ContentKey.get("text/plain; charset=utf8", "en")),
     new Content("Foo", "text/plain; charset=utf8", "en", new Date(0)),
   );
   await assertEquals$(
-    fixture.getRepresentation(ContentKey.get("text/html; charset=utf8", "en")),
+    fixture.get(ContentKey.get("text/html; charset=utf8", "en")),
     new Content("<h1>foo</h1>", "text/html; charset=utf8", "en", new Date(0)),
   );
   await assertEquals$(
-    fixture.getRepresentation(ContentKey.get("text/plain; charset=utf8", "ko")),
+    fixture.get(ContentKey.get("text/plain; charset=utf8", "ko")),
     new Content("푸", "text/plain; charset=utf8", "ko", new Date(0)),
   );
   await assertEquals$(
-    fixture.getRepresentation(ContentKey.get("text/html; charset=utf8", "ko")),
+    fixture.get(ContentKey.get("text/html; charset=utf8", "ko")),
     new Content("<h1>푸</h1>", "text/html; charset=utf8", "ko", new Date(0)),
   );
-  assertStrictEquals(
-    fixture.getRepresentation(ContentKey.get("text/plain", "en")),
-    null,
-  );
-  assertStrictEquals(
-    fixture.getRepresentation(ContentKey.get("text/html", "en")),
-    null,
-  );
-  assertStrictEquals(
-    fixture.getRepresentation(ContentKey.get("text/plain", "ko")),
-    null,
-  );
-  assertStrictEquals(
-    fixture.getRepresentation(ContentKey.get("text/html", "ko")),
-    null,
-  );
+  assertStrictEquals(fixture.get(ContentKey.get("text/plain", "en")), null);
+  assertStrictEquals(fixture.get(ContentKey.get("text/html", "en")), null);
+  assertStrictEquals(fixture.get(ContentKey.get("text/plain", "ko")), null);
+  assertStrictEquals(fixture.get(ContentKey.get("text/html", "ko")), null);
 });
 
 Deno.test("Resource#addRepresentation()", async () => {

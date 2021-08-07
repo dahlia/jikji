@@ -88,7 +88,7 @@ export class Resource implements Iterable<Content> {
    * @returns The content if the resource has a representation.
    *          Otherwise `null`.
    */
-  getRepresentation(key: ContentKey): Content | null {
+  get(key: ContentKey): Content | null {
     return this.#representations.get(key) ?? null;
   }
 

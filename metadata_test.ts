@@ -98,7 +98,7 @@ Deno.test("sortResources()", async () => {
   const sortedByBody = await sortResources(
     Object.values(resources),
     async (r) =>
-      await r.getRepresentation(ContentKey.get("text/plain; charset=utf-8"))!
+      await r.get(ContentKey.get("text/plain; charset=utf-8"))!
         .getBody() as string,
   );
   assertEquals$(

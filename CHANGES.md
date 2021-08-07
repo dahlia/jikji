@@ -22,6 +22,7 @@ To be released.
  -  Added `detectLanguage()` function, `DetectLanguageOptions` type,
     `DetectLanguagePathnameOptions` interface, and
     `DetectLanguageSearchParamsOptions` interface to _path.ts_ module.
+ -  Renamed `Resource#hasRepresentation()` method to `has()`.
 
 
 Version 0.1.1

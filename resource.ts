@@ -78,7 +78,7 @@ export class Resource implements Iterable<Content> {
    * @param key The content key to negotiate.
    * @returns `true` if the resource has it.  Otherwise `false`.
    */
-  hasRepresentation(key: ContentKey): boolean {
+  has(key: ContentKey): boolean {
     return this.#representations.has(key);
   }
 
@@ -89,7 +89,7 @@ export class Resource implements Iterable<Content> {
    *          Otherwise `null`.
    */
   getRepresentation(key: ContentKey): Content | null {
-    return this.#representations.get(key) || null;
+    return this.#representations.get(key) ?? null;
   }
 
   /**

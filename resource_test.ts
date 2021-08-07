@@ -80,23 +80,15 @@ Deno.test("Resource#size", () => {
   }
 });
 
-Deno.test("Resource#hasRepresentation()", () => {
-  assert(
-    fixture.hasRepresentation(ContentKey.get("text/plain; charset=utf8", "en")),
-  );
-  assert(
-    fixture.hasRepresentation(ContentKey.get("text/html; charset=utf8", "en")),
-  );
-  assert(
-    fixture.hasRepresentation(ContentKey.get("text/plain; charset=utf8", "ko")),
-  );
-  assert(
-    fixture.hasRepresentation(ContentKey.get("text/html; charset=utf8", "ko")),
-  );
-  assert(!fixture.hasRepresentation(ContentKey.get("text/plain", "en")));
-  assert(!fixture.hasRepresentation(ContentKey.get("text/html", "en")));
-  assert(!fixture.hasRepresentation(ContentKey.get("text/plain", "ko")));
-  assert(!fixture.hasRepresentation(ContentKey.get("text/html", "ko")));
+Deno.test("Resource#has()", () => {
+  assert(fixture.has(ContentKey.get("text/plain; charset=utf8", "en")));
+  assert(fixture.has(ContentKey.get("text/html; charset=utf8", "en")));
+  assert(fixture.has(ContentKey.get("text/plain; charset=utf8", "ko")));
+  assert(fixture.has(ContentKey.get("text/html; charset=utf8", "ko")));
+  assert(!fixture.has(ContentKey.get("text/plain", "en")));
+  assert(!fixture.has(ContentKey.get("text/html", "en")));
+  assert(!fixture.has(ContentKey.get("text/plain", "ko")));
+  assert(!fixture.has(ContentKey.get("text/html", "ko")));
 });
 
 Deno.test("Resource#getRepresentation()", async () => {

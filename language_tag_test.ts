@@ -220,6 +220,33 @@ Deno.test("LanguageTag#reduce()", () => {
   assertEquals([...enLatnUS.reduce(true)], [enLatnUS, enLatn, enUS, en]);
 });
 
+const scriptNames: Record<string, Record<string, string>> = {
+  "en-Latn-US": {
+    "Latn": "Latin",
+    "Hang": "Hangul",
+    "Hant": "Traditional",
+  },
+  "ko": {
+    "Latn": "로마자",
+    "Hang": "한글",
+    "Hant": "번체",
+  },
+  "zh-Hant-TW": {
+    "Latn": "拉丁文",
+    "Hang": "韓文字",
+    "Hant": "繁體",
+  },
+};
+
+for (const [tag, expected] of Object.entries(scriptNames)) {
+  Deno.test(`LanguageTag#getScriptName() [${tag}]`, async () => {
+    const lang = LanguageTag.fromString(tag);
+    for (const [script, expectedName] of Object.entries(expected)) {
+      assertEquals(await lang.getScriptName(script), expectedName);
+    }
+  });
+}
+
 Deno.test("LanguageTag#toString()", () => {
   assertEquals(LanguageTag.get("ZH").toString(), "zh");
   assertEquals(LanguageTag.get("ZH", "hant").toString(), "zh-Hant");

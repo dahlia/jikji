@@ -34,7 +34,7 @@ export class LanguageTag {
     this.language = language.toLowerCase();
     this.script = script?.toLowerCase() || null;
     this.region = region?.toLowerCase() || null;
-    Object.freeze(this);
+    this.#cldrData = {};
   }
 
   private static readonly interns: Record<string, LanguageTag> = {};
@@ -128,6 +128,66 @@ export class LanguageTag {
         }
       }
     }
+  }
+
+  static readonly #CLDR_URL_BASE =
+    "https://cdn.skypack.dev/cldr-localenames-full/main/";
+  #cldrTag?: string;
+
+  private *tryCldrUrls(file: string): Iterable<string> {
+    const base = LanguageTag.#CLDR_URL_BASE.replace(/\/$/, "");
+    if (this.#cldrTag != null) {
+      yield `${base}/${this.#cldrTag}/${file}`;
+      return;
+    }
+
+    for (const l of this.reduce(true)) {
+      this.#cldrTag = l.toString();
+      yield `${base}/${this.#cldrTag}/${file}`;
+    }
+  }
+
+  #cldrData: Record<string, Record<string, unknown>>;
+
+  private async fetchCldr(file: string): Promise<Record<string, unknown>> {
+    if (this.#cldrData[file] != null) return this.#cldrData[file];
+
+    let data: Record<string, unknown> | undefined;
+    for (const url of this.tryCldrUrls(file)) {
+      try {
+        const response = await fetch(url);
+        const json = await response.json();
+        data = json.main[this.#cldrTag ?? ""].localeDisplayNames;
+        break;
+      } catch {
+        continue;
+      }
+    }
+
+    if (data == null) {
+      throw new LanguageTagError(
+        "There is no Unicode CLDR sheet for the language tag: " +
+          `${this.toString()}.`,
+      );
+    }
+
+    this.#cldrData[file] = data;
+    return data;
+  }
+
+  /**
+   * Looks up the display name of the given `script` for the given language
+   * from the Unicode CLDR data.
+   * @param script The script to look up.  The script must be a valid
+   *               ISO 15924 code.
+   * @returns The display name of the script, or `null` if it is unavailable
+   *          from the Unicode CLDR data.
+   */
+  async getScriptName(script: string): Promise<string | null> {
+    script = script[0].toUpperCase() + script.substr(1).toLowerCase();
+    const data = await this.fetchCldr("scripts.json");
+    const scripts = data?.scripts as Record<string, string> | undefined;
+    return scripts?.[script] ?? null;
   }
 
   /**

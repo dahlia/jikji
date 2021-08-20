@@ -26,6 +26,7 @@ To be released.
  -  Renamed `Resource#getRepresentation()` method to `get()`.
  -  Renamed `Resource#addRepresentation()` method to `add()`.
  -  Added `LanguageTag#reduce()` method.
+ -  Added `LanguageTag#getTerritoryName()` method.
  -  Added `LanguageTag#getScriptName()` method.
  -  Added `Resource#keys()` method.
 

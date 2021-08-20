@@ -176,6 +176,21 @@ export class LanguageTag {
   }
 
   /**
+   * Looks up the display name of the given `territory` for the given language
+   * from the Unicode CLDR data.
+   * @param territory The territory to look up.  The territory must be a valid
+   *                  ISO 3166-1 alpha-2 code.
+   * @returns The display name of the territory.  If the territory is not found,
+   *          `null` is returned.
+   */
+  async getTerritoryName(territory: string): Promise<string | null> {
+    territory = territory.toUpperCase();
+    const data = await this.fetchCldr("territories.json");
+    const territories = data.territories as Record<string, string> | undefined;
+    return territories?.[territory] ?? null;
+  }
+
+  /**
    * Looks up the display name of the given `script` for the given language
    * from the Unicode CLDR data.
    * @param script The script to look up.  The script must be a valid

@@ -220,6 +220,33 @@ Deno.test("LanguageTag#reduce()", () => {
   assertEquals([...enLatnUS.reduce(true)], [enLatnUS, enLatn, enUS, en]);
 });
 
+const territoryNames: Record<string, Record<string, string>> = {
+  "en-Latn-US": {
+    "CN": "China",
+    "KR": "South Korea",
+    "US": "United States",
+  },
+  "ko": {
+    "CN": "중국",
+    "KR": "대한민국",
+    "US": "미국",
+  },
+  "zh-Hant-TW": {
+    "CN": "中國",
+    "KR": "南韓",
+    "US": "美國",
+  },
+};
+
+for (const [tag, expected] of Object.entries(territoryNames)) {
+  Deno.test(`LanguageTag#getTerritoryName() [${tag}]`, async () => {
+    const lang = LanguageTag.fromString(tag);
+    for (const [territory, expectedName] of Object.entries(expected)) {
+      assertEquals(await lang.getTerritoryName(territory), expectedName);
+    }
+  });
+}
+
 const scriptNames: Record<string, Record<string, string>> = {
   "en-Latn-US": {
     "Latn": "Latin",

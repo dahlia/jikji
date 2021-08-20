@@ -176,7 +176,98 @@ export class LanguageTag {
   }
 
   /**
-   * Looks up the display name of the given `territory` for the given language
+   * Looks up the display name for the given language tag in this language
+   * from the Unicode CLDR data.
+   * @param language The language tag to look up.
+   * @returns The display name for the given language tag.  If the given
+   *          language tag is not found, `null` is returned.
+   */
+  async getLanguageName(
+    language: string | LanguageTag,
+  ): Promise<string | null> {
+    language = typeof language == "string"
+      ? LanguageTag.fromString(language)
+      : language;
+    const data = await this.fetchCldr("languages.json");
+    const languages = data.languages as Record<string, string> | undefined;
+    if (languages == null) return null;
+
+    type Pattern =
+      | "localePattern"
+      | "localeSeparator"
+      | "localeKeyTypePattern";
+    const localeDisplayPattern = async (): Promise<Record<Pattern, string>> => {
+      const data = await this.fetchCldr("localeDisplayNames.json");
+      return data.localeDisplayPattern as Record<Pattern, string>;
+    };
+    function replace(pattern: string, a?: string, b?: string): string {
+      return pattern.replace(
+        /\{[01]\}/g,
+        (p) => p === "{0}" ? `${a}` : `${b}`,
+      );
+    }
+
+    let languageName: string | null = null;
+    for (const reduced of language.reduce(true)) {
+      const name = languages[reduced.toString()];
+      if (name == null) continue;
+
+      languageName = name;
+      if (reduced == language) break;
+
+      let variants: [] | [string] | [string, string] = [];
+      if (language.region != null && reduced.region != language.region) {
+        const territory = await this.getTerritoryName(language.region);
+        if (territory != null) variants = [territory];
+      }
+      if (language.script != null && reduced.script != language.script) {
+        const script = await this.getScriptName(language.script);
+        if (script != null) variants = [script, ...variants];
+      }
+
+      const pattern = (await localeDisplayPattern()).localePattern;
+      const generalName = languages[reduced.language];
+      if (reduced.region != null) {
+        const regionName = await this.getTerritoryName(reduced.region);
+        if (
+          regionName != null &&
+          languageName === replace(pattern, generalName, regionName)
+        ) {
+          languageName = generalName;
+          variants = variants[0] != null
+            ? [variants[0], regionName]
+            : [regionName];
+        }
+      } else if (reduced.script != null) {
+        const scriptName = await this.getScriptName(reduced.script);
+        if (
+          scriptName != null &&
+          languageName === replace(pattern, generalName, scriptName)
+        ) {
+          languageName = generalName;
+          variants = variants[0] != null
+            ? [scriptName, variants[0]]
+            : [scriptName];
+        }
+      }
+
+      if (variants.length == 2) {
+        const separator = (await localeDisplayPattern()).localeSeparator;
+        variants = [replace(separator, ...variants)];
+      }
+
+      if (variants.length == 1) {
+        languageName = replace(pattern, languageName, variants[0]);
+      }
+
+      break;
+    }
+
+    return languageName;
+  }
+
+  /**
+   * Looks up the display name of the given `territory` in this language
    * from the Unicode CLDR data.
    * @param territory The territory to look up.  The territory must be a valid
    *                  ISO 3166-1 alpha-2 code.
@@ -191,7 +282,7 @@ export class LanguageTag {
   }
 
   /**
-   * Looks up the display name of the given `script` for the given language
+   * Looks up the display name of the given `script` in this language
    * from the Unicode CLDR data.
    * @param script The script to look up.  The script must be a valid
    *               ISO 15924 code.

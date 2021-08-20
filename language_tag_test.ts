@@ -220,6 +220,46 @@ Deno.test("LanguageTag#reduce()", () => {
   assertEquals([...enLatnUS.reduce(true)], [enLatnUS, enLatn, enUS, en]);
 });
 
+const languageNames: Record<string, Record<string, string>> = {
+  "en-Latn-US": {
+    "en-Latn-US": "American English (Latin)",
+    "ko": "Korean",
+    "zh": "Chinese",
+    "zh-Hant-TW": "Traditional Chinese (Taiwan)",
+  },
+  "ko": {
+    "en-Latn-US": "영어(로마자, 미국)",
+    "ko": "한국어",
+    "zh": "중국어",
+    "zh-Hant-TW": "중국어(번체, 대만)",
+  },
+  "zh": {
+    "en-Latn-US": "美国英语（拉丁文）",
+    "ko": "韩语",
+    "zh": "中文",
+    "zh-Hant-TW": "繁体中文（台湾）",
+  },
+  "zh-Hant-TW": {
+    "en-Latn-US": "英文（拉丁文，美國）",
+    "ko": "韓文",
+    "zh": "中文",
+    "zh-Hant-TW": "繁體中文（台灣）",
+  },
+};
+
+for (const [tag, expected] of Object.entries(languageNames)) {
+  Deno.test(`LanguageTag#getLanguageName() [${tag}]`, async () => {
+    const lang = LanguageTag.fromString(tag);
+    for (const [tag, expectedName] of Object.entries(expected)) {
+      assertEquals(await lang.getLanguageName(tag), expectedName);
+      assertEquals(
+        await lang.getLanguageName(LanguageTag.fromString(tag)),
+        expectedName,
+      );
+    }
+  });
+}
+
 const territoryNames: Record<string, Record<string, string>> = {
   "en-Latn-US": {
     "CN": "China",

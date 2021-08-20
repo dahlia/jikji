@@ -202,6 +202,24 @@ Deno.test("LanguageTag#matches()", () => {
   assert(!zhHantHK.matches(en));
 });
 
+Deno.test("LanguageTag#reduce()", () => {
+  const en = LanguageTag.fromString("en");
+  assertEquals([...en.reduce()], []);
+  assertEquals([...en.reduce(true)], [en]);
+
+  const enUS = LanguageTag.fromString("en-US");
+  assertEquals([...enUS.reduce()], [en]);
+  assertEquals([...enUS.reduce(true)], [enUS, en]);
+
+  const enLatn = LanguageTag.fromString("en-Latn");
+  assertEquals([...enLatn.reduce()], [en]);
+  assertEquals([...enLatn.reduce(true)], [enLatn, en]);
+
+  const enLatnUS = LanguageTag.fromString("en-Latn-US");
+  assertEquals([...enLatnUS.reduce()], [enLatn, enUS, en]);
+  assertEquals([...enLatnUS.reduce(true)], [enLatnUS, enLatn, enUS, en]);
+});
+
 Deno.test("LanguageTag#toString()", () => {
   assertEquals(LanguageTag.get("ZH").toString(), "zh");
   assertEquals(LanguageTag.get("ZH", "hant").toString(), "zh-Hant");

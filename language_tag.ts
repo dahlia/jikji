@@ -110,6 +110,27 @@ export class LanguageTag {
   }
 
   /**
+   * Lists all available reduced (i.e., less specific) language tags for the
+   * given language tag.  For example, `en-Latn-US` has `en-Latn`, `en-US`, and
+   * `en` as reduced tags.
+   * @param containSelf Whether the reduced tags should contain the given
+   *                    language tag itself.
+   * @returns A list of reduced tags.  The most specific tag is listed first,
+   *          and the most general tag is listed last.
+   */
+  *reduce(containSelf = false): Iterable<LanguageTag> {
+    const scripts = this.script == null ? [null] : [this.script, null];
+    const regions = this.region == null ? [null] : [this.region, null];
+    for (const script of scripts) {
+      for (const region of regions) {
+        if (containSelf || this.script != script || this.region != region) {
+          yield LanguageTag.get(this.language, script, region);
+        }
+      }
+    }
+  }
+
+  /**
    * Turns a language tag object into an RFC 5646 string.
    * @returns A string formatted as RFC 5646.
    */

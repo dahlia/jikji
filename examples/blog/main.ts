@@ -4,7 +4,7 @@ import { info } from "https://deno.land/std@0.103.0/log/mod.ts";
 import staticFiles from "https://deno.land/x/static_files@1.1.0/mod.ts";
 import { renderListTemplate, renderTemplate } from "../../ejs.ts";
 import { frontMatter, markdown } from "../../markdown.ts";
-import { defaultMime } from "../../file.ts";
+import { defaultMime } from "../../mime.ts";
 import {
   anyRepresentations,
   havingExtension,

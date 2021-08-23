@@ -20,12 +20,8 @@ import {
   ExpandGlobOptions,
 } from "https://deno.land/std@0.103.0/fs/expand_glob.ts";
 import * as log from "https://deno.land/std@0.103.0/log/mod.ts";
-import {
-  Mime,
-  mime,
-  MimeTypeMap,
-} from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
+import { defaultMime, Mime } from "./mime.ts";
 import { Content, PathTransformer, Pipeline, Resource } from "./pipeline.ts";
 import { rebase as rebaseUrl } from "./path.ts";
 
@@ -345,26 +341,3 @@ export function writeFiles(
     await Promise.all(promises);
   };
 }
-
-/**
- * Extends a given `mime` object with given `typeMaps`.
- * @param mime A base {@link Mime} instance to extend.
- * @param typeMaps Additional type maps.
- * @returns A distinct {@link Mime} instance with extended types.
- */
-export function extendMime(mime: Mime, ...typeMaps: MimeTypeMap[]): Mime {
-  const mimeTypes: MimeTypeMap = {};
-  mime.types.forEach((type, ext) => {
-    if (type in mimeTypes) mimeTypes[type].push(ext);
-    else mimeTypes[type] = [ext];
-  });
-
-  return new Mime(mimeTypes, ...typeMaps);
-}
-
-/**
- * Default {@link Mime} instance.
- */
-const defaultMime = extendMime(mime);
-
-export { defaultMime, Mime };

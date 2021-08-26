@@ -13,6 +13,7 @@ import { assertEquals$ } from "./asserts.ts";
 import { Content, ContentKeyError } from "./content.ts";
 import { LanguageTag, LanguageTagError } from "./language_tag.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
+import { defaultMime } from "./mime.ts";
 import { makeResources } from "./fixtures.ts";
 import {
   allRepresentations,
@@ -300,6 +301,63 @@ Deno.test("Pipeline#map()", async () => {
   }
   assertEquals(i, resources.length);
   await assertEquals$(await toArray(p), resources);
+});
+
+Deno.test("Pipeline#divide()", async () => {
+  const d = new Date();
+  const p = new Pipeline([
+    new Resource("https://example.com/abc/", [
+      new Content("abc", "text/plain", null, d),
+      new Content("<h1>abc</h1>", "text/html", null, d),
+    ]),
+    new Resource("https://example.com/def/", [
+      new Content("def", "text/plain", null, d),
+      new Content("<h1>def</h1>", "text/html", null, d),
+    ]),
+  ]);
+  const p2 = p.divide((r) =>
+    [...r].map((c) =>
+      new Resource(
+        `${r.path.href}index.${defaultMime.getExtension(c.type.toString())}`,
+        [c],
+      )
+    )
+  );
+  await assertEquals$(
+    (await toArray(p2)).sort((a, b) => a.path.href.localeCompare(b.path.href)),
+    [
+      new Resource("https://example.com/abc/index.html", [
+        new Content("<h1>abc</h1>", "text/html", null, d),
+      ]),
+      new Resource("https://example.com/abc/index.txt", [
+        new Content("abc", "text/plain", null, d),
+      ]),
+      new Resource("https://example.com/def/index.html", [
+        new Content("<h1>def</h1>", "text/html", null, d),
+      ]),
+      new Resource("https://example.com/def/index.txt", [
+        new Content("def", "text/plain", null, d),
+      ]),
+    ],
+  );
+
+  const p3 = p.divide((r) =>
+    [...r].map((c) =>
+      new Resource("https://example.com/", [
+        c.replace({
+          type: c.type.withParameter("orig", r.path.pathname.split("/")[1]),
+        }),
+      ])
+    )
+  );
+  await assertEquals$(await toArray(p3), [
+    new Resource("https://example.com/", [
+      new Content("<h1>abc</h1>", "text/html; orig=abc", null, d),
+      new Content("abc", "text/plain; orig=abc", null, d),
+      new Content("<h1>def</h1>", "text/html; orig=def", null, d),
+      new Content("def", "text/plain; orig=def", null, d),
+    ]),
+  ]);
 });
 
 Deno.test("Pipeline#filter()", async () => {

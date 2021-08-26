@@ -30,6 +30,8 @@ To be released.
  -  Added `LanguageTag#getTerritoryName()` method.
  -  Added `LanguageTag#getScriptName()` method.
  -  Added `Resource#keys()` method.
+ -  Added `ResourceDivider` type to _pipeline.ts_ module.
+ -  Added `Pipeline#divide()` method.
  -  Added _mime.ts_ module.
  -  Moved `Mime` class from _file.ts_ module to _mime.ts_ module.
  -  Moved `extendMime()` function from _file.ts_ module to _mime.ts_ module.

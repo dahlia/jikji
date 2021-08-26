@@ -40,6 +40,17 @@ export type PipelineSummarizer = (pipeline: Pipeline) => (
 export type ResourceTransformer = (resource: Resource) => Resource;
 
 /**
+ * Represents functions to divide a {@link Resource} into multiple
+ * {@link Resource}s.
+ * @param resource A resource to be divided into multiple resources.
+ * @returns Divided resources.
+ */
+export type ResourceDivider = (resource: Resource) => (
+  | Iterable<Resource>
+  | AsyncIterable<Resource>
+);
+
+/**
  * Represents functions to determine whether to filter out a {@link Resource}
  * or not.
  * @param resource A resource to be determined if it is filtered or not.
@@ -263,7 +274,7 @@ export class Pipeline implements AsyncIterable<Resource> {
    *
    * To transform {@link Content}s or {@link Resource}s' paths instead,
    * use {@link transform} or {@link move} higher-order functions.
-   * @param transformers A resource transformer.
+   * @param transformers Resource transformers.
    * @returns A distinct pipeline with transformed {@link Resource}s.
    */
   map(...transformers: ResourceTransformer[]): Pipeline {
@@ -282,6 +293,31 @@ export class Pipeline implements AsyncIterable<Resource> {
   private mapWithoutMerge(transformer: ResourceTransformer): Pipeline {
     return new Pipeline(
       () => map(this.getResources(), transformer),
+      this.#resourcesMonitor ?? null,
+    );
+  }
+
+  /**
+   * Divides every single {@link Resource} in the pipeline into multiple
+   * {@link Resource}s (unless their paths overlap), and returns a distinct
+   * pipeline.  Note that this does not mutate the pipeline in-place.
+   *
+   * If divided {@link Resource}s' paths overlap each other, their contents
+   * belong together in a single {@link Resource}.
+   * @param divider A function to divide a {@link Resource} into multiple
+   *               {@link Resource}s.
+   * @returns A distinct pipeline with divided {@link Resource}s.
+   */
+  divide(divider: ResourceDivider): Pipeline {
+    const resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
+    return new Pipeline(
+      async function* (): AsyncIterable<Resource> {
+        for await (const r of resources) {
+          for await (const divided of divider(r)) {
+            yield divided;
+          }
+        }
+      },
       this.#resourcesMonitor ?? null,
     );
   }

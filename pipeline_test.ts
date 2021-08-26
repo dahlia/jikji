@@ -23,6 +23,7 @@ import {
   Pipeline,
   replace,
   Resource,
+  ResourceDivider,
   ResourceSet,
   transform,
 } from "./pipeline.ts";
@@ -315,14 +316,14 @@ Deno.test("Pipeline#divide()", async () => {
       new Content("<h1>def</h1>", "text/html", null, d),
     ]),
   ]);
-  const p2 = p.divide((r) =>
+  const divider: ResourceDivider = (r) =>
     [...r].map((c) =>
       new Resource(
         `${r.path.href}index.${defaultMime.getExtension(c.type.toString())}`,
         [c],
       )
-    )
-  );
+    );
+  const p2 = p.divide(divider);
   await assertEquals$(
     (await toArray(p2)).sort((a, b) => a.path.href.localeCompare(b.path.href)),
     [
@@ -358,6 +359,23 @@ Deno.test("Pipeline#divide()", async () => {
       new Content("def", "text/plain; orig=def", null, d),
     ]),
   ]);
+
+  const p4 = p.divide(divider, (r) => r.path.href.endsWith("abc/"));
+  await assertEquals$(
+    (await toArray(p4)).sort((a, b) => a.path.href.localeCompare(b.path.href)),
+    [
+      new Resource("https://example.com/abc/index.html", [
+        new Content("<h1>abc</h1>", "text/html", null, d),
+      ]),
+      new Resource("https://example.com/abc/index.txt", [
+        new Content("abc", "text/plain", null, d),
+      ]),
+      new Resource("https://example.com/def/", [
+        new Content("<h1>def</h1>", "text/html", null, d),
+        new Content("def", "text/plain", null, d),
+      ]),
+    ],
+  );
 });
 
 Deno.test("Pipeline#filter()", async () => {

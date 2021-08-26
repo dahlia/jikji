@@ -306,15 +306,22 @@ export class Pipeline implements AsyncIterable<Resource> {
    * belong together in a single {@link Resource}.
    * @param divider A function to divide a {@link Resource} into multiple
    *               {@link Resource}s.
+   * @param predicate An optional predicate to filter {@link Resource}s to
+   *                  divide.  Only {@link Resource}s satisfying the predicate
+   *                  are divided.  Include all {@link Resource}s by default.
    * @returns A distinct pipeline with divided {@link Resource}s.
    */
-  divide(divider: ResourceDivider): Pipeline {
+  divide(divider: ResourceDivider, predicate?: ResourcePredicate): Pipeline {
     const resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
     return new Pipeline(
       async function* (): AsyncIterable<Resource> {
         for await (const r of resources) {
-          for await (const divided of divider(r)) {
-            yield divided;
+          if (predicate == null || predicate(r)) {
+            for await (const divided of divider(r)) {
+              yield divided;
+            }
+          } else {
+            yield r;
           }
         }
       },

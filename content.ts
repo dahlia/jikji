@@ -222,16 +222,18 @@ export class Content {
         : filter.exactType;
       if (this.type !== type) return false;
     }
-    if (filter.language != null) {
+    if (typeof filter.language != "undefined") {
       const lang = typeof filter.language == "string"
         ? LanguageTag.fromString(filter.language)
         : filter.language;
+      if (lang == null) return this.language == null;
       if (this.language == null || !this.language.matches(lang)) return false;
     }
-    if (filter.exactLanguage != null) {
+    if (typeof filter.exactLanguage != "undefined") {
       const lang = typeof filter.exactLanguage == "string"
         ? LanguageTag.fromString(filter.exactLanguage)
         : filter.exactLanguage;
+      if (lang == null) return this.language == null;
       if (this.language !== lang) return false;
     }
     return true;
@@ -385,12 +387,15 @@ export interface ContentFilter {
 
   /**
    * Filters out {@link Content}s having incompatible `language`s with this.
+   * If `null` is given, it means to leave only {@link Content}s having
+   * no `language`.
+   *
    * This use {@link LanguageTag.matches} method for comparison under the hood.
    */
-  language?: LanguageTag | string;
+  language?: LanguageTag | string | null;
 
   /** Similar to {@link language} filter, except it does exact match. */
-  exactLanguage?: LanguageTag | string;
+  exactLanguage?: LanguageTag | string | null;
 }
 
 /**

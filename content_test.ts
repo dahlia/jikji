@@ -271,24 +271,28 @@ for (const [typeName, c] of Object.entries(langTagLikeTypes)) {
     assert(!empty.matches({ language: c("ko-KR") }));
     assert(!empty.matches({ language: c("ko-KP") }));
     assert(!empty.matches({ language: c("en") }));
+    assert(empty.matches({ language: null }));
     assert(ko.matches({ language: c("ko") }));
     assert(!ko.matches({ language: c("ko-Hang") }));
     assert(!ko.matches({ language: c("ko-Kore") }));
     assert(!ko.matches({ language: c("ko-KR") }));
     assert(!ko.matches({ language: c("ko-KP") }));
     assert(!ko.matches({ language: c("en") }));
+    assert(!ko.matches({ language: null }));
     assert(koHang.matches({ language: c("ko") }));
     assert(koHang.matches({ language: c("ko-Hang") }));
     assert(!koHang.matches({ language: c("ko-Kore") }));
     assert(!koHang.matches({ language: c("ko-KR") }));
     assert(!koHang.matches({ language: c("ko-KP") }));
     assert(!koHang.matches({ language: c("en") }));
+    assert(!koHang.matches({ language: null }));
     assert(koKR.matches({ language: c("ko") }));
     assert(!koKR.matches({ language: c("ko-Hang") }));
     assert(!koKR.matches({ language: c("ko-Kore") }));
     assert(koKR.matches({ language: c("ko-KR") }));
     assert(!koKR.matches({ language: c("ko-KP") }));
     assert(!koKR.matches({ language: c("en") }));
+    assert(!koKR.matches({ language: null }));
 
     // exactLanguage:
     assert(!empty.matches({ exactLanguage: c("ko") }));
@@ -297,24 +301,28 @@ for (const [typeName, c] of Object.entries(langTagLikeTypes)) {
     assert(!empty.matches({ exactLanguage: c("ko-KR") }));
     assert(!empty.matches({ exactLanguage: c("ko-KP") }));
     assert(!empty.matches({ exactLanguage: c("en") }));
+    assert(empty.matches({ exactLanguage: null }));
     assert(ko.matches({ exactLanguage: c("ko") }));
     assert(!ko.matches({ exactLanguage: c("ko-Hang") }));
     assert(!ko.matches({ exactLanguage: c("ko-Kore") }));
     assert(!ko.matches({ exactLanguage: c("ko-KR") }));
     assert(!ko.matches({ exactLanguage: c("ko-KP") }));
     assert(!ko.matches({ exactLanguage: c("en") }));
+    assert(!ko.matches({ exactLanguage: null }));
     assert(!koHang.matches({ exactLanguage: c("ko") }));
     assert(koHang.matches({ exactLanguage: c("ko-Hang") }));
     assert(!koHang.matches({ exactLanguage: c("ko-Kore") }));
     assert(!koHang.matches({ exactLanguage: c("ko-KR") }));
     assert(!koHang.matches({ exactLanguage: c("ko-KP") }));
     assert(!koHang.matches({ exactLanguage: c("en") }));
+    assert(!koHang.matches({ exactLanguage: null }));
     assert(!koKR.matches({ exactLanguage: c("ko") }));
     assert(!koKR.matches({ exactLanguage: c("ko-Hang") }));
     assert(!koKR.matches({ exactLanguage: c("ko-Kore") }));
     assert(koKR.matches({ exactLanguage: c("ko-KR") }));
     assert(!koKR.matches({ exactLanguage: c("ko-KP") }));
     assert(!koKR.matches({ exactLanguage: c("en") }));
+    assert(!koKR.matches({ exactLanguage: null }));
   });
 }
 

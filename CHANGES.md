@@ -36,6 +36,8 @@ To be released.
  -  Moved `Mime` class from _file.ts_ module to _mime.ts_ module.
  -  Moved `extendMime()` function from _file.ts_ module to _mime.ts_ module.
  -  Moved `defaultMime` from _file.ts_ module to _mime.ts_ module.
+ -  `ContentFilter#language` and `ContentFilter#exactLanguage` fields now can
+    be `null` to mean emptiness of `Content#language` field.
 
 
 Version 0.1.1

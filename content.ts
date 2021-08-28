@@ -210,6 +210,7 @@ export class Content {
    */
   matches(filter?: ContentFilter): boolean {
     if (filter == null) return true;
+    if (filter?.negate) return !this.matches({ ...filter, negate: false });
     if (filter.type != null) {
       const type = typeof filter.type == "string"
         ? MediaType.fromString(filter.type)
@@ -372,6 +373,14 @@ export type ContentPredicate = (content: Content) => boolean;
  * Omitted (`undefined`) fields are satisfied for any {@link Content}.
  */
 export interface ContentFilter {
+  /**
+   * Negates the filter.  If turned on, the filter is negated, which means
+   * to exclude {@link Content}s that satisfy the filter.
+   *
+   * Turned off by default.
+   */
+  negate?: boolean;
+
   /**
    * Filters out {@link Content}s having `type`s that don't match to this.
    * This use {@link MediaType.matches} method for comparison under the hood,

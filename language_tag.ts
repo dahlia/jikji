@@ -130,12 +130,44 @@ export class LanguageTag {
     }
   }
 
-  static readonly #CLDR_URL_BASE =
+  static readonly #CLDR_LIKELY_SUBTAGS_URL =
+    "https://cdn.skypack.dev/cldr-core/supplemental/likelySubtags.json";
+  static #cldrLikelySubtags?: Record<string, string>;
+
+  /**
+   * Gets the most likely subtag according to Unicode CLDR (Likely Subtags in
+   * Supplemental Data), if available.  For example, `ko` is likely to be
+   * `ko-Kore-KR`, and `zh-TW` is likely to be `zh-Hant-TW`.
+   * @returns The most likely subtag if available, otherwise it returns the
+   *          original language tag.
+   */
+  async toLikelySubtag(): Promise<LanguageTag> {
+    if (LanguageTag.#cldrLikelySubtags == null) {
+      let data: Record<string, string>;
+      try {
+        const response = await fetch(LanguageTag.#CLDR_LIKELY_SUBTAGS_URL);
+        const json = await response.json();
+        data = json.supplemental.likelySubtags;
+      } catch {
+        data = {};
+      }
+      LanguageTag.#cldrLikelySubtags = Object.fromEntries(
+        Object.entries(data).map(([k, v]) => [k.toLowerCase(), v]),
+      );
+    }
+
+    const tag = LanguageTag.#cldrLikelySubtags[this.toString().toLowerCase()];
+    if (tag == null) return this;
+    return LanguageTag.fromString(tag);
+  }
+
+  static readonly #CLDR_LOCALENAMES_URL_BASE =
     "https://cdn.skypack.dev/cldr-localenames-full/main/";
   #cldrTag?: string;
 
   private *tryCldrUrls(file: string): Iterable<string> {
     const base = LanguageTag.#CLDR_URL_BASE.replace(/\/$/, "");
+    const base = LanguageTag.#CLDR_LOCALENAMES_URL_BASE.replace(/\/$/, "");
     if (this.#cldrTag != null) {
       yield `${base}/${this.#cldrTag}/${file}`;
       return;

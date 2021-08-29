@@ -220,6 +220,25 @@ Deno.test("LanguageTag#reduce()", () => {
   assertEquals([...enLatnUS.reduce(true)], [enLatnUS, enLatn, enUS, en]);
 });
 
+Deno.test("LanguageTag#toLikelySubtag()", async () => {
+  assertStrictEquals(
+    await LanguageTag.get("en").toLikelySubtag(),
+    LanguageTag.fromString("en-Latn-US"),
+  );
+  assertStrictEquals(
+    await LanguageTag.get("ko").toLikelySubtag(),
+    LanguageTag.fromString("ko-Kore-KR"),
+  );
+  assertStrictEquals(
+    await LanguageTag.fromString("zh-TW").toLikelySubtag(),
+    LanguageTag.fromString("zh-Hant-TW"),
+  );
+  assertStrictEquals(
+    await LanguageTag.fromString("zh-Hanb").toLikelySubtag(),
+    LanguageTag.fromString("zh-Hanb-TW"),
+  );
+});
+
 const languageNames: Record<string, Record<string, string>> = {
   "en-Latn-US": {
     "en-Latn-US": "American English (Latin)",

@@ -258,6 +258,12 @@ const languageNames: Record<string, Record<string, string>> = {
     "zh": "中文",
     "zh-Hant-TW": "繁体中文（台湾）",
   },
+  "zh-TW": {
+    "en-Latn-US": "英文（拉丁文，美國）",
+    "ko": "韓文",
+    "zh": "中文",
+    "zh-Hant-TW": "繁體中文（台灣）",
+  },
   "zh-Hant-TW": {
     "en-Latn-US": "英文（拉丁文，美國）",
     "ko": "韓文",
@@ -290,6 +296,11 @@ const territoryNames: Record<string, Record<string, string>> = {
     "KR": "대한민국",
     "US": "미국",
   },
+  "zh-TW": {
+    "CN": "中國",
+    "KR": "南韓",
+    "US": "美國",
+  },
   "zh-Hant-TW": {
     "CN": "中國",
     "KR": "南韓",
@@ -316,6 +327,11 @@ const scriptNames: Record<string, Record<string, string>> = {
     "Latn": "로마자",
     "Hang": "한글",
     "Hant": "번체",
+  },
+  "zh-TW": {
+    "Latn": "拉丁文",
+    "Hang": "韓文字",
+    "Hant": "繁體",
   },
   "zh-Hant-TW": {
     "Latn": "拉丁文",

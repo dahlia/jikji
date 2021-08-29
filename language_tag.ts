@@ -34,7 +34,6 @@ export class LanguageTag {
     this.language = language.toLowerCase();
     this.script = script?.toLowerCase() || null;
     this.region = region?.toLowerCase() || null;
-    this.#cldrData = {};
   }
 
   private static readonly interns: Record<string, LanguageTag> = {};
@@ -163,47 +162,67 @@ export class LanguageTag {
 
   static readonly #CLDR_LOCALENAMES_URL_BASE =
     "https://cdn.skypack.dev/cldr-localenames-full/main/";
-  #cldrTag?: string;
 
-  private *tryCldrUrls(file: string): Iterable<string> {
-    const base = LanguageTag.#CLDR_URL_BASE.replace(/\/$/, "");
+  private async *tryCldrUrls(
+    file: string,
+  ): AsyncIterable<[LanguageTag, string]> {
     const base = LanguageTag.#CLDR_LOCALENAMES_URL_BASE.replace(/\/$/, "");
-    if (this.#cldrTag != null) {
-      yield `${base}/${this.#cldrTag}/${file}`;
-      return;
-    }
+    yield [this, `${base}/${this.toString()}/${file}`];
 
-    for (const l of this.reduce(true)) {
-      this.#cldrTag = l.toString();
-      yield `${base}/${this.#cldrTag}/${file}`;
+    const likelySubtag = await this.toLikelySubtag();
+    const similarTags = likelySubtag.reduce(likelySubtag !== this);
+    for (const l of similarTags) {
+      if (l !== this) yield [l, `${base}/${l.toString()}/${file}`];
     }
   }
 
-  #cldrData: Record<string, Record<string, unknown>>;
+  static #cldrData: Map<
+    LanguageTag,
+    Record<string, Record<string, unknown> | undefined> | null
+  > = new Map();
 
   private async fetchCldr(file: string): Promise<Record<string, unknown>> {
-    if (this.#cldrData[file] != null) return this.#cldrData[file];
-
+    const triedUrls: string[] = [];
     let data: Record<string, unknown> | undefined;
-    for (const url of this.tryCldrUrls(file)) {
-      try {
-        const response = await fetch(url);
-        const json = await response.json();
-        data = json.main[this.#cldrTag ?? ""].localeDisplayNames;
-        break;
-      } catch {
+    for await (const [l, url] of this.tryCldrUrls(file)) {
+      triedUrls.push(url);
+      const cldrData = LanguageTag.#cldrData.get(l);
+      if (cldrData != null && cldrData[file] != null) {
+        data = cldrData[file];
+      } else if (cldrData === null) {
         continue;
+      } else {
+        let json;
+        try {
+          const response = await fetch(url);
+          json = await response.json();
+        } catch {
+          LanguageTag.#cldrData.set(l, null);
+          continue;
+        }
+
+        const tag = l.toString();
+        const main = json?.main[tag] != null
+          ? json.main[tag]
+          : Object.values(json.main)[0];
+        data = main.localeDisplayNames;
+        if (cldrData == null) {
+          LanguageTag.#cldrData.set(l, { file: data });
+        } else {
+          cldrData[file] = data;
+        }
       }
+
+      break;
     }
 
     if (data == null) {
       throw new LanguageTagError(
         "There is no Unicode CLDR sheet for the language tag: " +
-          `${this.toString()}.`,
+          `${this.toString()}.  Tried URLs are:\n  ${triedUrls.join("\n  ")}`,
       );
     }
 
-    this.#cldrData[file] = data;
     return data;
   }
 

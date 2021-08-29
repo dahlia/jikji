@@ -6,7 +6,7 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "https://deno.land/std@0.103.0/testing/asserts.ts";
+} from "https://deno.land/std@0.106.0/testing/asserts.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
 
 Deno.test("MediaType.get()", () => {

@@ -20,7 +20,7 @@ import {
   assert,
   assertEquals,
   assertThrows,
-} from "https://deno.land/std@0.103.0/testing/asserts.ts";
+} from "https://deno.land/std@0.106.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
 
 Deno.test("identity()", () => {

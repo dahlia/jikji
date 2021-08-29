@@ -7,10 +7,22 @@
     <%= title %>
   </title>
   <link rel="stylesheet" href="<%= baseUrl %>/static/style.css">
+  <link ref="canonical" href="<%= metadata.multiViews.get(null) %>" />
 </head>
 
 <body class="post">
   <article>
+    <aside>
+      <p>This article is also available in other languages:</p>
+      <ul>
+        <% for (const [key, href] of multiViews.entries())
+          if (key != null && key != viewKey) { %>
+          <li><a rel="alternate" href="<%= href %>"
+            hreflang="<%= key.language %>" lang="<%= key.language %>"><%=
+            await key.language.getLanguageName(key.language) %></a></li>
+        <% } %>
+      </ul>
+    </aside>
     <h1>
       <%= title %>
     </h1>

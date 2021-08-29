@@ -14,8 +14,16 @@
       <li><a href="<%= post.path %>">
           <%= await queryTitle(post) %>
         </a>
+        <% const metadata = await [...post][0].getMetadata() %>
+        <span class="languages">
+          <% for (const [key, href] of metadata.multiViews.entries())
+            if (key != null) { %>
+            <a href="<%= href %>" hreflang="<%= key.language %>"><%=
+              await key.language.getLanguageName(key.language) %></a>
+          <% } %>
+        </span>
         <time datetime="<%= (await queryPublished(post)).toISOString() %>">
-          (<%= (await queryPublished(post)).toDateString() %>)
+          <%= (await queryPublished(post)).toDateString() %>
         </time>
       </li>
       <% } %>

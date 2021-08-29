@@ -24,6 +24,8 @@ import { MediaType, MediaTypeError } from "./media_type.ts";
 import { defaultMime, Mime } from "./mime.ts";
 import { Content, PathTransformer, Pipeline, Resource } from "./pipeline.ts";
 import { rebase as rebaseUrl } from "./path.ts";
+import { ResourceError } from "./resource.ts";
+import { intoMultiView } from "./multiview.ts";
 
 function getLogger() {
   return log.getLogger("file");
@@ -252,92 +254,82 @@ export function writeFiles(
   }
 
   return async (resource: Resource) => {
-    const representations = [...resource];
-    const promises = representations.map(async (content) => {
-      let ext = mime?.getExtension(content.type.toString());
+    if (resource.size > 1) {
+      throw new ResourceError(
+        `${writeFiles.name}() cannot deal with resources that consist of ` +
+          `multiple contents.  Try using ${intoMultiView.name}().`,
+      );
+    }
+
+    const content: Content = [...resource][0];
+    let path = resource.path;
+    if (path.pathname.endsWith("/")) {
+      const ext = mime?.getExtension(content.type.toString());
       if (ext == null) {
         throw new MediaTypeError(
           "Failed to determine filename suffix for the media type " +
             content.type.toString() + ".",
         );
       }
-      let lang = "";
-      if (content.language != null) {
-        lang = `${content.language.toString().toLowerCase()}.`;
-        ext = `${lang}${ext}`;
-      }
-      const path = resource.path;
-      const pathType = mime?.getType(path.pathname);
-      const bareName = path.pathname.replace(/\.[^.]+$/, "");
-      const contentPath = path.pathname.endsWith("/")
-        ? new URL(`./index.${ext}`, path)
-        : pathType != null && content.type.matches(pathType)
-        ? new URL(
-          `${bareName}.${lang}${
-            path.pathname.match(/[^.]+$/)![0]
-          }${path.search}${path.hash}`,
-          path,
-        )
-        : new URL(`${bareName}.${ext}${path.search}${path.hash}`, path);
-      const targetPath = rebasePath(contentPath);
-      let sidecar = null;
-      let targetMtime;
-      if (!rewriteAlways) {
-        let targetStat: Deno.FileInfo | undefined;
-        try {
-          targetStat = await Deno.stat(targetPath);
-        } catch (e) {
-          if (!(e instanceof Deno.errors.NotFound)) throw e;
-        }
-        targetMtime = targetStat?.mtime;
-        if (
-          targetMtime != null &&
-          targetMtime > content.lastModified &&
-          (sidecar = await loadSidecar(targetPath)) === content.eTag
-        ) {
-          return;
-        }
-      }
-
-      const contentBody = await content.getBody();
-      const bodyBuffer = typeof contentBody == "string"
-        ? new TextEncoder().encode(contentBody)
-        : contentBody;
-      await Deno.mkdir(dirname(fromFileUrl(targetPath)), { recursive: true });
+      path = new URL(`./index.${ext}`, path);
+    }
+    const targetPath = rebasePath(path);
+    let sidecar = null;
+    let targetMtime;
+    if (!rewriteAlways) {
+      let targetStat: Deno.FileInfo | undefined;
       try {
-        await Deno.writeFile(targetPath, bodyBuffer);
-        if (onWrite != null) {
-          const p = onWrite(
-            targetPath,
-            {
-              lastModified: content.lastModified,
-              eTag: content.eTag,
-            },
-            targetMtime == null && sidecar == null
-              ? null
-              : { lastModified: targetMtime ?? null, eTag: sidecar },
-          );
-          if (p instanceof Promise) await p;
-        }
-        logger.info(targetPath.toString());
-        if (!rewriteAlways) {
-          if (content.eTag != null) {
-            await Deno.writeTextFile(
-              getSidecarPath(targetPath),
-              content.eTag,
-            );
-          } else if (sidecar != null) {
-            await Deno.remove(getSidecarPath(targetPath));
-          }
-        }
+        targetStat = await Deno.stat(targetPath);
       } catch (e) {
-        if (e instanceof Error) {
-          e.message += `: ${targetPath.toString()}`;
-        }
-
-        throw e;
+        if (!(e instanceof Deno.errors.NotFound)) throw e;
       }
-    });
-    await Promise.all(promises);
+      targetMtime = targetStat?.mtime;
+      if (
+        targetMtime != null &&
+        targetMtime > content.lastModified &&
+        (sidecar = await loadSidecar(targetPath)) === content.eTag
+      ) {
+        return;
+      }
+    }
+
+    const contentBody = await content.getBody();
+    const bodyBuffer = typeof contentBody == "string"
+      ? new TextEncoder().encode(contentBody)
+      : contentBody;
+    await Deno.mkdir(dirname(fromFileUrl(targetPath)), { recursive: true });
+    try {
+      await Deno.writeFile(targetPath, bodyBuffer);
+      if (onWrite != null) {
+        const p = onWrite(
+          targetPath,
+          {
+            lastModified: content.lastModified,
+            eTag: content.eTag,
+          },
+          targetMtime == null && sidecar == null
+            ? null
+            : { lastModified: targetMtime ?? null, eTag: sidecar },
+        );
+        if (p instanceof Promise) await p;
+      }
+      logger.info(targetPath.toString());
+      if (!rewriteAlways) {
+        if (content.eTag != null) {
+          await Deno.writeTextFile(
+            getSidecarPath(targetPath),
+            content.eTag,
+          );
+        } else if (sidecar != null) {
+          await Deno.remove(getSidecarPath(targetPath));
+        }
+      }
+    } catch (e) {
+      if (e instanceof Error) {
+        e.message += `: ${targetPath.toString()}`;
+      }
+
+      throw e;
+    }
   };
 }

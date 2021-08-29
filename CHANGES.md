@@ -37,6 +37,9 @@ To be released.
  -  Moved `Mime` class from _file.ts_ module to _mime.ts_ module.
  -  Moved `extendMime()` function from _file.ts_ module to _mime.ts_ module.
  -  Moved `defaultMime` from _file.ts_ module to _mime.ts_ module.
+ -  Added _miltiview.ts_ module.
+ -  `writeFiles()` function became to disallow `Resource` which consists with
+    multiple `Content`s.
  -  Added `ContentFilter#negate` field.
  -  `ContentFilter#language` and `ContentFilter#exactLanguage` fields now can
     be `null` to mean emptiness of `Content#language` field.

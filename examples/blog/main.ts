@@ -1,3 +1,13 @@
+// This is a single-file example of a static blog generator.
+//
+// The blog is generated from Markdown files in the source directory,
+// and the resulting HTML and CSS files are written to the output directory
+// (-o/--out-dir).  Posts can consist of multiple spoken languages
+// (e.g., foo.en.md for English, foo.zh-TW.md for Taiwanese Mandarin).
+//
+// This provides -w/--watch mode, which watches the source directory
+// for changes and regenerates the blog on the fly.  It also provides
+// -s/--serve mode, which runs an HTTP server on the output directory.
 import { parse } from "https://deno.land/std@0.103.0/flags/mod.ts";
 import { serve } from "https://deno.land/std@0.103.0/http/server.ts";
 import { info } from "https://deno.land/std@0.103.0/log/mod.ts";
@@ -7,6 +17,7 @@ import { frontMatter, markdown } from "../../markdown.ts";
 import { defaultMime } from "../../mime.ts";
 import {
   anyRepresentations,
+  ContentKey,
   havingExtension,
   intoDirectory,
   Pipeline,
@@ -18,6 +29,8 @@ import {
   when,
   writeFiles,
 } from "../../mod.ts";
+import { detectLanguage } from "../../path.ts";
+import { htmlRedirector, intoMultiView } from "../../multiview.ts";
 import sass from "../../sass.ts";
 
 // Makes logs show up in the console:
@@ -89,6 +102,12 @@ const pipeline = scanFiles(["posts/**/*.md", "static/**/*"], { root: srcDir })
   // Maps the current directory to the target URL <https://example.com/>:
   // E.g., ./2021/07/03/hello-world.md -> https://example.com/2021/07/03/hello-world.md
   .move(rebase("./", baseUrl))
+  // If a resource's path has a suffix to indicate the language (e.g., x.en.md),
+  // then configures the resource's language (e.g., en) and strips the suffix
+  // from the path (e.g., x.en.md -> x.md).  As there can be multiple languages
+  // for a common prefix (e.g., x.en.md and x.zh.md), these contents are merged
+  // into a single resource (e.g., x.md having en and zh):
+  .map(detectLanguage({ from: "pathname", strip: true }))
   // Strips .md extensions and adds trailing slashes instead:
   // E.g., 2021/07/03/hello-world.md becomes 2021/07/03/hello-world/
   .move(when(havingExtension("md"), intoDirectory()))
@@ -100,14 +119,25 @@ const pipeline = scanFiles(["posts/**/*.md", "static/**/*"], { root: srcDir })
   .transform(frontMatter, { type: "text/markdown" })
   // Renders posts written in Markdown to HTML:
   .transform(markdown(), { type: "text/markdown" })
+  // Turns multi-language posts into distinct files, and give index pages for
+  // redirecting browsers to their preferred language:
+  .divide(
+    intoMultiView({
+      negotiator: htmlRedirector,
+      defaultContentKey: ContentKey.get("text/html", "en"),
+    }),
+    (r) => r.path.href.endsWith("/") && r.size > 1,
+  )
   // Renders the whole page for posts using the EJS template:
   .transform(
     renderTemplate("templates/post.ejs", { baseUrl }),
-    { type: "text/html" },
+    { negate: true, language: null },
   )
   // Adds the home page (a list of posts):
   .addSummaries(async function* (p: Pipeline) {
-    const posts = p.filter(anyRepresentations({ type: "text/html" }));
+    const posts = p.filter(
+      anyRepresentations({ type: "text/html", language: null }),
+    );
     yield new Resource(baseUrl, [
       await renderListTemplate("templates/list.ejs", posts, { baseUrl }),
     ]);

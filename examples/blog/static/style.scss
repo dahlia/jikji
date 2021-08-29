@@ -7,6 +7,29 @@ body {
     ul {
       list-style: none;
       padding: 0;
+
+      .languages,
+      time {
+        font-size: small;
+        color: gray;
+
+        &:before {
+          content: "\2014";
+        }
+
+        a {
+          text-decoration: none;
+
+          &:before {
+            content: "\00b7\0020";
+            cursor: default;
+          }
+
+          &:first-child:before {
+            content: "";
+          }
+        }
+      }
     }
   }
 }

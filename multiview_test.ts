@@ -45,7 +45,9 @@ Deno.test("intoMultiView()", async () => {
     dividedResources.map((r) => [r.path.href, r]),
   );
   const multiViews = new Map<ContentKey | null, URL>(
-    dividedResources.map((r) => [[...r][0].key, r.path]),
+    dividedResources
+      .filter((r) => !r.path.pathname.endsWith(".htaccess"))
+      .map((r) => [[...r][0].key, r.path]),
   );
   multiViews.set(null, resource.path);
   await assertEquals$(
@@ -117,6 +119,17 @@ Deno.test("intoMultiView()", async () => {
           }),
         ]),
       ],
+      [
+        "https://example.com/.htaccess",
+        new Resource("https://example.com/.htaccess", [
+          new Content(
+            "Options +MultiViews",
+            "application/octet-stream",
+            null,
+            new Date(1630284433391),
+          ),
+        ]),
+      ],
     ]),
   );
 
@@ -145,7 +158,8 @@ Deno.test("intoMultiView()", async () => {
   await assertEquals$(
     pathsToResourcesWithNegotiator,
     new Map([
-      ...pathsToResources.entries(),
+      ...[...pathsToResources.entries()]
+        .filter(([k, _]: [string, Resource]) => !k.endsWith("/.htaccess")),
       [
         "https://example.com/",
         new Resource("https://example.com/", [

@@ -247,7 +247,9 @@ export class Content {
       `  type: ${Deno.inspect(this.type)},\n` +
       `  language: ${Deno.inspect(this.language)},\n` +
       `  lastModified: ${Deno.inspect(this.lastModified)},\n` +
-      `  metadata: ${Deno.inspect(this.#metadata)},\n` +
+      `  metadata: ${
+        body == null ? "(unloaded)" : Deno.inspect(this.#metadata)
+      },\n` +
       `  eTag: ${Deno.inspect(this.eTag)}\n` +
       "}";
   }

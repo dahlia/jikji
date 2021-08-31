@@ -61,6 +61,8 @@ export interface IntoMultiViewOptions {
   /**
    * A function to create a negotiator file for a {@link MultiView} resource.
    * See {@link MultiViewNegotiator} for more details.
+   *
+   * If unspecified, Apache .htaccess configuration is made instead.
    */
   negotiator?: MultiViewNegotiator;
 
@@ -123,7 +125,23 @@ export function intoMultiView(
         }),
       ]);
     }
-    const negotiator = options.negotiator?.(multiViews, defaultView);
+
+    // If no negotiator is specified, create Apache .htaccess configuration
+    // to enable MultiViews.
+    // https://httpd.apache.org/docs/current/en/mod/mod_negotiation.html#multiviews
+    if (options.negotiator == null) {
+      yield new Resource(new URL(".htaccess", resource.path), [
+        new Content(
+          "Options +MultiViews",
+          "application/octet-stream",
+          null,
+          new Date(1630284433391),
+        ),
+      ]);
+      return;
+    }
+
+    const negotiator = options.negotiator(multiViews, defaultView);
     if (negotiator != null) {
       yield new Resource(resource.path, [
         negotiator.replace({

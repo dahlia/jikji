@@ -212,30 +212,42 @@ export class Content {
     if (filter == null) return true;
     if (filter?.negate) return !this.matches({ ...filter, negate: false });
     if (filter.type != null) {
-      const type = typeof filter.type == "string"
-        ? MediaType.fromString(filter.type)
-        : filter.type;
-      if (!this.type.matches(type)) return false;
+      const types = (filter.type instanceof Array ? filter.type : [filter.type])
+        .map((t) => typeof t == "string" ? MediaType.fromString(t) : t);
+      if (!types.some((t) => this.type.matches(t))) return false;
     }
     if (filter.exactType != null) {
-      const type = typeof filter.exactType == "string"
-        ? MediaType.fromString(filter.exactType)
-        : filter.exactType;
-      if (this.type !== type) return false;
+      const exactTypes = (filter.exactType instanceof Array
+        ? filter.exactType
+        : [filter.exactType]).map((t) =>
+          typeof t == "string"
+            ? MediaType.fromString(t)
+            : t
+        );
+      if (exactTypes.indexOf(this.type) < 0) return false;
     }
     if (typeof filter.language != "undefined") {
-      const lang = typeof filter.language == "string"
-        ? LanguageTag.fromString(filter.language)
-        : filter.language;
-      if (lang == null) return this.language == null;
-      if (this.language == null || !this.language.matches(lang)) return false;
+      const languages = (filter.language instanceof Array
+        ? filter.language
+        : [filter.language]).map((l) =>
+          typeof l == "string" ? LanguageTag.fromString(l) : l
+        );
+      const matchesAny = languages.some((l) =>
+        this.language == null ? l == null
+        : l != null && this.language.matches(l)
+      );
+      if (!matchesAny) return false;
     }
     if (typeof filter.exactLanguage != "undefined") {
-      const lang = typeof filter.exactLanguage == "string"
-        ? LanguageTag.fromString(filter.exactLanguage)
-        : filter.exactLanguage;
-      if (lang == null) return this.language == null;
-      if (this.language !== lang) return false;
+      const exactLanguages = (filter.exactLanguage instanceof Array
+        ? filter.exactLanguage
+        : [filter.exactLanguage]).map((l) =>
+          typeof l == "string"
+            ? LanguageTag.fromString(l)
+            : l
+        );
+      const matchesAny = exactLanguages.some((l) => l === this.language);
+      if (!matchesAny) return false;
     }
     return true;
   }
@@ -387,14 +399,17 @@ export interface ContentFilter {
    * Filters out {@link Content}s having `type`s that don't match to this.
    * This use {@link MediaType.matches} method for comparison under the hood,
    * which means it does not compare parameters if it lacks parameters.
+   *
+   * If an array is given, the filter is satisfied when any of the given
+   * media types matches to the {@link Content}'s `type`.
    */
-  type?: MediaType | string;
+  type?: MediaType | string | (MediaType | string)[];
 
   /**
    * Similar to {@link type} filter, except it does exact match, which means
    * is is sensitive to {@link MediaType#parameters} unlike {@link type} filter.
    */
-  exactType?: MediaType | string;
+  exactType?: MediaType | string | (MediaType | string)[];
 
   /**
    * Filters out {@link Content}s having incompatible `language`s with this.
@@ -402,11 +417,14 @@ export interface ContentFilter {
    * no `language`.
    *
    * This use {@link LanguageTag.matches} method for comparison under the hood.
+   *
+   * If an array is given, the filter is satisfied when any of the given
+   * language tags matches to the {@link Content}'s `language`.
    */
-  language?: LanguageTag | string | null;
+  language?: LanguageTag | string | null | (LanguageTag | string | null)[];
 
   /** Similar to {@link language} filter, except it does exact match. */
-  exactLanguage?: LanguageTag | string | null;
+  exactLanguage?: LanguageTag | string | null | (LanguageTag | string | null)[];
 }
 
 /**

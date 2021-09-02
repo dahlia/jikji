@@ -255,6 +255,30 @@ for (const [typeName, c] of Object.entries(mediaTypeLikeTypes)) {
         !html.matches({ exactType: c("text/plain; charset=utf-8"), negate }),
       );
 
+      // array:
+      assert$(txt.matches({ type: [c("text/plain"), c("text/html")], negate }));
+      assert$(
+        txtAscii.matches({ type: [c("text/plain"), c("text/html")], negate }),
+      );
+      assert$(
+        txtUtf8.matches({ type: [c("text/plain"), c("text/html")], negate }),
+      );
+      assert$(
+        txt.matches({ exactType: [c("text/plain"), c("text/html")], negate }),
+      );
+      assert$(
+        !txtAscii.matches({
+          exactType: [c("text/plain"), c("text/html")],
+          negate,
+        }),
+      );
+      assert$(
+        !txtUtf8.matches({
+          exactType: [c("text/plain"), c("text/html")],
+          negate,
+        }),
+      );
+
       // both:
       assert$(
         txt.matches({
@@ -365,6 +389,28 @@ for (const [typeName, c] of Object.entries(langTagLikeTypes)) {
       assert$(!koKR.matches({ exactLanguage: c("ko-KP"), negate }));
       assert$(!koKR.matches({ exactLanguage: c("en"), negate }));
       assert$(!koKR.matches({ exactLanguage: null, negate }));
+
+      // array:
+      assert$(empty.matches({ language: [null, c("ko"), c("ko-KR")], negate }));
+      assert$(ko.matches({ language: [null, c("ko"), c("ko-KR")], negate }));
+      assert$(
+        koHang.matches({ language: [null, c("ko"), c("ko-KR")], negate }),
+      );
+      assert$(
+        koKR.matches({ language: [null, c("ko"), c("ko-KR")], negate }),
+      );
+      assert$(
+        empty.matches({ exactLanguage: [null, c("ko"), c("ko-KR")], negate }),
+      );
+      assert$(
+        ko.matches({ exactLanguage: [null, c("ko"), c("ko-KR")], negate }),
+      );
+      assert$(
+        !koHang.matches({ exactLanguage: [null, c("ko"), c("ko-KR")], negate }),
+      );
+      assert$(
+        koKR.matches({ exactLanguage: [null, c("ko"), c("ko-KR")], negate }),
+      );
     });
   }
 }

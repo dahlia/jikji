@@ -43,6 +43,9 @@ To be released.
  -  Added `ContentFilter#negate` field.
  -  `ContentFilter#language` and `ContentFilter#exactLanguage` fields now can
     be `null` to mean emptiness of `Content#language` field.
+ -  `ContentFilter#type`, `ContentFilter#exactType`, `ContentFilter#language`,
+    and `ContentFilter#exactLanguage` fields now can be an array, which is
+    satisfied when any of the given values matches the content.
 
 
 Version 0.1.1

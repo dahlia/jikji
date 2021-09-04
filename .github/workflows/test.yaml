@@ -21,7 +21,15 @@ jobs:
         run: brew install sass/sass/sass
       - if: "runner.os == 'Windows'"
         run: choco install sass
-      - run: deno test --allow-read --allow-write --allow-run --jobs=4 --coverage=.cov
+      - run: >-
+          deno test
+          --allow-read
+          --allow-write
+          --allow-run
+          --allow-net=cdn.skypack.dev
+          --doc
+          --jobs=4
+          --coverage=.cov
       - run: deno coverage --lcov .cov > .cov.lcov
       - uses: codecov/codecov-action@v2
         with:

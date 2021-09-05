@@ -3,6 +3,25 @@ body {
   margin: auto;
   line-height: 130%;
 
+  @media (prefers-color-scheme: dark) {
+    & {
+      background-color: black;
+      color: white;
+    }
+
+    a:link {
+      color: skyblue;
+    }
+
+    a:active {
+      color: palevioletred;
+    }
+
+    a:visited {
+      color: plum;
+    }
+  }
+
   &.list {
     ul {
       list-style: none;

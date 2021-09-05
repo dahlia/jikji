@@ -6,6 +6,7 @@ deno test \
   --allow-run \
   --allow-net=cdn.skypack.dev \
   --doc \
-  --jobs=4
+  --jobs \
+  --fail-fast
 deno lint
 deno fmt --check --ignore=.vscode/

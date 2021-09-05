@@ -28,7 +28,6 @@ jobs:
           --allow-run
           --allow-net=cdn.skypack.dev
           --doc
-          --jobs=4
           --coverage=.cov
       - run: deno coverage --lcov .cov > .cov.lcov
       - uses: codecov/codecov-action@v2

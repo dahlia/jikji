@@ -133,7 +133,6 @@ Deno.test("intoMultiView()", async () => {
     ]),
   );
 
-  const d = new Date();
   const dividerWithNegotiator = intoMultiView({
     negotiator: (views: MultiView, defaultView?: Content) =>
       new Content(
@@ -145,7 +144,6 @@ Deno.test("intoMultiView()", async () => {
           }\ndefault:\n${await defaultView?.getBody()}`,
         "text/html",
         null,
-        d,
       ),
     defaultContentKey: ContentKey.get("text/html", "en"),
   });
@@ -176,7 +174,9 @@ Deno.test("intoMultiView()", async () => {
               "<h1>Hello</h1>",
             "text/html",
             null,
-            d,
+            new Date(
+              dividedResources.map((r) => +r.lastModified).sort().reverse()[0],
+            ),
             { multiViews, viewKey: null },
           ),
         ]),

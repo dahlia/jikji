@@ -97,6 +97,7 @@ export function intoMultiView(
   return function* (resource: Resource): Iterable<Resource> {
     let defaultView: Content | undefined;
     const multiViews: MultiView = new Map<ContentKey | null, URL>();
+    let lastModified: Date | undefined;
     multiViews.set(null, resource.path);
     for (const c of resource) {
       const path = resource.path;
@@ -115,6 +116,9 @@ export function intoMultiView(
       }
       if (c.key == defaultContentKey) defaultView = c;
       multiViews.set(c.key, path);
+      if (lastModified == null || lastModified < c.lastModified) {
+        lastModified = c.lastModified;
+      }
       yield new Resource(path, [
         c.replace({
           metadata: async () => ({
@@ -147,10 +151,12 @@ export function intoMultiView(
         negotiator.replace({
           language: null,
           metadata: async () => ({
+            ...await defaultView?.getMetadata(),
             ...await negotiator.getMetadata(),
             multiViews,
             viewKey: null,
           }),
+          lastModified,
         }),
       ]);
     }
@@ -327,3 +333,114 @@ export function _negotiateUsingClientSideJavaScript$internal(
     return defaultUrl;
   }
 }
+
+/**
+ * Creates a negotiator file which depends on `Accept-Language` and
+ * serves the HTML file for the requested content language using PHP.
+ *
+ * Designed to work with {@link intoMultiView} function.
+ */
+export const phpNegotiator: MultiViewNegotiator = (
+  views: MultiView,
+  defaultContent?: Content,
+): (Content | undefined) => {
+  // FIXME: Deal with content types besides languages.
+  const languages = [...views.entries()]
+    .filter(([key]) => key != null && isHtml(key.type))
+    .map(([key, path]: [ContentKey | null, URL]) => [
+      key?.language,
+      path.href.match(/([^]+)$/)?.[1],
+    ]);
+  const languagesJson = JSON.stringify(Object.fromEntries(languages));
+  const languagesBase64 = btoa(languagesJson);
+  const defaultLanguage = defaultContent?.language?.toString().toLowerCase();
+  const php = `
+<?php
+// FIXME: Deal with Accept besides Accept-Language.
+$views = json_decode(base64_decode('${languagesBase64}'), true);
+$supported_languages = array_keys($views);
+$accept_language
+  = empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])
+  ? ''
+  : $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+$preferred_languages = array();
+$accept_languages = explode(',', $accept_language);
+foreach ($accept_languages as $accept_language) {
+  $terms = explode(';', $accept_language);
+  $terms_no = count($terms);
+  $q = 1.0;
+  for ($j = 1; $j < $terms_no; ++$j) {
+    $kv = explode('=', $terms[$j], 2);
+    if (count($kv) < 2) continue;
+    $k = trim($kv[0]);
+    if ($k != 'q' && $k != 'Q') continue;
+    $q = (float) trim($kv[1]);
+  }
+  $lang = strtolower($terms[0]);
+  $preferred_languages[$lang] = $q;
+}
+if (isset($preferred_languages['*'])) {
+  $preferred_languages['*'] = min($preferred_languages) / 2;
+}
+
+function parse_language_tag($tag) {
+  $subtags = preg_split('/[-_]/', strtolower($tag));
+  $lang = array_shift($subtags);
+  $script = count($subtags) > 0 && strlen($subtags[0]) == 4
+    ? $subtags[0]
+    : null;
+  $region = count($subtags) > 0 && strlen($subtags[0]) == 2
+    ? $subtags[0]
+    : (count($subtags) > 1 ? $subtags[1] : null);
+  return array('language' => $lang, 'script' => $script, 'region' => $region);
+}
+
+function preferability($accept, $support) {
+  $accept = parse_language_tag($accept);
+  $support = parse_language_tag($support);
+  return ($accept['language'] === $support['language'] ? 16 : 0) +
+    ($accept['script'] === $support['script'] ? 8 : 0) +
+    (is_null($accept['script']) ? 4 : 0) +
+    ($accept['region'] === $support['region'] ? 2 : 0) +
+    (is_null($accept) ? 1 : 0);
+}
+
+$negotiated_languages = array();
+foreach ($supported_languages as $language) {
+  $negotiated_languages[$language] = 0;
+  foreach ($preferred_languages as $preferred_language => $q) {
+    $weight = preferability($language, $preferred_language) * $q;
+    if ($negotiated_languages[$language] < $weight) {
+      $negotiated_languages[$language] = $weight;
+    }
+  }
+}
+
+arsort($negotiated_languages);
+$negotiated_language = count($negotiated_languages) > 0
+  ? array_keys($negotiated_languages)[0]
+  : ${JSON.stringify(defaultLanguage)};
+
+if (empty($negotiated_language)) {
+  header('Vary: Accept-Language', true, 406);
+  header('Content-Type: text/plain');
+  exit;
+}
+
+$basename = "index.$negotiated_language.html";
+$path = dirname(__FILE__) . "/$basename";
+$mtime = filemtime($path);
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s \\G\\M\\T', $mtime));
+header('Content-Type: ' . mime_content_type($basename));
+if (!empty($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
+  $if_modified_since = strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']);
+  if ($if_modified_since !== false && $if_modified_since <= $mtime) {
+    header('Vary: Accept-Language', true, 304);
+    exit;
+  }
+}
+header('Vary: Accept-Language');
+echo file_get_contents($path);
+`;
+  return new Content(php, "application/php; charset=utf-8");
+};

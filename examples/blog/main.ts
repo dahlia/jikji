@@ -30,7 +30,11 @@ import {
   writeFiles,
 } from "../../mod.ts";
 import { detectLanguage } from "../../path.ts";
-import { htmlRedirector, intoMultiView } from "../../multiview.ts";
+import {
+  htmlRedirector,
+  intoMultiView,
+  phpNegotiator,
+} from "../../multiview.ts";
 import sass from "../../sass.ts";
 
 // Makes logs show up in the console:
@@ -38,7 +42,7 @@ await setupConsoleLog();
 
 // Takes CLI arguments & options:
 const args = parse(Deno.args, {
-  boolean: ["help", "remove", "watch", "serve"],
+  boolean: ["help", "remove", "watch", "serve", "php"],
   default: {
     help: false,
     "out-dir": "public_html",
@@ -68,13 +72,20 @@ const args = parse(Deno.args, {
 if (args.help) {
   console.log("Usage: main.ts [options] [SRC=.] [BASE_URL]");
   console.log("\nOptions:");
-  console.log("  -h/--help:    Show this help message and exit.");
-  console.log("  -o/--out-dir: Output directory.  [public_html]");
-  console.log("  -r/--remove:  Empty the output directory first.");
-  console.log("  -s/--serve:   Run an HTTP server.");
-  console.log("  -H/--host:    Hostname to listen HTTP requests.  [127.0.0.1]");
-  console.log("  -p/--port:    Port number to listen HTTP requests.  [8080]");
-  console.log("  -w/--watch:   Watch the SRC directory for changes.");
+  console.log("  -h, --help:    Show this help message and exit.");
+  console.log("  -o, --out-dir: Output directory.  [public_html]");
+  console.log("  -r, --remove:  Empty the output directory first.");
+  console.log("  -s, --serve:   Run an HTTP server.");
+  console.log(
+    "  -H, --host:    " +
+      "Hostname to listen HTTP requests.  [127.0.0.1]",
+  );
+  console.log("  -p, --port:    Port number to listen HTTP requests.  [8080]");
+  console.log(
+    "      --php:     " +
+      "Build PHP files for server-side content negotiation.",
+  );
+  console.log("  -w, --watch:   Watch the SRC directory for changes.");
   Deno.exit(0);
 }
 
@@ -86,15 +97,23 @@ if (
   Deno.exit(1);
 }
 
+if (args.php && args.serve) {
+  console.error("Error: --php and -s/--serve options are mutually exclusive.");
+  console.error("       Try php's built-in web server instead (`php -s`).");
+  Deno.exit(1);
+}
+
 // The path of the input directory:
-const srcDir: string = args._.length > 0 ? args[0] : ".";
+const srcDir: string = args._.length > 0 ? args._[0].toString() : ".";
 
 // The path of the output directory:
 const outDir: string = args["out-dir"];
 
 // The base URL for permalinks:
 const baseUrl: URL = new URL(
-  args._.length > 1 ? args[1] : `http://${args.host}:${args.port}/`,
+  args._.length > 1
+    ? args._[1].toString()
+    : `http://${args.host}:${args.port}/`,
 );
 
 // Scans for Markdown files in posts/ directory, and static assets in static/:
@@ -123,7 +142,7 @@ const pipeline = scanFiles(["posts/**/*.md", "static/**/*"], { root: srcDir })
   // redirecting browsers to their preferred language:
   .divide(
     intoMultiView({
-      negotiator: htmlRedirector,
+      negotiator: args.php ? phpNegotiator : htmlRedirector,
       defaultContentKey: ContentKey.get("text/html", "en"),
     }),
     (r) => r.path.href.endsWith("/") && r.size > 1,
@@ -136,7 +155,10 @@ const pipeline = scanFiles(["posts/**/*.md", "static/**/*"], { root: srcDir })
   // Adds the home page (a list of posts):
   .addSummaries(async function* (p: Pipeline) {
     const posts = p.filter(
-      anyRepresentations({ type: "text/html", language: null }),
+      anyRepresentations({
+        type: ["text/html", "application/php"],
+        language: null,
+      }),
     );
     yield new Resource(baseUrl, [
       await renderListTemplate("templates/list.ejs", posts, { baseUrl }),

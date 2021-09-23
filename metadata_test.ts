@@ -2,7 +2,7 @@
  * @copyright 2021 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.108.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { makeResourceMap } from "./fixtures.ts";
 import {

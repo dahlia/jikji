@@ -352,7 +352,7 @@ export interface DetectLanguagePathnameOptions {
   strip?: boolean;
 }
 
-/***
+/**
  * Options for {@link detectLanguage} function to extract language from
  * a URL query string.
  */

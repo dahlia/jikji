@@ -6,19 +6,19 @@ import {
   _format,
   AssertionError,
   equal,
-} from "https://deno.land/std@0.106.0/testing/asserts.ts";
+} from "https://deno.land/std@0.108.0/testing/asserts.ts";
 import {
   diff,
   DiffResult,
   DiffType,
-} from "https://deno.land/std@0.106.0/testing/_diff.ts";
+} from "https://deno.land/std@0.108.0/testing/_diff.ts";
 import {
   bold,
   gray,
   green,
   red,
   white,
-} from "https://deno.land/std@0.106.0/fmt/colors.ts";
+} from "https://deno.land/std@0.108.0/fmt/colors.ts";
 import { Content } from "./content.ts";
 import { Resource } from "./resource.ts";
 

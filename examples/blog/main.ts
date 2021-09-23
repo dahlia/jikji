@@ -8,9 +8,9 @@
 // This provides -w/--watch mode, which watches the source directory
 // for changes and regenerates the blog on the fly.  It also provides
 // -s/--serve mode, which runs an HTTP server on the output directory.
-import { parse } from "https://deno.land/std@0.106.0/flags/mod.ts";
-import { serve } from "https://deno.land/std@0.106.0/http/server.ts";
-import { info } from "https://deno.land/std@0.106.0/log/mod.ts";
+import { parse } from "https://deno.land/std@0.108.0/flags/mod.ts";
+import { serve } from "https://deno.land/std@0.108.0/http/server_legacy.ts";
+import { info } from "https://deno.land/std@0.108.0/log/mod.ts";
 import staticFiles from "https://deno.land/x/static_files@1.1.0/mod.ts";
 import { renderListTemplate, renderTemplate } from "../../ejs.ts";
 import { frontMatter, markdown } from "../../markdown.ts";

@@ -7,7 +7,7 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "https://deno.land/std@0.108.0/testing/asserts.ts";
+} from "https://deno.land/std@0.115.1/testing/asserts.ts";
 import {
   Content,
   ContentKey,

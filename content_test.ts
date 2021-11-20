@@ -211,9 +211,10 @@ for (const [typeName, c] of Object.entries(mediaTypeLikeTypes)) {
     const assert$: (expr: unknown, msg?: string) => void = negate
       ? (expr, msg) => assert(!expr, msg)
       : assert;
-    const label =
-      `Content#matches({ type|exactType: ${typeName}, negate: ${negate ??
-        "undefined"} })`;
+    const label = `Content#matches({ type|exactType: ${typeName}, negate: ${
+      negate ??
+        "undefined"
+    } })`;
     Deno.test(label, () => {
       const txt = new Content("", "text/plain");
       const txtAscii = new Content("", "text/plain; charset=ascii");
@@ -322,8 +323,10 @@ for (const [typeName, c] of Object.entries(langTagLikeTypes)) {
       ? (expr, msg) => assert(!expr, msg)
       : assert;
     const label =
-      `Content#matches({ language|exactLanguage: ${typeName}, negate: ${negate ??
-        "undefined"} })`;
+      `Content#matches({ language|exactLanguage: ${typeName}, negate: ${
+        negate ??
+          "undefined"
+      } })`;
     Deno.test(label, () => {
       const empty = new Content("", "text/plain");
       const ko = new Content("", "text/plain", "ko");

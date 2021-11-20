@@ -46,6 +46,8 @@ To be released.
  -  `ContentFilter#type`, `ContentFilter#exactType`, `ContentFilter#language`,
     and `ContentFilter#exactLanguage` fields now can be an array, which is
     satisfied when any of the given values matches the content.
+ -  Added `bracketedSpans` to _markdown.ts_ module.  (See also the [module's
+    website](https://github.com/mb21/markdown-it-bracketed-spans).)
 
 
 Version 0.1.1

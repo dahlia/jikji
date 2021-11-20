@@ -5,6 +5,7 @@
 import MarkdownIt from "https://esm.sh/markdown-it@12.0.6";
 import abbr from "https://esm.sh/markdown-it-abbr@1.0.4";
 import attrs from "https://esm.sh/markdown-it-attrs@4.0.0";
+import bracketedSpans from "https://esm.sh/markdown-it-bracketed-spans@1.0.1";
 import deflist from "https://esm.sh/markdown-it-deflist@2.1.0";
 import footnote from "https://esm.sh/markdown-it-footnote@3.0.3";
 import title from "https://esm.sh/markdown-it-title@3.0.0";
@@ -90,4 +91,4 @@ export function markdown(
   };
 }
 
-export { abbr, attrs, deflist, footnote, MarkdownIt, title };
+export { abbr, attrs, bracketedSpans, deflist, footnote, MarkdownIt, title };

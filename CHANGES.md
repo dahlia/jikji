@@ -6,7 +6,7 @@ Jikji changelog
 Version 0.2.0
 -------------
 
-To be released.
+Released on November 22, 2021.
 
  -  `Pipeline` became to merge its representations into the existing `Resource`
     when a `Resource` having duplicate `path` is added.

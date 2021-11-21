@@ -249,23 +249,22 @@ export class Pipeline implements AsyncIterable<Resource> {
     summarizer: PipelineSummarizer,
     predicate?: ResourcePredicate,
   ): Pipeline {
-    const summary = summarizer(
-      predicate == null ? this : this.filter(predicate),
-    );
+    return new Pipeline(() => {
+      const summary = summarizer(
+        predicate == null ? this : this.filter(predicate),
+      );
 
-    if (summary instanceof Promise) {
-      const iter = async function* (): AsyncIterable<Resource> {
-        yield await summary;
-      };
-      return new Pipeline(concat(iter(), this));
-    } else if (summary instanceof Resource) {
-      return this.add(summary);
-    }
+      if (summary instanceof Promise) {
+        const iter = async function* (): AsyncIterable<Resource> {
+          yield await summary;
+        };
+        return concat(iter(), this.getResources());
+      } else if (summary instanceof Resource) {
+        return concat([summary], this.getResources());
+      }
 
-    return new Pipeline(
-      () => concat(summary, this.getResources()),
-      this.#resourcesMonitor ?? null,
-    );
+      return concat(summary, this.getResources());
+    }, this.#resourcesMonitor ?? null);
   }
 
   /**
@@ -312,10 +311,10 @@ export class Pipeline implements AsyncIterable<Resource> {
    * @returns A distinct pipeline with divided {@link Resource}s.
    */
   divide(divider: ResourceDivider, predicate?: ResourcePredicate): Pipeline {
-    const resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
+    const getResources = () => this.getResources();
     return new Pipeline(
       async function* (): AsyncIterable<Resource> {
-        for await (const r of resources) {
+        for await (const r of getResources()) {
           if (predicate == null || predicate(r)) {
             for await (const divided of divider(r)) {
               yield divided;

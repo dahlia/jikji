@@ -92,6 +92,8 @@ async function* scanResources(
   options: ExpandGlobOptions & { encoding?: string },
   mime?: Mime,
 ): AsyncIterable<Resource> {
+  const logger = getLogger();
+  logger.debug(`Start scan: ${Deno.inspect(globs)}`);
   mime ??= defaultMime;
   const now = new Date();
   const paths = new Set<string>();
@@ -113,6 +115,7 @@ async function* scanResources(
         null,
         fileInfo.mtime || now,
       );
+      logger.debug(`Scan: ${path}`);
       yield new Resource(path, [content]);
     }
   }
@@ -313,7 +316,7 @@ export function writeFiles(
         );
         if (p instanceof Promise) await p;
       }
-      logger.info(targetPath.toString());
+      logger.info(`Write: ${targetPath.toString()}`);
       if (!rewriteAlways) {
         if (content.eTag != null) {
           await Deno.writeTextFile(

@@ -399,10 +399,12 @@ function preferability($accept, $support) {
   $accept = parse_language_tag($accept);
   $support = parse_language_tag($support);
   return ($accept['language'] === $support['language'] ? 16 : 0) +
-    ($accept['script'] === $support['script'] ? 8 : 0) +
+    (!is_null($accept['script']) &&
+      $accept['script'] === $support['script'] ? 8 : 0) +
     (is_null($accept['script']) ? 4 : 0) +
-    ($accept['region'] === $support['region'] ? 2 : 0) +
-    (is_null($accept) ? 1 : 0);
+    (!is_null($accept['region']) &&
+      $accept['region'] === $support['region'] ? 2 : 0) +
+    (is_null($accept['region']) ? 1 : 0);
 }
 
 $negotiated_languages = array();
@@ -427,11 +429,19 @@ if (empty($negotiated_language)) {
   exit;
 }
 
-$basename = "index.$negotiated_language.html";
+$basename = 'index.' . strtolower($negotiated_language) . '.html';
 $path = dirname(__FILE__) . "/$basename";
 $mtime = filemtime($path);
+if ($mtime === false) {
+  header('Vary: Accept-Language', true, 406);
+  header('Content-Type: text/plain');
+  exit;
+}
+
+$mimetype = mime_content_type($basename);
 header('Last-Modified: ' . gmdate('D, d M Y H:i:s \\G\\M\\T', $mtime));
-header('Content-Type: ' . mime_content_type($basename));
+header('Content-Type: ' .
+  (empty($mimetype) || $mimetype === false ? 'text/html' : $mimetype));
 if (!empty($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
   $if_modified_since = strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']);
   if ($if_modified_since !== false && $if_modified_since <= $mtime) {
@@ -442,5 +452,5 @@ if (!empty($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
 header('Vary: Accept-Language');
 echo file_get_contents($path);
 `;
-  return new Content(php, "application/php; charset=utf-8");
+  return new Content(php.trimStart(), "application/php; charset=utf-8");
 };

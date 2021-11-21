@@ -46,15 +46,17 @@ const args = parse(Deno.args, {
   default: {
     help: false,
     "out-dir": "public_html",
+    "base-url": null,
     remove: false,
     watch: false,
     serve: false,
     host: "127.0.0.1",
-    port: 8000,
+    port: 8080,
   },
   alias: {
     h: "help",
     o: "out-dir",
+    u: "base-url",
     r: "remove",
     w: "watch",
     s: "serve",
@@ -70,22 +72,23 @@ const args = parse(Deno.args, {
 
 // If -h/--help is requested, print it and exit:
 if (args.help) {
-  console.log("Usage: main.ts [options] [SRC=.] [BASE_URL]");
+  console.log("Usage: main.ts [options] [SRC=.]");
   console.log("\nOptions:");
-  console.log("  -h, --help:    Show this help message and exit.");
-  console.log("  -o, --out-dir: Output directory.  [public_html]");
-  console.log("  -r, --remove:  Empty the output directory first.");
-  console.log("  -s, --serve:   Run an HTTP server.");
+  console.log("  -h, --help:     Show this help message and exit.");
+  console.log("  -o, --out-dir:  Output directory.  [public_html]");
+  console.log("  -u, --base-url: Base URL.  [http://127.0.0.1:8080/]");
+  console.log("  -r, --remove:   Empty the output directory first.");
+  console.log("  -s, --serve:    Run an HTTP server.");
   console.log(
-    "  -H, --host:    " +
+    "  -H, --host:     " +
       "Hostname to listen HTTP requests.  [127.0.0.1]",
   );
-  console.log("  -p, --port:    Port number to listen HTTP requests.  [8080]");
+  console.log("  -p, --port:     Port number to listen HTTP requests.  [8080]");
   console.log(
-    "      --php:     " +
+    "      --php:      " +
       "Build PHP files for server-side content negotiation.",
   );
-  console.log("  -w, --watch:   Watch the SRC directory for changes.");
+  console.log("  -w, --watch:    Watch the SRC directory for changes.");
   Deno.exit(0);
 }
 
@@ -99,7 +102,7 @@ if (
 
 if (args.php && args.serve) {
   console.error("Error: --php and -s/--serve options are mutually exclusive.");
-  console.error("       Try php's built-in web server instead (`php -s`).");
+  console.error("       Try php's built-in web server instead (`php -S`).");
   Deno.exit(1);
 }
 
@@ -111,9 +114,7 @@ const outDir: string = args["out-dir"];
 
 // The base URL for permalinks:
 const baseUrl: URL = new URL(
-  args._.length > 1
-    ? args._[1].toString()
-    : `http://${args.host}:${args.port}/`,
+  args["base-url"] ?? `http://${args.host}:${args.port}/`,
 );
 
 // Scans for Markdown files in posts/ directory, and static assets in static/:

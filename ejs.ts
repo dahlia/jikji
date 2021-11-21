@@ -105,11 +105,12 @@ export async function renderListTemplate(
     }
   }
 
-  return new Content(
+  const content: Content = new Content(
     async () => {
       const tpl = await openTemplate(filePath);
       return await tpl({
         list: array,
+        content,
         __file__: filePath,
         __dir__: dirname(filePath),
         ...metadata,
@@ -122,6 +123,7 @@ export async function renderListTemplate(
     undefined,
     array.map((r) => r.path.toString()).join("\n"),
   );
+  return content;
 }
 
 /**

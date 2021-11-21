@@ -48,6 +48,8 @@ To be released.
     satisfied when any of the given values matches the content.
  -  Added `bracketedSpans` to _markdown.ts_ module.  (See also the [module's
     website](https://github.com/mb21/markdown-it-bracketed-spans).)
+ -  Added `content` (which is a `Content` instance) as a common context used for
+    templates rendered by `renderListTemplate()` in _ejs.ts_ module.
 
 
 Version 0.1.1

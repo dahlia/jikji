@@ -3,6 +3,14 @@
 Jikji changelog
 ===============
 
+Version 0.2.1
+-------------
+
+To be released.
+
+ -  Fixed type errors from _markdown.ts_ module.
+
+
 Version 0.2.0
 -------------
 

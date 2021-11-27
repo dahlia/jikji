@@ -6,7 +6,7 @@ Jikji changelog
 Version 0.2.1
 -------------
 
-To be released.
+Released on November 27, 2021.
 
  -  Fixed type errors from _markdown.ts_ module.
 

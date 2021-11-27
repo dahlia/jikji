@@ -260,7 +260,9 @@ export function writeFiles(
     if (resource.size > 1) {
       throw new ResourceError(
         `${writeFiles.name}() cannot deal with resources that consist of ` +
-          `multiple contents.  Try using ${intoMultiView.name}().`,
+          `multiple contents.  Try using ${intoMultiView.name}().\n` +
+          `Resource path: ${resource.path}\nRepresentations:\n- ` +
+          `${[...resource.keys()].map((k) => k.toString()).join('\n- ')}\n`,
       );
     }
 

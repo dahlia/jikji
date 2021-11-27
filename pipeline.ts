@@ -311,7 +311,7 @@ export class Pipeline implements AsyncIterable<Resource> {
    * @returns A distinct pipeline with divided {@link Resource}s.
    */
   divide(divider: ResourceDivider, predicate?: ResourcePredicate): Pipeline {
-    const getResources = () => this.getResources();
+    const getResources = () => this[Symbol.asyncIterator]();
     return new Pipeline(
       async function* (): AsyncIterable<Resource> {
         for await (const r of getResources()) {

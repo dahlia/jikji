@@ -6,7 +6,7 @@ Jikji changelog
 Version 0.2.2
 -------------
 
-To be released.
+Released on November 28, 2021.
 
  -  Fixed `Pipeline#divide()` method's bug where it had divide virtually no
     resources.

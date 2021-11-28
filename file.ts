@@ -262,7 +262,7 @@ export function writeFiles(
         `${writeFiles.name}() cannot deal with resources that consist of ` +
           `multiple contents.  Try using ${intoMultiView.name}().\n` +
           `Resource path: ${resource.path}\nRepresentations:\n- ` +
-          `${[...resource.keys()].map((k) => k.toString()).join('\n- ')}\n`,
+          `${[...resource.keys()].map((k) => k.toString()).join("\n- ")}\n`,
       );
     }
 

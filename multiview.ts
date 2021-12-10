@@ -198,6 +198,7 @@ export const htmlRedirector: MultiViewNegotiator = (
       var defaultLang =
         ${JSON.stringify(defaultContent?.language?.toString())} || undefined;
       var url = _negotiateUsingClientSideJavaScript$internal(
+        document,
         navigator,
         multiViews,
         defaultLang
@@ -275,6 +276,7 @@ export const htmlRedirector: MultiViewNegotiator = (
 };
 
 export function _negotiateUsingClientSideJavaScript$internal(
+  document: { cookie: string },
   navigator: { languages?: string[]; language?: string },
   multiViews: Record<string, string>,
   defaultLanguage?: string,
@@ -304,6 +306,17 @@ export function _negotiateUsingClientSideJavaScript$internal(
       (accept.script == null ? 4 : 0) +
       (accept.region === view.region ? 2 : 0) +
       (accept.region == null ? 1 : 0);
+  }
+
+  const acceptLanguageCookie = document.cookie.match(
+    /(?:^|;)\s*accept-language=([A-Za-z0-9_-]+)\s*(?:;|$)/,
+  )?.[1];
+  if (acceptLanguageCookie != null) {
+    for (const lang in multiViews) {
+      if (lang.toLowerCase() === acceptLanguageCookie.toLowerCase()) {
+        return multiViews[lang];
+      }
+    }
   }
 
   const acceptLanguages: string[] = navigator.languages ??
@@ -423,8 +436,18 @@ $negotiated_language = count($negotiated_languages) > 0
   ? array_keys($negotiated_languages)[0]
   : ${JSON.stringify(defaultLanguage)};
 
+if (!empty($_COOKIE['accept-language'])) {
+  $cookie_language = strtolower(trim($_COOKIE['accept-language']));
+  foreach ($supported_languages as $l) {
+    if (strtolower($l) === $cookie_language) {
+      $negotiated_language = $cookie_language;
+      break;
+    }
+  }
+}
+
 if (empty($negotiated_language)) {
-  header('Vary: Accept-Language', true, 406);
+  header('Vary: Accept-Language, Cookie', true, 406);
   header('Content-Type: text/plain');
   exit;
 }
@@ -433,7 +456,7 @@ $basename = 'index.' . strtolower($negotiated_language) . '.html';
 $path = dirname(__FILE__) . "/$basename";
 $mtime = filemtime($path);
 if ($mtime === false) {
-  header('Vary: Accept-Language', true, 406);
+  header('Vary: Accept-Language, Cookie', true, 406);
   header('Content-Type: text/plain');
   exit;
 }
@@ -449,7 +472,7 @@ if (!empty($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
     exit;
   }
 }
-header('Vary: Accept-Language');
+header('Vary: Accept-Language, Cookie');
 echo file_get_contents($path);
 `;
   return new Content(php.trimStart(), "application/php; charset=utf-8");

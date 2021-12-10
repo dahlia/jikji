@@ -8,6 +8,12 @@ Version 0.3.0
 
 To be released.
 
+ -  Built-in `MultiViewNegotiator`s in *multiview.ts* module became aware of
+    the cookie `accept-language`, which is the most prior option for choosing
+    the language:
+     - `htmlRedirector`
+     - `phpNegotiator`
+
 
 Version 0.2.2
 -------------

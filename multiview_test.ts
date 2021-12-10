@@ -240,10 +240,27 @@ for (const [name, defaultContent] of Object.entries(defaultContents)) {
       Object.fromEntries(Object.entries(views).filter(([lang]) => lang !== "")),
     );
     const scriptText = doc?.querySelector("script")?.innerText ?? "";
-    const script = new Function("navigator", "location", scriptText);
+    const script = new Function(
+      "document",
+      "navigator",
+      "location",
+      scriptText,
+    );
     const loc = { href: "" };
-    script({ language: "ko" }, loc);
+    script({ cookie: "" }, { language: "ko" }, loc);
     assertEquals(loc.href, "https://example.com/index.ko-kr.html");
+    script(
+      { cookie: "foo=zh-hans; accept-language=zh" },
+      { language: "ko" },
+      loc,
+    );
+    assertEquals(loc.href, "https://example.com/index.ko-kr.html");
+    script({ cookie: "accept-language=zh-hans" }, { language: "ko" }, loc);
+    assertEquals(loc.href, "https://example.com/index.zh-hans.html");
+    script({ cookie: "foo=1; accept-language=ZH-Hans; bar=2" }, {
+      language: "ko",
+    }, loc);
+    assertEquals(loc.href, "https://example.com/index.zh-hans.html");
   });
 }
 
@@ -255,32 +272,62 @@ Deno.test("_negotiateUsingClientSideJavaScript$internal()", () => {
     "zh-Hans": "https://example.com/index.zh-hans.html",
   };
   assertEquals(
-    negotiate({ languages: ["ko-kr", "en-us"] }, views, "en"),
+    negotiate({ cookie: "" }, { languages: ["ko-kr", "en-us"] }, views, "en"),
     "https://example.com/index.ko-kr.html",
   );
   assertEquals(
-    negotiate({ languages: ["ko", "en-us"] }, views, "en"),
+    negotiate({ cookie: "" }, { languages: ["ko", "en-us"] }, views, "en"),
     "https://example.com/index.ko-kr.html",
   );
   assertEquals(
-    negotiate({ languages: ["en-us"] }, views, "zh-Hans"),
+    negotiate({ cookie: "" }, { languages: ["en-us"] }, views, "zh-Hans"),
     "https://example.com/index.en.html",
   );
   assertEquals(
-    negotiate({ language: "ko-" }, views, "en"),
+    negotiate({ cookie: "a=1; b=2" }, { language: "ko-" }, views, "en"),
     "https://example.com/index.ko-kr.html",
   );
   assertEquals(
-    negotiate({ languages: ["de", "in"] }, views, "en"),
+    negotiate({ cookie: "c=3" }, { languages: ["de", "in"] }, views, "en"),
     "https://example.com/index.en.html",
   );
   assertEquals(
-    negotiate({ language: "ja" }, views, "zh-Hans"),
+    negotiate({ cookie: "d=4" }, { language: "ja" }, views, "zh-Hans"),
     "https://example.com/index.zh-hans.html",
   );
   assertEquals(
-    negotiate({}, views, "zh-Hans"),
+    negotiate({ cookie: "" }, {}, views, "zh-Hans"),
     "https://example.com/index.zh-hans.html",
   );
-  assertEquals(negotiate({}, views, "de"), undefined);
+  assertEquals(
+    negotiate({ cookie: "" }, {}, views, "de"),
+    undefined,
+  );
+  assertEquals(
+    negotiate(
+      { cookie: "accept-language=de" },
+      { languages: ["ko-kr", "en-us"] },
+      views,
+      "en",
+    ),
+    "https://example.com/index.ko-kr.html",
+  );
+  assertEquals(
+    negotiate(
+      { cookie: "accept-language=zh-hans" },
+      { languages: ["ko-kr", "en-us"] },
+      views,
+      "en",
+    ),
+    "https://example.com/index.zh-hans.html",
+  );
+  assertEquals(
+    negotiate(
+      { cookie: "foo=1; accept-language=ZH-Hans; bar=2" },
+      { languages: ["ko-kr", "en-us"] },
+      views,
+      "en",
+    ),
+    "https://example.com/index.zh-hans.html",
+  );
 });

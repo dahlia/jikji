@@ -8,13 +8,12 @@
 // This provides -w/--watch mode, which watches the source directory
 // for changes and regenerates the blog on the fly.  It also provides
 // -s/--serve mode, which runs an HTTP server on the output directory.
-import { parse } from "https://deno.land/std@0.115.1/flags/mod.ts";
-import { serve } from "https://deno.land/std@0.115.1/http/server_legacy.ts";
-import { info } from "https://deno.land/std@0.115.1/log/mod.ts";
-import staticFiles from "https://deno.land/x/static_files@1.1.0/mod.ts";
+import { parse } from "https://deno.land/std@0.145.0/flags/mod.ts";
+import { serve } from "https://deno.land/std@0.145.0/http/server.ts";
+import { serveDir } from "https://deno.land/std@0.145.0/http/file_server.ts";
+import { info } from "https://deno.land/std@0.145.0/log/mod.ts";
 import { renderListTemplate, renderTemplate } from "../../ejs.ts";
 import { frontMatter, markdown } from "../../markdown.ts";
-import { defaultMime } from "../../mime.ts";
 import {
   anyRepresentations,
   ContentKey,
@@ -43,6 +42,7 @@ await setupConsoleLog();
 // Takes CLI arguments & options:
 const args = parse(Deno.args, {
   boolean: ["help", "remove", "watch", "serve", "php"],
+  string: ["out-dir", "base-url", "host", "port"],
   default: {
     help: false,
     "out-dir": "public_html",
@@ -51,7 +51,7 @@ const args = parse(Deno.args, {
     watch: false,
     serve: false,
     host: "127.0.0.1",
-    port: 8080,
+    port: "8080",
   },
   alias: {
     h: "help",
@@ -92,10 +92,7 @@ if (args.help) {
   Deno.exit(0);
 }
 
-if (
-  typeof args.port != "number" ||
-  args.port < 0 || args.port > 65535 || args.port % 1 !== 0
-) {
+if (!args.port.match(/^\d+$/) || parseInt(args.port) > 65535) {
   console.error("Error: -p/--port: Invalid port number.");
   Deno.exit(1);
 }
@@ -192,19 +189,16 @@ async function build(): Promise<void> {
 
 // Runs an HTTP server:
 async function runServer(): Promise<void> {
-  const httpd = serve({ port: args.port, hostname: args.host });
-  const server = staticFiles(outDir, {
-    setHeaders(headers: Headers, path: string) {
-      const type = defaultMime.getType(path);
-      if (type != null) {
-        headers.set("Content-Type", type);
-      }
+  await serve(
+    (req: Request) => serveDir(req, { fsRoot: outDir, showDirListing: true }),
+    {
+      port: parseInt(args.port),
+      hostname: args.host,
+      onListen({ port, hostname }) {
+        info(`Listening on http://${hostname}:${port}/`);
+      },
     },
-  });
-  info(`Listening on http://${args.host}:${args.port}/`);
-  for await (const req of httpd) {
-    await server(req);
-  }
+  );
 }
 
 await Promise.all(args.serve ? [build(), runServer()] : [build()]);

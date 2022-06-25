@@ -1,5 +1,5 @@
 /**
- * @copyright 2021 Hong Minhee
+ * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
 import concat from "https://esm.sh/@async-generators/concat@0.1.0";

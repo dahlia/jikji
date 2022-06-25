@@ -1,5 +1,5 @@
 /**
- * @copyright 2021 Hong Minhee
+ * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
 import MarkdownIt from "https://esm.sh/markdown-it@12.2.0";
@@ -9,7 +9,7 @@ import bracketedSpans from "https://esm.sh/markdown-it-bracketed-spans@1.0.1";
 import deflist from "https://esm.sh/markdown-it-deflist@2.1.0";
 import footnote from "https://esm.sh/markdown-it-footnote@3.0.3";
 import title from "https://cdn.skypack.dev/markdown-it-title@4.0.0";
-import * as yaml from "https://deno.land/std@0.115.1/encoding/yaml.ts";
+import * as yaml from "https://deno.land/std@0.145.0/encoding/yaml.ts";
 import { Content, ContentTransformer, MediaType } from "./pipeline.ts";
 
 /**

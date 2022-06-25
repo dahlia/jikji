@@ -1,14 +1,14 @@
 /**
- * @copyright 2021 Hong Minhee
+ * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { basename } from "https://deno.land/std@0.115.1/path/mod.ts";
+import { basename } from "https://deno.land/std@0.145.0/path/mod.ts";
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
-} from "https://deno.land/std@0.115.1/testing/asserts.ts";
+} from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { Content, ContentKeyError } from "./content.ts";
 import { LanguageTag, LanguageTagError } from "./language_tag.ts";
@@ -69,7 +69,7 @@ Deno.test("Pipeline(AsyncIterable<Resource>)", async () => {
     },
   };
   const p3 = new Pipeline(dupIterable);
-  await assertThrowsAsync(() => toArray(p3), ContentKeyError);
+  await assertRejects(() => toArray(p3), ContentKeyError);
 });
 
 Deno.test("Pipeline(Iterable<Resource>)", async () => {
@@ -105,7 +105,7 @@ Deno.test("Pipeline(Iterable<Resource>)", async () => {
     },
   };
   const p3 = new Pipeline(dupIterable);
-  await assertThrowsAsync(() => toArray(p3), ContentKeyError);
+  await assertRejects(() => toArray(p3), ContentKeyError);
 });
 
 Deno.test({
@@ -214,10 +214,7 @@ Deno.test("Pipeline#add()", async () => {
   );
 
   const p4 = p1.add(def);
-  await assertThrowsAsync(
-    () => toArray(p4),
-    ContentKeyError,
-  );
+  await assertRejects(() => toArray(p4), ContentKeyError);
 });
 
 const summarizerReturnTypes: Record<

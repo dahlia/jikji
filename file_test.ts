@@ -1,5 +1,5 @@
 /**
- * @copyright 2021 Hong Minhee
+ * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
 import {
@@ -7,12 +7,12 @@ import {
   resolve,
   sep,
   toFileUrl,
-} from "https://deno.land/std@0.115.1/path/mod.ts";
+} from "https://deno.land/std@0.145.0/path/mod.ts";
 import {
   assert,
   assertEquals,
   assertThrows,
-} from "https://deno.land/std@0.115.1/testing/asserts.ts";
+} from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import { sleep } from "https://deno.land/x/sleep@v1.2.0/sleep.ts";
 import { assertEquals$ } from "./asserts.ts";
 import {

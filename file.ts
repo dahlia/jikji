@@ -1,5 +1,5 @@
 /**
- * @copyright 2021 Hong Minhee
+ * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
 import {
@@ -14,12 +14,12 @@ import {
   sep,
   SEP_PATTERN,
   toFileUrl,
-} from "https://deno.land/std@0.115.1/path/mod.ts";
+} from "https://deno.land/std@0.145.0/path/mod.ts";
 import {
   expandGlob,
   ExpandGlobOptions,
-} from "https://deno.land/std@0.115.1/fs/expand_glob.ts";
-import * as log from "https://deno.land/std@0.115.1/log/mod.ts";
+} from "https://deno.land/std@0.145.0/fs/expand_glob.ts";
+import * as log from "https://deno.land/std@0.145.0/log/mod.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
 import { defaultMime, Mime } from "./mime.ts";
 import { Content, PathTransformer, Pipeline, Resource } from "./pipeline.ts";

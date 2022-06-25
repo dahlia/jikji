@@ -1,24 +1,24 @@
 /**
- * @copyright 2021 Hong Minhee
+ * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
 import {
-  _format,
   AssertionError,
   equal,
-} from "https://deno.land/std@0.115.1/testing/asserts.ts";
+} from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import {
   diff,
   DiffResult,
   DiffType,
-} from "https://deno.land/std@0.115.1/testing/_diff.ts";
+} from "https://deno.land/std@0.145.0/testing/_diff.ts";
+import { format } from "https://deno.land/std@0.145.0/testing/_format.ts";
 import {
   bold,
   gray,
   green,
   red,
   white,
-} from "https://deno.land/std@0.115.1/fmt/colors.ts";
+} from "https://deno.land/std@0.145.0/fmt/colors.ts";
 import { Content } from "./content.ts";
 import { Resource } from "./resource.ts";
 
@@ -256,8 +256,8 @@ export async function assertEquals$(
     return;
   }
   let message = "";
-  const actualString = _format(actual);
-  const expectedString = _format(expected);
+  const actualString = format(actual);
+  const expectedString = format(expected);
   try {
     const diffResult = diff(
       actualString.split("\n"),

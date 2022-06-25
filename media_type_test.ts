@@ -1,12 +1,12 @@
 /**
- * @copyright 2021 Hong Minhee
+ * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
 import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "https://deno.land/std@0.115.1/testing/asserts.ts";
+} from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
 
 Deno.test("MediaType.get()", () => {

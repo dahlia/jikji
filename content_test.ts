@@ -1,5 +1,5 @@
 /**
- * @copyright 2021 Hong Minhee
+ * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
 import {
@@ -8,7 +8,7 @@ import {
   assertNotStrictEquals,
   assertStrictEquals,
   assertThrows,
-} from "https://deno.land/std@0.115.1/testing/asserts.ts";
+} from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
 import {
   Content,

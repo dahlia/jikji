@@ -1,5 +1,5 @@
 /**
- * @copyright 2021 Hong Minhee
+ * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
 import { LanguageTag, LanguageTagError } from "./language_tag.ts";
@@ -220,21 +220,20 @@ export class Content {
       const exactTypes = (filter.exactType instanceof Array
         ? filter.exactType
         : [filter.exactType]).map((t) =>
-          typeof t == "string"
-            ? MediaType.fromString(t)
-            : t
+          typeof t == "string" ? MediaType.fromString(t) : t
         );
-      if (exactTypes.indexOf(this.type) < 0) return false;
+      if (exactTypes.indexOf(this.type) < 0) {
+        return false;
+      }
     }
     if (typeof filter.language != "undefined") {
-      const languages = (filter.language instanceof Array
-        ? filter.language
-        : [filter.language]).map((l) =>
-          typeof l == "string" ? LanguageTag.fromString(l) : l
-        );
+      const languages =
+        (filter.language instanceof Array ? filter.language : [filter.language])
+          .map((l) => typeof l == "string" ? LanguageTag.fromString(l) : l);
       const matchesAny = languages.some((l) =>
-        this.language == null ? l == null
-        : l != null && this.language.matches(l)
+        this.language == null
+          ? l == null
+          : l != null && this.language.matches(l)
       );
       if (!matchesAny) return false;
     }
@@ -242,11 +241,11 @@ export class Content {
       const exactLanguages = (filter.exactLanguage instanceof Array
         ? filter.exactLanguage
         : [filter.exactLanguage]).map((l) =>
-          typeof l == "string"
-            ? LanguageTag.fromString(l)
-            : l
+          typeof l == "string" ? LanguageTag.fromString(l) : l
         );
-      const matchesAny = exactLanguages.some((l) => l === this.language);
+      const matchesAny = exactLanguages.some((l) =>
+        l === this.language
+      );
       if (!matchesAny) return false;
     }
     return true;

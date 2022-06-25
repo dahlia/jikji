@@ -2,9 +2,11 @@
  * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
-import concat from "https://esm.sh/@async-generators/concat@0.1.0";
-import map from "https://esm.sh/@async-generators/map@0.1.0";
-import filter from "https://esm.sh/@async-generators/filter@0.1.1";
+import {
+  concat,
+  filter,
+  map,
+} from "https://deno.land/x/aitertools@0.3.1/mod.ts";
 import { MediaType } from "./media_type.ts";
 import { LanguageTag } from "./language_tag.ts";
 import {
@@ -133,10 +135,10 @@ export class Pipeline implements AsyncIterable<Resource> {
       this.#buffer = resourcesGetter;
     }
     if (resourcesMonitor != null) {
-      this.#resourcesMonitor = map(resourcesMonitor, (_) => {
+      this.#resourcesMonitor = map(() => {
         this.#buffer = undefined;
         this.#merged = false;
-      });
+      }, resourcesMonitor);
     }
     this.#merged = false;
   }
@@ -281,7 +283,7 @@ export class Pipeline implements AsyncIterable<Resource> {
       () => {
         let resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
         for (const transformer of transformers) {
-          resources = map(resources, transformer);
+          resources = map(transformer, resources);
         }
         return resources;
       },
@@ -291,7 +293,7 @@ export class Pipeline implements AsyncIterable<Resource> {
 
   private mapWithoutMerge(transformer: ResourceTransformer): Pipeline {
     return new Pipeline(
-      () => map(this.getResources(), transformer),
+      () => map(transformer, this.getResources()),
       this.#resourcesMonitor ?? null,
     );
   }
@@ -342,7 +344,7 @@ export class Pipeline implements AsyncIterable<Resource> {
       () => {
         let resources: AsyncIterable<Resource> = this[Symbol.asyncIterator]();
         for (const pred of predicates) {
-          resources = filter(resources, pred);
+          resources = filter(pred, resources);
         }
         return resources;
       },

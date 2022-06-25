@@ -5,7 +5,7 @@ import {
 import {
   DOMParser,
   Element,
-} from "https://deno.land/x/deno_dom@v0.1.13-alpha/deno-dom-wasm.ts";
+} from "https://deno.land/x/deno_dom@v0.1.31-alpha/deno-dom-wasm.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { Content, ContentKey, MediaType } from "./content.ts";
 import {

@@ -13,7 +13,7 @@ import {
   assertEquals,
   assertThrows,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
-import { sleep } from "https://deno.land/x/sleep@v1.2.0/sleep.ts";
+import { sleep } from "https://deno.land/x/sleep@v1.2.1/sleep.ts";
 import { assertEquals$ } from "./asserts.ts";
 import {
   rebase,

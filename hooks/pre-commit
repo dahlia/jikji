@@ -3,8 +3,7 @@ set -e
 deno test \
   --allow-read \
   --allow-write \
-  --allow-run \
-  --allow-net=cdn.skypack.dev \
+  --allow-net=cdn.skypack.dev,deno.land \
   --check \
   --doc \
   --jobs \

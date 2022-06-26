@@ -2,16 +2,15 @@ import { assertEquals$ } from "./asserts.ts";
 import { Content } from "../content.ts";
 import {
   CSS_MEDIA_TYPE,
-  getSassCompiler,
   Options,
+  REQUIRED_PERMISSIONS,
   sass,
   SCSS_MEDIA_TYPE,
 } from "../sass.ts";
 
 Deno.test({
   name: "sass()",
-  ignore: await getSassCompiler() == null,
-  permissions: { run: true },
+  permissions: REQUIRED_PERMISSIONS,
   async fn() {
     const compileSass = sass(
       { outputStyle: "compressed", asString: true } as Options,
@@ -21,7 +20,7 @@ Deno.test({
     const css = compileSass(scss);
     await assertEquals$(
       css,
-      new Content("p a{color:red}\n", CSS_MEDIA_TYPE, null, d),
+      new Content("p a{color:red}", CSS_MEDIA_TYPE, null, d),
     );
   },
 });

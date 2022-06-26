@@ -13,8 +13,26 @@ To be released.
     the language:
      - `htmlRedirector`
      - `phpNegotiator`
- -  `ContentMetadata` type from *content.ts* no more includes `null`.
+ -  `ContentMetadata` type from *content.ts* module no more includes `null`.
  -  Added `LanguageTag.requiredPermissions` constant.
+ -  The *sass.ts* module no more depends on Dart-Sass CLI (`sass`) or
+    SassC (`sassc`), so no more requires `--allow-run` permission on Deno.
+    Instead, it depends on [Deno Sass], a TypeScript & WebAssembly binding of
+    [grass], which is written in Rust.  In order to load WebAssembly binary,
+    now it requires `--allow-net=deno.land` instead.  [[#15]]
+     -  The indented syntax of Sass (_\*.sass_) is no more supported.  Only
+        curly-bracket syntax of SCSS (_\*.scss_) is supported.
+     -  `Options#outputStyle` field from *sass.ts* module no more includes
+        `"nested"` and `"compact"`.
+     -  Removed `Options#precision` field from *sass.ts* module.
+     -  Removed `Options#sourceMap` field from *sass.ts* module.
+     -  Removed `getSassCompiler()` function from *sass.ts* module.
+     -  Removed `SASS_MEDIA_TYPE` constant from *sass.ts* module.
+     -  Added `REQUIRED_PERMISSIONS` constant to *sass.ts* module.
+
+[Deno Sass]: https://github.com/hironichu/denosass
+[grass]: https://github.com/connorskees/grass
+[#15]: https://github.com/dahlia/jikji/issues/15
 
 
 Version 0.2.2

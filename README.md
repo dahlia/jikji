@@ -20,7 +20,7 @@ Currently, it provides the below *composable building blocks*:
  -  First-class support for [content negotiation] on type & language
  -  Markdown (powered by [markdown-it])
  -  EJS/ETS template engine (powered by [dejs])
- -  [Sass/SCSS] stylesheet preprocessor (through subprocess)
+ -  [SCSS] stylesheet preprocessor (powered by [grass])
 
 [Tag badge]: https://img.shields.io/github/v/tag/dahlia/jikji
 [Deno module]: https://deno.land/x/jikji
@@ -33,7 +33,8 @@ Currently, it provides the below *composable building blocks*:
 [content negotiation]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation
 [markdown-it]: https://github.com/markdown-it/markdown-it
 [dejs]: https://github.com/syumai/dejs
-[Sass/SCSS]: https://sass-lang.com/
+[SCSS]: https://sass-lang.com/
+[grass]: https://github.com/connorskees/grass
 
 
 Example

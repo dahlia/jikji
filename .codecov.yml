@@ -8,8 +8,6 @@ coverage:
 
 ignore:
   - "*_test.ts"
-  - asserts.ts
   - examples/
-  - fixtures.ts
   - test.ts
-  - "tests/*_test.ts"
+  - "tests/*.ts"

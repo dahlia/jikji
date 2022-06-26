@@ -11,6 +11,7 @@ import {
 Deno.test({
   name: "sass()",
   ignore: await getSassCompiler() == null,
+  permissions: { run: true },
   async fn() {
     const compileSass = sass(
       { outputStyle: "compressed", asString: true } as Options,

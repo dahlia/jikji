@@ -272,16 +272,22 @@ const languageNames: Record<string, Record<string, string>> = {
   },
 };
 
+const permissions = LanguageTag.requiredPermissions;
+
 for (const [tag, expected] of Object.entries(languageNames)) {
-  Deno.test(`LanguageTag#getLanguageName() [${tag}]`, async () => {
-    const lang = LanguageTag.fromString(tag);
-    for (const [tag, expectedName] of Object.entries(expected)) {
-      assertEquals(await lang.getLanguageName(tag), expectedName);
-      assertEquals(
-        await lang.getLanguageName(LanguageTag.fromString(tag)),
-        expectedName,
-      );
-    }
+  Deno.test({
+    name: `LanguageTag#getLanguageName() [${tag}]`,
+    permissions,
+    async fn() {
+      const lang = LanguageTag.fromString(tag);
+      for (const [tag, expectedName] of Object.entries(expected)) {
+        assertEquals(await lang.getLanguageName(tag), expectedName);
+        assertEquals(
+          await lang.getLanguageName(LanguageTag.fromString(tag)),
+          expectedName,
+        );
+      }
+    },
   });
 }
 
@@ -309,11 +315,15 @@ const territoryNames: Record<string, Record<string, string>> = {
 };
 
 for (const [tag, expected] of Object.entries(territoryNames)) {
-  Deno.test(`LanguageTag#getTerritoryName() [${tag}]`, async () => {
-    const lang = LanguageTag.fromString(tag);
-    for (const [territory, expectedName] of Object.entries(expected)) {
-      assertEquals(await lang.getTerritoryName(territory), expectedName);
-    }
+  Deno.test({
+    name: `LanguageTag#getTerritoryName() [${tag}]`,
+    permissions,
+    async fn() {
+      const lang = LanguageTag.fromString(tag);
+      for (const [territory, expectedName] of Object.entries(expected)) {
+        assertEquals(await lang.getTerritoryName(territory), expectedName);
+      }
+    },
   });
 }
 
@@ -341,11 +351,15 @@ const scriptNames: Record<string, Record<string, string>> = {
 };
 
 for (const [tag, expected] of Object.entries(scriptNames)) {
-  Deno.test(`LanguageTag#getScriptName() [${tag}]`, async () => {
-    const lang = LanguageTag.fromString(tag);
-    for (const [script, expectedName] of Object.entries(expected)) {
-      assertEquals(await lang.getScriptName(script), expectedName);
-    }
+  Deno.test({
+    name: `LanguageTag#getScriptName() [${tag}]`,
+    permissions,
+    async fn() {
+      const lang = LanguageTag.fromString(tag);
+      for (const [script, expectedName] of Object.entries(expected)) {
+        assertEquals(await lang.getScriptName(script), expectedName);
+      }
+    },
   });
 }
 

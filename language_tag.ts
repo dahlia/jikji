@@ -8,6 +8,11 @@
  * @license LGPL-3.0-only
  */
 export class LanguageTag {
+  /** Required set of permissions for using this class within Deno. */
+  static readonly requiredPermissions: Deno.PermissionOptionsObject = {
+    net: ["cdn.skypack.dev"],
+  };
+
   /** An ISO 639 code which consists of two or three letters. */
   readonly language: string;
   /** An ISO 15924 code which consists of four letters. */

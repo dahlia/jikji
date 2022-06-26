@@ -7,7 +7,7 @@ import {
   Element,
 } from "https://deno.land/x/deno_dom@v0.1.31-alpha/deno-dom-wasm.ts";
 import { assertEquals$ } from "./asserts.ts";
-import { Content, ContentKey, MediaType } from "../content.ts";
+import { Content, ContentKey, LanguageTag, MediaType } from "../content.ts";
 import {
   _negotiateUsingClientSideJavaScript$internal,
   htmlRedirector,
@@ -194,73 +194,79 @@ const defaultContents: Record<string, Content | undefined> = {
 };
 
 for (const [name, defaultContent] of Object.entries(defaultContents)) {
-  Deno.test(`htmlRedirector(views, ${name})`, async () => {
-    const views = {
-      "en": "https://example.com/index.en.html",
-      "ko-KR": "https://example.com/index.ko-kr.html",
-      "zh-Hans": "https://example.com/index.zh-hans.html",
-      "": "https://example.com/index.html",
-    };
-    const multiViews: MultiView = new Map(
-      Object.entries(views).map(
-        ([lang, href]) => [
-          lang === "" ? null : ContentKey.get("text/html", lang),
-          new URL(href),
-        ],
-      ),
-    );
-    const html = htmlRedirector(multiViews, defaultContent);
-    assertNotEquals(html, null);
-    assertEquals(
-      html?.type,
-      defaultContent?.type ?? MediaType.fromString("text/html; charset=utf8"),
-    );
-    assertEquals(html?.language, defaultContent?.language ?? null);
-    const parser = new DOMParser();
-    const contentBody = await html?.getBody();
-    const contentText = typeof contentBody == "string"
-      ? contentBody
-      : new TextDecoder(html?.encoding ?? undefined).decode(contentBody);
-    const doc = parser.parseFromString(contentText, "text/html");
-    assertNotEquals(doc, null);
-    const links: Record<string, string> = Object.fromEntries(
-      Array.from(
-        doc?.querySelectorAll(
-          "a[href][hreflang][rel=alternate], " +
-            "link[href][hreflang][rel=alternate]",
-        ) as Iterable<Element>,
-        (link: Element) => [
-          link.getAttribute("hreflang"),
-          link.getAttribute("href"),
-        ],
-      ),
-    );
-    assertEquals(
-      links,
-      Object.fromEntries(Object.entries(views).filter(([lang]) => lang !== "")),
-    );
-    const scriptText = doc?.querySelector("script")?.innerText ?? "";
-    const script = new Function(
-      "document",
-      "navigator",
-      "location",
-      scriptText,
-    );
-    const loc = { href: "" };
-    script({ cookie: "" }, { language: "ko" }, loc);
-    assertEquals(loc.href, "https://example.com/index.ko-kr.html");
-    script(
-      { cookie: "foo=zh-hans; accept-language=zh" },
-      { language: "ko" },
-      loc,
-    );
-    assertEquals(loc.href, "https://example.com/index.ko-kr.html");
-    script({ cookie: "accept-language=zh-hans" }, { language: "ko" }, loc);
-    assertEquals(loc.href, "https://example.com/index.zh-hans.html");
-    script({ cookie: "foo=1; accept-language=ZH-Hans; bar=2" }, {
-      language: "ko",
-    }, loc);
-    assertEquals(loc.href, "https://example.com/index.zh-hans.html");
+  Deno.test({
+    name: `htmlRedirector(views, ${name})`,
+    permissions: LanguageTag.requiredPermissions,
+    async fn() {
+      const views = {
+        "en": "https://example.com/index.en.html",
+        "ko-KR": "https://example.com/index.ko-kr.html",
+        "zh-Hans": "https://example.com/index.zh-hans.html",
+        "": "https://example.com/index.html",
+      };
+      const multiViews: MultiView = new Map(
+        Object.entries(views).map(
+          ([lang, href]) => [
+            lang === "" ? null : ContentKey.get("text/html", lang),
+            new URL(href),
+          ],
+        ),
+      );
+      const html = htmlRedirector(multiViews, defaultContent);
+      assertNotEquals(html, null);
+      assertEquals(
+        html?.type,
+        defaultContent?.type ?? MediaType.fromString("text/html; charset=utf8"),
+      );
+      assertEquals(html?.language, defaultContent?.language ?? null);
+      const parser = new DOMParser();
+      const contentBody = await html?.getBody();
+      const contentText = typeof contentBody == "string"
+        ? contentBody
+        : new TextDecoder(html?.encoding ?? undefined).decode(contentBody);
+      const doc = parser.parseFromString(contentText, "text/html");
+      assertNotEquals(doc, null);
+      const links: Record<string, string> = Object.fromEntries(
+        Array.from(
+          doc?.querySelectorAll(
+            "a[href][hreflang][rel=alternate], " +
+              "link[href][hreflang][rel=alternate]",
+          ) as Iterable<Element>,
+          (link: Element) => [
+            link.getAttribute("hreflang"),
+            link.getAttribute("href"),
+          ],
+        ),
+      );
+      assertEquals(
+        links,
+        Object.fromEntries(
+          Object.entries(views).filter(([lang]) => lang !== ""),
+        ),
+      );
+      const scriptText = doc?.querySelector("script")?.innerText ?? "";
+      const script = new Function(
+        "document",
+        "navigator",
+        "location",
+        scriptText,
+      );
+      const loc = { href: "" };
+      script({ cookie: "" }, { language: "ko" }, loc);
+      assertEquals(loc.href, "https://example.com/index.ko-kr.html");
+      script(
+        { cookie: "foo=zh-hans; accept-language=zh" },
+        { language: "ko" },
+        loc,
+      );
+      assertEquals(loc.href, "https://example.com/index.ko-kr.html");
+      script({ cookie: "accept-language=zh-hans" }, { language: "ko" }, loc);
+      assertEquals(loc.href, "https://example.com/index.zh-hans.html");
+      script({ cookie: "foo=1; accept-language=ZH-Hans; bar=2" }, {
+        language: "ko",
+      }, loc);
+      assertEquals(loc.href, "https://example.com/index.zh-hans.html");
+    },
   });
 }
 

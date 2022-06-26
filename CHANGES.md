@@ -14,6 +14,7 @@ To be released.
      - `htmlRedirector`
      - `phpNegotiator`
  -  `ContentMetadata` type from *content.ts* no more includes `null`.
+ -  Added `LanguageTag.requiredPermissions` constant.
 
 
 Version 0.2.2

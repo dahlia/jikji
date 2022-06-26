@@ -54,6 +54,11 @@ export function makeResourceMap(
   return result;
 }
 
+export const tempDirPermissions: Deno.PermissionOptionsObject = {
+  write: true,
+  read: true,
+};
+
 export async function withTempDir(
   options:
     | Deno.MakeTempOptions & { fn: (path: string) => void | Promise<void> }

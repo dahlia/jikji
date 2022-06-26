@@ -6,7 +6,7 @@ import { LanguageTag, LanguageTagError } from "./language_tag.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
 
 /** The content metadata.  Usually extracted from front matter. */
-export type ContentMetadata = Record<string, unknown> | null;
+export type ContentMetadata = Record<string, unknown>;
 
 /** The content body.  It can be either a Unicode string or a byte array. */
 export type ContentBody = string | Uint8Array;

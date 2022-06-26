@@ -13,6 +13,7 @@ To be released.
     the language:
      - `htmlRedirector`
      - `phpNegotiator`
+ -  `ContentMetadata` type from *content.ts* no more includes `null`.
 
 
 Version 0.2.2

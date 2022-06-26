@@ -5,8 +5,10 @@ deno test \
   --allow-write \
   --allow-run \
   --allow-net=cdn.skypack.dev \
+  --check \
   --doc \
   --jobs \
   --fail-fast
+deno check examples/blog/main.ts
 deno lint
 deno fmt --check --ignore=.vscode/

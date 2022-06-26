@@ -27,6 +27,7 @@ jobs:
           --allow-write
           --allow-run
           --allow-net=cdn.skypack.dev
+          --check
           --doc
           --coverage=.cov
       - run: deno coverage --lcov .cov > .cov.lcov
@@ -54,4 +55,4 @@ jobs:
       - run: |
           set -e
           cd examples/blog/
-          deno run -A main.ts
+          deno run --allow-all --check main.ts

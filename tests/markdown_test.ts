@@ -3,8 +3,8 @@
  * @license LGPL-3.0-only
  */
 import { assertEquals$ } from "./asserts.ts";
-import { abbr, frontMatter, markdown, MarkdownIt, title } from "./markdown.ts";
-import { Content } from "./content.ts";
+import { abbr, frontMatter, markdown, MarkdownIt, title } from "../markdown.ts";
+import { Content } from "../content.ts";
 
 Deno.test("frontMatter()", async () => {
   const bodyTypes: (((_: string) => string) | ((_: string) => Uint8Array))[] = [

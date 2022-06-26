@@ -7,14 +7,14 @@ import {
   Element,
 } from "https://deno.land/x/deno_dom@v0.1.31-alpha/deno-dom-wasm.ts";
 import { assertEquals$ } from "./asserts.ts";
-import { Content, ContentKey, MediaType } from "./content.ts";
+import { Content, ContentKey, MediaType } from "../content.ts";
 import {
   _negotiateUsingClientSideJavaScript$internal,
   htmlRedirector,
   intoMultiView,
   MultiView,
-} from "./multiview.ts";
-import { Resource } from "./resource.ts";
+} from "../multiview.ts";
+import { Resource } from "../resource.ts";
 
 async function toArray<T>(
   iterable: Iterable<T> | AsyncIterable<T>,

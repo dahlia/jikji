@@ -1,12 +1,12 @@
 import { assertEquals$ } from "./asserts.ts";
-import { Content } from "./content.ts";
+import { Content } from "../content.ts";
 import {
   CSS_MEDIA_TYPE,
   getSassCompiler,
   Options,
   sass,
   SCSS_MEDIA_TYPE,
-} from "./sass.ts";
+} from "../sass.ts";
 
 Deno.test({
   name: "sass()",

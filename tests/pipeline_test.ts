@@ -10,11 +10,11 @@ import {
   assertThrows,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
-import { Content, ContentKeyError } from "./content.ts";
-import { LanguageTag, LanguageTagError } from "./language_tag.ts";
-import { MediaType, MediaTypeError } from "./media_type.ts";
-import { defaultMime } from "./mime.ts";
 import { makeResources } from "./fixtures.ts";
+import { Content, ContentKeyError } from "../content.ts";
+import { LanguageTag, LanguageTagError } from "../language_tag.ts";
+import { MediaType, MediaTypeError } from "../media_type.ts";
+import { defaultMime } from "../mime.ts";
 import {
   allRepresentations,
   anyRepresentations,
@@ -26,7 +26,7 @@ import {
   ResourceDivider,
   ResourceSet,
   transform,
-} from "./pipeline.ts";
+} from "../pipeline.ts";
 
 async function toArray<T>(iterable: AsyncIterable<T>): Promise<T[]> {
   const result: T[] = [];

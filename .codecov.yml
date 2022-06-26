@@ -12,3 +12,4 @@ ignore:
   - examples/
   - fixtures.ts
   - test.ts
+  - "tests/*_test.ts"

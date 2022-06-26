@@ -3,6 +3,12 @@
  * @license LGPL-3.0-only
  */
 import {
+  assert,
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.145.0/testing/asserts.ts";
+import { assertEquals$ } from "./asserts.ts";
+import {
   detectLanguage,
   extractFromPath,
   extractFromUrl,
@@ -14,14 +20,8 @@ import {
   removeBase,
   replaceBasename,
   when,
-} from "./path.ts";
-import { Content, Resource } from "./resource.ts";
-import {
-  assert,
-  assertEquals,
-  assertThrows,
-} from "https://deno.land/std@0.145.0/testing/asserts.ts";
-import { assertEquals$ } from "./asserts.ts";
+} from "../path.ts";
+import { Content, Resource } from "../resource.ts";
 
 Deno.test("identity()", () => {
   const p1 = new URL("https://example.com/foo/bar.php?baz=1#qux");

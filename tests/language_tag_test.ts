@@ -8,7 +8,7 @@ import {
   assertStrictEquals,
   assertThrows,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
-import { LanguageTag, LanguageTagError } from "./language_tag.ts";
+import { LanguageTag, LanguageTagError } from "../language_tag.ts";
 
 Deno.test("LanguageTag.get()", () => {
   // Having all fields:

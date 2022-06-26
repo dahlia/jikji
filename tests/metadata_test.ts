@@ -13,8 +13,8 @@ import {
   queryString,
   queryTitle,
   sortResources,
-} from "./metadata.ts";
-import { Content, ContentKey, Resource } from "./resource.ts";
+} from "../metadata.ts";
+import { Content, ContentKey, Resource } from "../resource.ts";
 
 async function toArray<T>(iterable: AsyncIterable<T>): Promise<T[]> {
   const result: T[] = [];

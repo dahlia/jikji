@@ -19,8 +19,8 @@ import {
   red,
   white,
 } from "https://deno.land/std@0.145.0/fmt/colors.ts";
-import { Content } from "./content.ts";
-import { Resource } from "./resource.ts";
+import { Content } from "../content.ts";
+import { Resource } from "../resource.ts";
 
 async function setEquals(
   actual?: Set<unknown>,

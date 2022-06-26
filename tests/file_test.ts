@@ -15,14 +15,14 @@ import {
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import { sleep } from "https://deno.land/x/sleep@v1.2.1/sleep.ts";
 import { assertEquals$ } from "./asserts.ts";
+import { makeResources, withFixture, withTempDir } from "./fixtures.ts";
 import {
   rebase,
   relativePathToFileUrl,
   scanFiles,
   writeFiles,
-} from "./file.ts";
-import { makeResources, withFixture, withTempDir } from "./fixtures.ts";
-import { Content, move, replace, Resource } from "./pipeline.ts";
+} from "../file.ts";
+import { Content, move, replace, Resource } from "../pipeline.ts";
 
 Deno.test({
   name: "rebase() [non-Windows]",

@@ -4,8 +4,8 @@
  */
 import { dirname, join } from "https://deno.land/std@0.145.0/path/mod.ts";
 import { mime } from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
-import { ContentMetadata, MediaType } from "./content.ts";
-import { Content, Resource } from "./resource.ts";
+import { ContentMetadata, MediaType } from "../content.ts";
+import { Content, Resource } from "../resource.ts";
 
 export function makeResources(
   files: Record<

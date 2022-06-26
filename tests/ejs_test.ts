@@ -8,10 +8,10 @@ import {
   assertEquals,
   assertNotEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
-import { Content, LanguageTag, MediaType } from "./content.ts";
-import { renderListTemplate, renderTemplate } from "./ejs.ts";
 import { makeResources, withTempDir } from "./fixtures.ts";
-import { queryTitle, sortResources } from "./metadata.ts";
+import { Content, LanguageTag, MediaType } from "../content.ts";
+import { renderListTemplate, renderTemplate } from "../ejs.ts";
+import { queryTitle, sortResources } from "../metadata.ts";
 
 Deno.test("renderTemplate()", () =>
   withTempDir({

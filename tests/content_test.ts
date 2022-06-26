@@ -20,7 +20,7 @@ import {
   MediaType,
   MediaTypeError,
   toContentPredicate,
-} from "./content.ts";
+} from "../content.ts";
 
 const contentBodyTypes: [string, string | Uint8Array][] = [
   ["Uint8Array", new Uint8Array([])],

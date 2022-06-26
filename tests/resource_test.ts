@@ -8,14 +8,14 @@ import {
   assertStrictEquals,
   assertThrows,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
+import { assertEquals$ } from "./asserts.ts";
 import {
   Content,
   ContentKey,
   ContentKeyError,
   Resource,
   ResourceError,
-} from "./resource.ts";
-import { assertEquals$ } from "./asserts.ts";
+} from "../resource.ts";
 
 Deno.test("Resource()", () => {
   const dateA = new Date(0);

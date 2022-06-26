@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.145.0/testing/asserts.ts";
-import { extendMime, Mime } from "./mime.ts";
+import { extendMime, Mime } from "../mime.ts";
 
 Deno.test("extendMime()", () => {
   const base = new Mime({

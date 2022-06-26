@@ -26,12 +26,11 @@ export type NonUndefined<T> = T extends undefined ? never : T;
  * @param pipeline A pipeline with {@link Resource}s to summarize.
  * @returns Summary as {@link Resource}s.
  */
-export type PipelineSummarizer = (pipeline: Pipeline) => (
+export type PipelineSummarizer = (pipeline: Pipeline) =>
   | AsyncIterable<Resource>
   | Promise<Resource>
   | Iterable<Resource>
-  | Resource
-);
+  | Resource;
 
 /**
  * Represents functions to transform a {@link Resource} into another
@@ -47,10 +46,9 @@ export type ResourceTransformer = (resource: Resource) => Resource;
  * @param resource A resource to be divided into multiple resources.
  * @returns Divided resources.
  */
-export type ResourceDivider = (resource: Resource) => (
+export type ResourceDivider = (resource: Resource) =>
   | Iterable<Resource>
-  | AsyncIterable<Resource>
-);
+  | AsyncIterable<Resource>;
 
 /**
  * Represents functions to determine whether to filter out a {@link Resource}
@@ -476,7 +474,7 @@ export class Pipeline implements AsyncIterable<Resource> {
       | ((resource: Resource, index: number) => void)
       | ((resource: Resource) => Promise<void>)
       | ((resource: Resource) => void),
-    onReloaded?: ((() => Promise<void>) | (() => void)),
+    onReloaded?: (() => Promise<void>) | (() => void),
   ): Promise<void> {
     await this.forEach(callback);
     if (this.#resourcesMonitor != null) {

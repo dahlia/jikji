@@ -219,12 +219,11 @@ Deno.test("Pipeline#add()", async () => {
 
 const summarizerReturnTypes: Record<
   string,
-  (r: Resource) => (
+  (r: Resource) =>
     | Resource
     | Promise<Resource>
     | Iterable<Resource>
     | AsyncIterable<Resource>
-  )
 > = {
   Resource: (r) => r,
   "Promise<Resource>": (r) => Promise.resolve(r),

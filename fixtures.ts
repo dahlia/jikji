@@ -56,10 +56,10 @@ export function makeResourceMap(
 
 export async function withTempDir(
   options:
-    | Deno.MakeTempOptions & { fn: (path: string) => (void | Promise<void>) }
-    | ((path: string) => (void | Promise<void>)),
+    | Deno.MakeTempOptions & { fn: (path: string) => void | Promise<void> }
+    | ((path: string) => void | Promise<void>),
 ): Promise<void> {
-  let fn: (path: string) => (void | Promise<void>);
+  let fn: (path: string) => void | Promise<void>;
   let opts: Deno.MakeTempOptions | undefined;
   if (typeof options == "function") {
     fn = options;
@@ -81,7 +81,7 @@ export async function withTempDir(
 
 export function withFixture(
   files: Record<string, string> | string[],
-  fn: (path: string, tempDir: string) => (void | Promise<void>),
+  fn: (path: string, tempDir: string) => void | Promise<void>,
 ): Promise<void> {
   if (files instanceof Array) {
     files = Object.fromEntries(files.map((k) => [k, ""]));

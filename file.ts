@@ -219,7 +219,7 @@ export function writeFiles(
   path: string,
   base: string | URL,
   options?: WriteFilesOptions,
-): ((resource: Resource) => Promise<void>) {
+): (resource: Resource) => Promise<void> {
   const logger = getLogger();
   const mime = options?.mime ?? defaultMime;
   const rewriteAlways = options?.rewriteAlways ?? false;
@@ -233,7 +233,7 @@ export function writeFiles(
       path: URL,
       content: unknown,
       target: unknown,
-    ) => (void | Promise<void>))
+    ) => void | Promise<void>)
     : null;
   const pathUrl = relativePathToFileUrl(path);
   if (!pathUrl.pathname.endsWith("/")) {

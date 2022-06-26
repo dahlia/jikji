@@ -52,7 +52,7 @@ export type MultiView = Map<ContentKey | null, URL>;
 export type MultiViewNegotiator = (
   views: MultiView,
   defaultView?: Content,
-) => (Content | undefined);
+) => Content | undefined;
 
 /**
  * Options for {@link intoMultiView} method.
@@ -178,7 +178,7 @@ function isHtml(mediaType: MediaType): boolean {
 export const htmlRedirector: MultiViewNegotiator = (
   views: MultiView,
   defaultContent?: Content,
-): (Content | undefined) => {
+): Content | undefined => {
   const multiViewsJSON: Record<string, string> = Object.fromEntries(
     [...views.entries()]
       .filter(([k, _]: [ContentKey | null, URL]) => k != null && isHtml(k.type))
@@ -356,7 +356,7 @@ export function _negotiateUsingClientSideJavaScript$internal(
 export const phpNegotiator: MultiViewNegotiator = (
   views: MultiView,
   defaultContent?: Content,
-): (Content | undefined) => {
+): Content | undefined => {
   // FIXME: Deal with content types besides languages.
   const languages = [...views.entries()]
     .filter(([key]) => key != null && isHtml(key.type))

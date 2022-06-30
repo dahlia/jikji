@@ -2,6 +2,7 @@
  * @copyright 2022 Hong Minhee
  * @license LGPL-3.0-only
  */
+import { delay } from "https://deno.land/std@0.145.0/async/mod.ts";
 import {
   join,
   resolve,
@@ -13,7 +14,6 @@ import {
   assertEquals,
   assertThrows,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
-import { sleep } from "https://deno.land/x/sleep@v1.2.1/sleep.ts";
 import { assertEquals$ } from "./asserts.ts";
 import {
   makeResources,
@@ -285,7 +285,7 @@ Deno.test({
           new URL("file:///tmp/site/"),
           options,
         );
-        if (Deno.build.os === "linux") await sleep(1);
+        if (Deno.build.os === "linux") await delay(1000);
         await write(r);
         const enHp = join(tempDir, "foo", "bar", "index.html");
         const enHs = await Deno.stat(enHp);
@@ -308,7 +308,7 @@ Deno.test({
         assertEquals(zhHs2.mtime, zhHs.mtime);
 
         // However, if rewriteAlways: true is set, it should rewrite.
-        if (Deno.build.os === "linux") await sleep(1);
+        if (Deno.build.os === "linux") await delay(1000);
         const rewrite = writeFiles(
           tempDir,
           new URL("file:///tmp/site/"),

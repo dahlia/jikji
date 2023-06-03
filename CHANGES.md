@@ -15,6 +15,9 @@ To be released.
      - `phpNegotiator`
  -  `ContentMetadata` type from *content.ts* module no more includes `null`.
  -  Added `LanguageTag.requiredPermissions` constant.
+ -  Added `WriteFilesOptions` interface to *file.ts* module, which defines
+    what options are available for `writeFiles()` function.
+     -  Added `WriteFilesOptions#onWrite` field.
  -  The *sass.ts* module no more depends on Dart-Sass CLI (`sass`) or
     SassC (`sassc`), so no more requires `--allow-run` permission on Deno.
     Instead, it depends on [Deno Sass], a TypeScript & WebAssembly binding of

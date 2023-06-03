@@ -262,24 +262,29 @@ Deno.test({
   name: "writeFiles()",
   permissions: tempDirPermissions,
   async fn() {
+    const lastModified = new Date();
+    lastModified.setMilliseconds(0);
     const r = new Resource("file:///tmp/site/foo/bar/", [
-      new Content("HTML content", "text/html", "en"),
+      new Content("HTML content", "text/html", "en", lastModified),
     ]);
     const r2 = new Resource("file:///tmp/site/foo/bar/index.zh.html", [
-      new Content("HTML 內容", "text/html", "zh"),
+      new Content("HTML 內容", "text/html", "zh", lastModified),
     ]);
     await withTempDir({
       prefix: "jikji-t-",
       suffix: "-fx",
       async fn(tempDir: string) {
-        const options = {};
         let writeLog: { path: string; content: unknown; target: unknown }[] =
           [];
-        (options as { onWrite: unknown }).onWrite = (
-          path: URL,
-          content: unknown,
-          target: unknown,
-        ) => writeLog.push({ path: path.href, content, target });
+        const options = {
+          onWrite(
+            path: URL,
+            content: { lastModified: Date; eTag: string | null },
+            target: { lastModified: Date | null; eTag: string | null } | null,
+          ) {
+            writeLog.push({ path: path.href, content, target });
+          },
+        };
         const write = writeFiles(
           tempDir,
           new URL("file:///tmp/site/"),

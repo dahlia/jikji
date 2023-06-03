@@ -11,7 +11,7 @@ import {
   isGlob,
   join,
   resolve,
-  sep,
+  SEP,
   SEP_PATTERN,
   toFileUrl,
 } from "https://deno.land/std@0.190.0/path/mod.ts";
@@ -155,7 +155,7 @@ export function scanFiles(
   async function* watchFileChanges(): AsyncIterable<void> {
     const logger = getLogger();
     let cwd = Deno.cwd();
-    if (!cwd.endsWith(sep)) cwd += sep;
+    if (!cwd.endsWith(SEP)) cwd += SEP;
     for await (const event of Deno.watchFs(fixedDirs, { recursive: true })) {
       if (event.kind == "access") continue;
       const matched = event.paths.some((p) =>
@@ -173,7 +173,7 @@ export function scanFiles(
 }
 
 function getFixedDirFromGlob(glob: string): string {
-  let fixedDir = `.${sep}`;
+  let fixedDir = `.${SEP}`;
   for (const match of glob.matchAll(new RegExp(SEP_PATTERN, "g"))) {
     if (isGlob(glob.substr(0, match.index ?? 0))) break;
     fixedDir = glob.substr(0, (match.index ?? 0) + match[0].length);
@@ -184,7 +184,7 @@ function getFixedDirFromGlob(glob: string): string {
 /**
  * Options for {@link writeFiles} function.
  */
-interface WriteFilesOptions {
+export interface WriteFilesOptions {
   /** An optional MIME object to determine file extensions from media types. */
   mime?: Mime;
 
@@ -200,6 +200,22 @@ interface WriteFilesOptions {
    * Ignored if `rewriteAlways` is turned on.
    */
   sidecarFilename?: (filename: string) => string;
+
+  /**
+   * An optional callback function to be called when a file is written.
+   * It won't be called if the file is not written because it's up-to-date.
+   * It won't be called for sidecar files either.
+   * @param path The path of the file written.
+   * @param content The metadata of the content to be written.
+   * @param target The metadata of the existing file to be overwritten.
+   * @returns A promise object to wait for the callback, or `void` if it's
+   *          synchronous.
+   */
+  onWrite?: (
+    path: URL,
+    content: { lastModified: Date; eTag: string | null },
+    target: { lastModified: Date | null; eTag: string | null } | null,
+  ) => void | Promise<void>;
 }
 
 /**
@@ -225,16 +241,6 @@ export function writeFiles(
   const rewriteAlways = options?.rewriteAlways ?? false;
   const sidecarFilename = options?.sidecarFilename ??
     ((f: string) => `.${f}.etag`);
-  // FIXME: The hidden "onWrite" event should be documented and added to the
-  // WriteFileOptions interface in the next minor version.
-  const onWrite = options != null && "onWrite" in options &&
-      typeof options["onWrite"] === "function"
-    ? (options["onWrite"] as (
-      path: URL,
-      content: unknown,
-      target: unknown,
-    ) => void | Promise<void>)
-    : null;
   const pathUrl = relativePathToFileUrl(path);
   if (!pathUrl.pathname.endsWith("/")) {
     pathUrl.pathname += "/";
@@ -305,8 +311,8 @@ export function writeFiles(
     await Deno.mkdir(dirname(fromFileUrl(targetPath)), { recursive: true });
     try {
       await Deno.writeFile(targetPath, bodyBuffer);
-      if (onWrite != null) {
-        const p = onWrite(
+      if (options?.onWrite != null) {
+        const p = options?.onWrite(
           targetPath,
           {
             lastModified: content.lastModified,

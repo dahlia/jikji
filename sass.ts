@@ -2,7 +2,7 @@
  * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
-import denosass from "https://deno.land/x/denosass@1.0.4/mod.ts";
+import denosass from "https://deno.land/x/denosass@1.0.6/mod.ts";
 import { MediaType, MediaTypeError } from "./media_type.ts";
 import { Content, ContentTransformer } from "./pipeline.ts";
 

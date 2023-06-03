@@ -15,18 +15,10 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
-      - run: >-
-          deno test
-          --allow-read
-          --allow-write
-          --allow-net=cdn.skypack.dev,deno.land
-          --check
-          --doc
-          --coverage=.cov
-      - run: deno coverage --lcov .cov > .cov.lcov
+      - run: deno task lcov
       - uses: codecov/codecov-action@v2
         with:
-          files: .cov.lcov
+          files: .cov-profile/cov.lcov
           env_vars: OS
   lint:
     runs-on: ubuntu-20.04

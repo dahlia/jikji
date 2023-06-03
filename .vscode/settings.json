@@ -1,10 +1,16 @@
 {
   "deno.codeLens.implementations": true,
   "deno.codeLens.references": true,
-  "deno.config": "./tsconfig.json",
+  "deno.config": "./deno.json",
   "deno.enable": true,
   "deno.lint": true,
   "deno.unstable": false,
+  "deno.testing.args": [
+    "--allow-read",
+    "--allow-write",
+    "--allow-net=cdn.skypack.dev,deno.land",
+    "--check"
+  ],
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
   "[typescript]": {

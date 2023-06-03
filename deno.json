@@ -1,0 +1,23 @@
+{
+  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
+  "checkJs": true,
+  "compilerOptions": {
+    "jsx": "react",
+    "strict": true
+  },
+  "fmt": {
+    "exclude": [
+      ".github/",
+      "*.md"
+    ],
+    "options": {
+      "lineWidth": 80
+    }
+  },
+  "tasks": {
+    "test": "deno test --allow-read --allow-write --allow-net=cdn.skypack.dev,deno.land --check --doc --parallel",
+    "prepare-coverage": "deno task test --coverage=.cov-profile && deno coverage --exclude=tests/ .cov-profile",
+    "coverage": "deno task prepare-coverage && rm -r .cov-profile",
+    "lcov": "deno task prepare-coverage --lcov --output=.cov-profile/cov.lcov"
+  }
+}

@@ -1,13 +1,6 @@
 #!/bin/bash
 set -e
-deno test \
-  --allow-read \
-  --allow-write \
-  --allow-net=cdn.skypack.dev,deno.land \
-  --check \
-  --doc \
-  --jobs \
-  --fail-fast
+deno task test --fail-fast
 deno check examples/blog/main.ts
 deno lint
 deno fmt --check --ignore=.vscode/

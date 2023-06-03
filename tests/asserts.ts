@@ -1,24 +1,24 @@
 /**
- * @copyright 2022 Hong Minhee
+ * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
 import {
   AssertionError,
   equal,
-} from "https://deno.land/std@0.145.0/testing/asserts.ts";
+} from "https://deno.land/std@0.190.0/testing/asserts.ts";
 import {
   diff,
   DiffResult,
   DiffType,
-} from "https://deno.land/std@0.145.0/testing/_diff.ts";
-import { format } from "https://deno.land/std@0.145.0/testing/_format.ts";
+} from "https://deno.land/std@0.190.0/testing/_diff.ts";
+import { format } from "https://deno.land/std@0.190.0/testing/_format.ts";
 import {
   bold,
   gray,
   green,
   red,
   white,
-} from "https://deno.land/std@0.145.0/fmt/colors.ts";
+} from "https://deno.land/std@0.190.0/fmt/colors.ts";
 import { Content } from "../content.ts";
 import { Resource } from "../resource.ts";
 

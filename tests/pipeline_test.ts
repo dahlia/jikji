@@ -1,14 +1,14 @@
 /**
- * @copyright 2022 Hong Minhee
+ * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { basename } from "https://deno.land/std@0.145.0/path/mod.ts";
+import { basename } from "https://deno.land/std@0.190.0/path/mod.ts";
 import {
   assert,
   assertEquals,
   assertRejects,
   assertThrows,
-} from "https://deno.land/std@0.145.0/testing/asserts.ts";
+} from "https://deno.land/std@0.190.0/testing/asserts.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { makeResources } from "./fixtures.ts";
 import { Content, ContentKeyError } from "../content.ts";
@@ -251,7 +251,7 @@ for (const [typeName, castToType] of Object.entries(summarizerReturnTypes)) {
         new Resource("file:///tmp/site/", [
           new Content(
             async () => {
-              const rs = (await toArray(pipeline));
+              const rs = await toArray(pipeline);
               const paths = rs.map((r) => r.path.toString());
               const body = paths.sort().join("\n");
               return body;

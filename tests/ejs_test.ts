@@ -114,7 +114,11 @@ Deno.test({
           "en",
         );
         assertEquals(await content3.getBody(), await content.getBody());
-        assert(content3.lastModified > content.lastModified);
+        assert(
+          content3.lastModified > content.lastModified,
+          `content3.lastModified (${content3.lastModified}) > ` +
+            `content.lastModified (${content.lastModified})`,
+        );
       },
     }),
 });

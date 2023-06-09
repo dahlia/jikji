@@ -2,6 +2,7 @@
  * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
+import { delay } from "https://deno.land/std@0.190.0/async/mod.ts";
 import { join } from "https://deno.land/std@0.190.0/path/mod.ts";
 import {
   assert,
@@ -105,6 +106,7 @@ Deno.test({
         assertEquals(content.lastModified, content2.lastModified);
         assertNotEquals(content.eTag, content2.eTag);
 
+        await delay(1000);
         await Deno.writeTextFile(tpl, tplBody);
         const content3 = await renderListTemplate(
           tpl,

@@ -290,7 +290,7 @@ Deno.test({
           new URL("file:///tmp/site/"),
           options,
         );
-        if (Deno.build.os === "linux") await delay(1000);
+        await delay(1000);
         await write(r);
         const enHp = join(tempDir, "foo", "bar", "index.html");
         const enHs = await Deno.stat(enHp);
@@ -313,7 +313,7 @@ Deno.test({
         assertEquals(zhHs2.mtime, zhHs.mtime);
 
         // However, if rewriteAlways: true is set, it should rewrite.
-        if (Deno.build.os === "linux") await delay(1000);
+        await delay(1000);
         const rewrite = writeFiles(
           tempDir,
           new URL("file:///tmp/site/"),

@@ -2,13 +2,13 @@
  * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
-import MarkdownIt from "https://esm.sh/markdown-it@13.0.1";
-import abbr from "https://esm.sh/markdown-it-abbr@1.0.4";
-import attrs from "https://cdn.skypack.dev/markdown-it-attrs@4.1.4";
-import bracketedSpans from "https://esm.sh/markdown-it-bracketed-spans@1.0.1";
-import deflist from "https://esm.sh/markdown-it-deflist@2.1.0";
-import footnote from "https://esm.sh/markdown-it-footnote@3.0.3";
-import title from "https://cdn.skypack.dev/markdown-it-title@4.0.0";
+import MarkdownIt from "npm:markdown-it@13.0.1";
+import abbr from "npm:markdown-it-abbr@1.0.4";
+import attrs from "npm:markdown-it-attrs@4.1.4";
+import bracketedSpans from "npm:markdown-it-bracketed-spans@1.0.1";
+import deflist from "npm:markdown-it-deflist@2.1.0";
+import footnote from "npm:markdown-it-footnote@3.0.3";
+import title from "npm:markdown-it-title@4.0.0";
 import * as yaml from "https://deno.land/std@0.190.0/yaml/mod.ts";
 import { Content, ContentTransformer, MediaType } from "./pipeline.ts";
 
@@ -64,7 +64,7 @@ export function frontMatter(content: Content) {
  * @returns A function to compiles a Markdown into an HTML/XHTML.
  */
 export function markdown(
-  markdownIt?: MarkdownIt,
+  markdownIt?: typeof MarkdownIt,
   env?: Record<string, unknown>,
 ): ContentTransformer {
   markdownIt ??= new MarkdownIt();

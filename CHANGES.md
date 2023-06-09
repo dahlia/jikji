@@ -8,6 +8,9 @@ Version 0.3.0
 
 To be released.
 
+ -  Jikji now utilizes [`npm:` specifier][npm specifier] instead of [esm.sh]
+    and [Skypack].  Therefore, it no more runs on earlier versions of Deno
+    than 1.28.0.
  -  Built-in `MultiViewNegotiator`s in *multiview.ts* module became aware of
     the cookie `accept-language`, which is the most prior option for choosing
     the language:
@@ -33,6 +36,9 @@ To be released.
      -  Removed `SASS_MEDIA_TYPE` constant from *sass.ts* module.
      -  Added `REQUIRED_PERMISSIONS` constant to *sass.ts* module.
 
+[npm specifier]: https://deno.com/blog/v1.28#using-npm
+[esm.sh]: https://esm.sh/
+[Skypack]: https://www.skypack.dev/
 [Deno Sass]: https://github.com/hironichu/denosass
 [grass]: https://github.com/connorskees/grass
 [#15]: https://github.com/dahlia/jikji/issues/15

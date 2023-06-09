@@ -35,6 +35,8 @@ To be released.
      -  Removed `getSassCompiler()` function from *sass.ts* module.
      -  Removed `SASS_MEDIA_TYPE` constant from *sass.ts* module.
      -  Added `REQUIRED_PERMISSIONS` constant to *sass.ts* module.
+ -  Now `frontMatter` from *markdown.ts* can deal with Windows-style line
+    endings (i.e., CR LF) and BOM.
 
 [npm specifier]: https://deno.com/blog/v1.28#using-npm
 [esm.sh]: https://esm.sh/

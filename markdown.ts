@@ -24,7 +24,7 @@ import { Content, ContentTransformer, MediaType } from "./pipeline.ts";
  * @returns The distinct content with front matter turned to metadata.
  */
 export function frontMatter(content: Content) {
-  const frontMatterPattern = /^---\n((.+?\n)*?)---\n/;
+  const frontMatterPattern = /^\ufeff?---\r?\n((.+?\r?\n)*?)---\r?\n/;
   const charset = content.type.parameters.charset;
   return new Content(
     async () => {

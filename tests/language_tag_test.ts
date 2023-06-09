@@ -272,6 +272,16 @@ const languageNames: Record<string, Record<string, string>> = {
   },
 };
 
+// For faster testing, preload the CLDR data ahead of time.
+const preloadingPromises: Promise<unknown>[] = [];
+for (const [tag, expected] of Object.entries(languageNames)) {
+  preloadingPromises.push(
+    ...Object.keys(expected).map((l) =>
+      LanguageTag.fromString(tag).getLanguageName(l)
+    ),
+  );
+}
+
 const permissions = LanguageTag.requiredPermissions;
 
 for (const [tag, expected] of Object.entries(languageNames)) {
@@ -314,6 +324,15 @@ const territoryNames: Record<string, Record<string, string>> = {
   },
 };
 
+// For faster testing, preload the CLDR data ahead of time.
+for (const [tag, expected] of Object.entries(territoryNames)) {
+  preloadingPromises.push(
+    ...Object.keys(expected).map((t) =>
+      LanguageTag.fromString(tag).getTerritoryName(t)
+    ),
+  );
+}
+
 for (const [tag, expected] of Object.entries(territoryNames)) {
   Deno.test({
     name: `LanguageTag#getTerritoryName() [${tag}]`,
@@ -349,6 +368,15 @@ const scriptNames: Record<string, Record<string, string>> = {
     "Hant": "繁體",
   },
 };
+
+// For faster testing, preload the CLDR data ahead of time.
+for (const [tag, expected] of Object.entries(scriptNames)) {
+  preloadingPromises.push(
+    ...Object.keys(expected).map((s) =>
+      LanguageTag.fromString(tag).getScriptName(s)
+    ),
+  );
+}
 
 for (const [tag, expected] of Object.entries(scriptNames)) {
   Deno.test({
@@ -395,3 +423,5 @@ Deno.test("LanguageTagError()", () => {
   assertEquals(e2.message, "error message");
   assertEquals(e2.name, "LanguageTagError");
 });
+
+await Promise.all(preloadingPromises);

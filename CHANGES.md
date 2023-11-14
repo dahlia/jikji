@@ -6,7 +6,7 @@ Jikji changelog
 Version 0.3.0
 -------------
 
-To be released.
+Released on November 14, 2023.
 
  -  Jikji now utilizes [`npm:` specifier][npm specifier] instead of [esm.sh]
     and [Skypack].  Therefore, it no more runs on earlier versions of Deno

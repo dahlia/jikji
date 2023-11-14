@@ -2,18 +2,18 @@
  * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { delay } from "https://deno.land/std@0.190.0/async/mod.ts";
+import { delay } from "https://deno.land/std@0.206.0/async/mod.ts";
 import {
   join,
   resolve,
   sep,
   toFileUrl,
-} from "https://deno.land/std@0.190.0/path/mod.ts";
+} from "https://deno.land/std@0.206.0/path/mod.ts";
 import {
   assert,
   assertEquals,
   assertThrows,
-} from "https://deno.land/std@0.190.0/testing/asserts.ts";
+} from "https://deno.land/std@0.206.0/assert/mod.ts";
 import { assertEquals$ } from "./asserts.ts";
 import {
   makeResources,

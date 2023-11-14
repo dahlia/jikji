@@ -2,7 +2,7 @@
  * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { dirname, resolve } from "https://deno.land/std@0.190.0/path/mod.ts";
+import { dirname, resolve } from "https://deno.land/std@0.206.0/path/mod.ts";
 import { compile } from "https://deno.land/x/dejs@0.10.3/mod.ts";
 import { Content, LanguageTag, MediaType } from "./content.ts";
 import * as metadata from "./metadata.ts";

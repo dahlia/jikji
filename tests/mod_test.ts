@@ -2,9 +2,9 @@
  * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { walk } from "https://deno.land/std@0.190.0/fs/walk.ts";
-import { join, sep } from "https://deno.land/std@0.190.0/path/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.190.0/testing/asserts.ts";
+import { walk } from "https://deno.land/std@0.206.0/fs/walk.ts";
+import { join, sep } from "https://deno.land/std@0.206.0/path/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.206.0/assert/mod.ts";
 import { tempDirPermissions, withFixture } from "./fixtures.ts";
 import { renderTemplate } from "../ejs.ts";
 import { frontMatter, markdown } from "../markdown.ts";

@@ -2,7 +2,7 @@
  * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { dirname, join } from "https://deno.land/std@0.190.0/path/mod.ts";
+import { dirname, join } from "https://deno.land/std@0.206.0/path/mod.ts";
 import { mime } from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
 import { ContentMetadata, MediaType } from "../content.ts";
 import { Content, Resource } from "../resource.ts";

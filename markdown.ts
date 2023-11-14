@@ -9,7 +9,7 @@ import bracketedSpans from "npm:markdown-it-bracketed-spans@1.0.1";
 import deflist from "npm:markdown-it-deflist@2.1.0";
 import footnote from "npm:markdown-it-footnote@3.0.3";
 import title from "npm:markdown-it-title@4.0.0";
-import * as yaml from "https://deno.land/std@0.190.0/yaml/mod.ts";
+import * as yaml from "https://deno.land/std@0.206.0/yaml/mod.ts";
 import { Content, ContentTransformer, MediaType } from "./pipeline.ts";
 
 /**

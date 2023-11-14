@@ -2,13 +2,13 @@
  * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { delay } from "https://deno.land/std@0.190.0/async/mod.ts";
-import { join } from "https://deno.land/std@0.190.0/path/mod.ts";
+import { delay } from "https://deno.land/std@0.206.0/async/mod.ts";
+import { join } from "https://deno.land/std@0.206.0/path/mod.ts";
 import {
   assert,
   assertEquals,
   assertNotEquals,
-} from "https://deno.land/std@0.190.0/testing/asserts.ts";
+} from "https://deno.land/std@0.206.0/assert/mod.ts";
 import { makeResources, tempDirPermissions, withTempDir } from "./fixtures.ts";
 import { Content, LanguageTag, MediaType } from "../content.ts";
 import { renderListTemplate, renderTemplate } from "../ejs.ts";

@@ -2,13 +2,13 @@
  * @copyright 2021–2023 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { basename } from "https://deno.land/std@0.190.0/path/mod.ts";
+import { basename } from "https://deno.land/std@0.206.0/path/mod.ts";
 import {
   assert,
   assertEquals,
   assertRejects,
   assertThrows,
-} from "https://deno.land/std@0.190.0/testing/asserts.ts";
+} from "https://deno.land/std@0.206.0/assert/mod.ts";
 import { assertEquals$ } from "./asserts.ts";
 import { makeResources } from "./fixtures.ts";
 import { Content, ContentKeyError } from "../content.ts";

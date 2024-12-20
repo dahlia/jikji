@@ -1,5 +1,5 @@
 /**
- * @copyright 2021–2023 Hong Minhee
+ * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
 export { Content, ContentKey, ContentKeyError } from "./content.ts";

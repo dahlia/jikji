@@ -4,7 +4,7 @@
  * It guarantees all instances are interned and only single instance is made
  * for each IANA media type, which means, `===` operator can be used for testing
  * structural equality of two {@link MediaType} operands.
- * @copyright 2021–2023 Hong Minhee
+ * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
 export class MediaType {

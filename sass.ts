@@ -1,5 +1,5 @@
 /**
- * @copyright 2021–2023 Hong Minhee
+ * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
 import denosass from "https://deno.land/x/denosass@1.0.6/mod.ts";

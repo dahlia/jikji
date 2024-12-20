@@ -6,7 +6,7 @@ Jikji changelog
 Version 0.4.0
 -------------
 
-To be released.
+Released on December 20, 2024.
 
  -  Jikji now requires Deno 2.0.0 or later.
 

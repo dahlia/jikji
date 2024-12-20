@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.206.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { extendMime, Mime } from "../mime.ts";
 
 Deno.test("extendMime()", () => {
@@ -14,7 +14,7 @@ Deno.test("extendMime()", () => {
   assertEquals(base.getExtension("text/html"), "html");
   assertEquals(extended.getExtension("text/html"), "html");
   assertEquals(base.getExtension("image/png"), "png");
-  assertEquals(extended.getExtension("image/png"), undefined);
-  assertEquals(base.getExtension("text/markdown"), undefined);
+  assertEquals(extended.getExtension("image/png"), null);
+  assertEquals(base.getExtension("text/markdown"), null);
   assertEquals(extended.getExtension("text/markdown"), "md");
 });

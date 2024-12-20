@@ -8,10 +8,9 @@
 // This provides -w/--watch mode, which watches the source directory
 // for changes and regenerates the blog on the fly.  It also provides
 // -s/--serve mode, which runs an HTTP server on the output directory.
-import { parse } from "https://deno.land/std@0.206.0/flags/mod.ts";
-import { serve } from "https://deno.land/std@0.206.0/http/server.ts";
-import { serveDir } from "https://deno.land/std@0.206.0/http/file_server.ts";
-import { info } from "https://deno.land/std@0.206.0/log/mod.ts";
+import { parseArgs } from "@std/cli/parse-args";
+import { serveDir } from "@std/http/file-server";
+import { info } from "@std/log";
 import { renderListTemplate, renderTemplate } from "../../ejs.ts";
 import { frontMatter, markdown } from "../../markdown.ts";
 import {
@@ -19,7 +18,7 @@ import {
   ContentKey,
   havingExtension,
   intoDirectory,
-  Pipeline,
+  type Pipeline,
   rebase,
   replaceBasename,
   Resource,
@@ -28,19 +27,19 @@ import {
   when,
   writeFiles,
 } from "../../mod.ts";
-import { detectLanguage } from "../../path.ts";
 import {
   htmlRedirector,
   intoMultiView,
   phpNegotiator,
 } from "../../multiview.ts";
+import { detectLanguage } from "../../path.ts";
 import sass from "../../sass.ts";
 
 // Makes logs show up in the console:
 await setupConsoleLog();
 
 // Takes CLI arguments & options:
-const args = parse(Deno.args, {
+const args = parseArgs(Deno.args, {
   boolean: ["help", "remove", "watch", "serve", "php"],
   string: ["out-dir", "base-url", "host", "port"],
   default: {
@@ -189,8 +188,7 @@ async function build(): Promise<void> {
 
 // Runs an HTTP server:
 async function runServer(): Promise<void> {
-  await serve(
-    (req: Request) => serveDir(req, { fsRoot: outDir, showDirListing: true }),
+  const server = Deno.serve(
     {
       port: parseInt(args.port),
       hostname: args.host,
@@ -198,7 +196,9 @@ async function runServer(): Promise<void> {
         info(`Listening on http://${hostname}:${port}/`);
       },
     },
+    (req: Request) => serveDir(req, { fsRoot: outDir, showDirListing: true }),
   );
+  await server.finished;
 }
 
 await Promise.all(args.serve ? [build(), runServer()] : [build()]);

@@ -2,8 +2,8 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { ContentCriterion, toContentPredicate } from "./content.ts";
-import { Resource } from "./resource.ts";
+import { type ContentCriterion, toContentPredicate } from "./content.ts";
+import type { Resource } from "./resource.ts";
 
 /**
  * Queries metadata values belonging to {@link Content}s in the given `resource`

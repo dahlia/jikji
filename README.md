@@ -4,7 +4,7 @@
 Jikji: small static site generator toolkit
 ==========================================
 
-[![Latest version][Tag badge]][Deno module]
+[![JSR][JSR badge]][JSR]
 [![LGPL 3.0][License badge]](./LICENSE)
 [![GitHub Actions][GitHub Actions status badge]][GitHub Actions]
 [![Codecov][Codecov badge]][Codecov]
@@ -20,21 +20,20 @@ Currently, it provides the below *composable building blocks*:
  -  First-class support for [content negotiation] on type & language
  -  Markdown (powered by [markdown-it])
  -  EJS/ETS template engine (powered by [dejs])
- -  [SCSS] stylesheet preprocessor (powered by [grass])
+ -  [SCSS] stylesheet preprocessor
 
-[Tag badge]: https://img.shields.io/github/v/tag/dahlia/jikji
-[Deno module]: https://deno.land/x/jikji
+[JSR badge]: https://jsr.io/badges/@hongminhee/jikji
+[JSR]: https://jsr.io/@hongminhee/jikji
 [License badge]: https://img.shields.io/github/license/dahlia/jikji
-[GitHub Actions]: https://github.com/dahlia/jikji/actions/workflows/test.yaml
-[GitHub Actions status badge]: https://github.com/dahlia/jikji/actions/workflows/test.yaml/badge.svg
+[GitHub Actions]: https://github.com/dahlia/jikji/actions/workflows/main.yaml
+[GitHub Actions status badge]: https://github.com/dahlia/jikji/actions/workflows/main.yaml/badge.svg
 [Codecov badge]: https://codecov.io/gh/dahlia/jikji/branch/main/graph/badge.svg?token=UBDX4Inrz6
 [Codecov]: https://codecov.io/gh/dahlia/jikji
-[Deno]: https://deno.land/
+[Deno]: https://deno.com/
 [content negotiation]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation
 [markdown-it]: https://github.com/markdown-it/markdown-it
 [dejs]: https://github.com/syumai/dejs
 [SCSS]: https://sass-lang.com/
-[grass]: https://github.com/connorskees/grass
 
 
 Example
@@ -111,15 +110,15 @@ Building blocks that Jikji provides are based on the following concepts:
 See also [API docs].
 
 
-[`Pipeline`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#Pipeline
-[`Resource`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#Resource
-[`Content`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#Content
-[`MediaType`s]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#MediaType
-[`LanguageTag`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts#LanguageTag
-[`ResourceTransformer`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fpipeline.ts#ResourceTransformer
-[`PathTransformer`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fpipeline.ts#PathTransformer
-[`ContentTransformer`]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fpipeline.ts#ContentTransformer
-[API docs]: https://doc.deno.land/https/deno.land%2Fx%2Fjikji%2Fmod.ts
+[`Pipeline`]: https://jsr.io/@hongminhee/jikji/doc/pipeline/~/Pipeline
+[`Resource`]: https://jsr.io/@hongminhee/jikji/doc/resource/~/Resource
+[`Content`]: https://jsr.io/@hongminhee/jikji/doc/content/~/Content
+[`MediaType`s]: https://jsr.io/@hongminhee/jikji/doc/media-type/~/MediaType
+[`LanguageTag`]: https://jsr.io/@hongminhee/jikji/doc/language-tag/~/LanguageTag
+[`ResourceTransformer`]: https://jsr.io/@hongminhee/jikji/doc/pipeline/~/ResourceTransformer
+[`PathTransformer`]: https://jsr.io/@hongminhee/jikji/doc/pipeline/~/PathTransformer
+[`ContentTransformer`]: https://jsr.io/@hongminhee/jikji/doc/pipeline/~/ContentTransformer
+[API docs]: https://jsr.io/@hongminhee/jikji/doc
 
 
 Changelog

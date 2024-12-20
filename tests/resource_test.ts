@@ -7,7 +7,7 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "https://deno.land/std@0.206.0/assert/mod.ts";
+} from "@std/assert";
 import { assertEquals$ } from "./asserts.ts";
 import {
   Content,

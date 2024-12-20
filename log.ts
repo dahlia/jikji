@@ -2,18 +2,19 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import * as log from "https://deno.land/std@0.206.0/log/mod.ts";
+import * as log from "@std/log";
 
 /**
  * A shortcut function to configure console logging.
  * @param level The minimum log level to print.  `INFO` by default.
  */
+// deno-lint-ignore require-await
 export async function setupConsoleLog(
   level: log.LevelName = "INFO",
 ): Promise<void> {
-  await log.setup({
+  log.setup({
     handlers: {
-      console: new log.handlers.ConsoleHandler(level),
+      console: new log.ConsoleHandler(level),
     },
     loggers: {
       default: {

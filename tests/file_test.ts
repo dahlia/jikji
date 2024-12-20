@@ -2,25 +2,9 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { delay } from "https://deno.land/std@0.206.0/async/mod.ts";
-import {
-  join,
-  resolve,
-  sep,
-  toFileUrl,
-} from "https://deno.land/std@0.206.0/path/mod.ts";
-import {
-  assert,
-  assertEquals,
-  assertThrows,
-} from "https://deno.land/std@0.206.0/assert/mod.ts";
-import { assertEquals$ } from "./asserts.ts";
-import {
-  makeResources,
-  tempDirPermissions,
-  withFixture,
-  withTempDir,
-} from "./fixtures.ts";
+import { assert, assertEquals, assertThrows } from "@std/assert";
+import { delay } from "@std/async";
+import { join, resolve, SEPARATOR, toFileUrl } from "@std/path";
 import {
   rebase,
   relativePathToFileUrl,
@@ -28,6 +12,13 @@ import {
   writeFiles,
 } from "../file.ts";
 import { Content, move, replace, Resource } from "../pipeline.ts";
+import { assertEquals$ } from "./asserts.ts";
+import {
+  makeResources,
+  tempDirPermissions,
+  withFixture,
+  withTempDir,
+} from "./fixtures.ts";
 
 const permissions: Deno.PermissionOptionsObject = {
   read: ["."],
@@ -189,8 +180,8 @@ Deno.test({
       toFileUrl(resolve(join("foo", "bar"))),
     );
     assertEquals(
-      relativePathToFileUrl("foo" + sep),
-      toFileUrl(resolve("foo") + sep),
+      relativePathToFileUrl("foo" + SEPARATOR),
+      toFileUrl(resolve("foo") + SEPARATOR),
     );
     if (Deno.build.os === "windows") {
       assertEquals(
@@ -250,7 +241,7 @@ Deno.test({
         }
         rs.sort(comparePath);
         const expected = makeResources(files, lastModified)
-          .map(move(rebase("/tmp/site/", path + sep)))
+          .map(move(rebase("/tmp/site/", path + SEPARATOR)))
           .sort(comparePath);
         await assertEquals$(rs, expected);
       },

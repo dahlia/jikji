@@ -2,11 +2,11 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { dirname, resolve } from "https://deno.land/std@0.206.0/path/mod.ts";
-import { compile } from "https://deno.land/x/dejs@0.10.3/mod.ts";
-import { Content, LanguageTag, MediaType } from "./content.ts";
+import { compile } from "@hongminhee/dejs";
+import { dirname, resolve } from "@std/path";
+import { Content, type LanguageTag, MediaType } from "./content.ts";
 import * as metadata from "./metadata.ts";
-import { ContentTransformer, Resource } from "./pipeline.ts";
+import type { ContentTransformer, Resource } from "./pipeline.ts";
 
 /**
  * Gives a {@link ContentTransformer} that compiles and renders EJS templates.

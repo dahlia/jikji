@@ -336,7 +336,10 @@ export class ContentKey {
    * @throws {LanguageTagError} Thrown when the `language` is an invalid
    *                            RFC 5646 language tag string.
    */
-  static get(type: MediaType | string, language?: LanguageTag | string | null) {
+  static get(
+    type: MediaType | string,
+    language?: LanguageTag | string | null,
+  ): ContentKey {
     if (typeof type == "string") {
       type = MediaType.fromString(type);
     }

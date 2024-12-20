@@ -2,19 +2,15 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import {
-  concat,
-  filter,
-  map,
-} from "https://deno.land/x/aitertools@0.3.1/mod.ts";
-import { MediaType } from "./media_type.ts";
-import { LanguageTag } from "./language_tag.ts";
+import { concat, filter, map } from "@hongminhee/aitertools";
 import {
   Content,
-  ContentCriterion,
-  ContentFields,
+  type ContentCriterion,
+  type ContentFields,
   toContentPredicate,
 } from "./content.ts";
+import { LanguageTag } from "./language_tag.ts";
+import { MediaType } from "./media_type.ts";
 import { Resource } from "./resource.ts";
 
 /** Represents a type `T` except for `undefined`. */

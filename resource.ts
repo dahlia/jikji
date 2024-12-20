@@ -124,7 +124,7 @@ export class Resource implements Iterable<Content> {
    *             it can be a string, its content should be a URL anyway.
    * @returns A distinct {@link Resource} instance with the new `path`.
    */
-  move(path: URL | string) {
+  move(path: URL | string): Resource {
     return new Resource(path, [...this]);
   }
 

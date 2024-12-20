@@ -7,7 +7,7 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "https://deno.land/std@0.206.0/assert/mod.ts";
+} from "@std/assert";
 import { LanguageTag, LanguageTagError } from "../language_tag.ts";
 
 Deno.test("LanguageTag.get()", () => {
@@ -259,13 +259,13 @@ const languageNames: Record<string, Record<string, string>> = {
     "zh-Hant-TW": "繁体中文（台湾）",
   },
   "zh-TW": {
-    "en-Latn-US": "英文（拉丁文，美國）",
+    "en-Latn-US": "英文（拉丁字母，美國）",
     "ko": "韓文",
     "zh": "中文",
     "zh-Hant-TW": "繁體中文（台灣）",
   },
   "zh-Hant-TW": {
-    "en-Latn-US": "英文（拉丁文，美國）",
+    "en-Latn-US": "英文（拉丁字母，美國）",
     "ko": "韓文",
     "zh": "中文",
     "zh-Hant-TW": "繁體中文（台灣）",
@@ -358,13 +358,13 @@ const scriptNames: Record<string, Record<string, string>> = {
     "Hant": "번체",
   },
   "zh-TW": {
-    "Latn": "拉丁文",
-    "Hang": "韓文字",
+    "Latn": "拉丁字母",
+    "Hang": "諺文",
     "Hant": "繁體",
   },
   "zh-Hant-TW": {
-    "Latn": "拉丁文",
-    "Hang": "韓文字",
+    "Latn": "拉丁字母",
+    "Hang": "諺文",
     "Hant": "繁體",
   },
 };

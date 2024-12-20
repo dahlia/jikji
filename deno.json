@@ -1,20 +1,56 @@
 {
-  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
-  "checkJs": true,
-  "compilerOptions": {
-    "jsx": "react",
-    "strict": true
+  "name": "@hongminhee/jikji",
+  "version": "0.4.0",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    ".": "./mod.ts",
+    "./content": "./content.ts",
+    "./ejs": "./ejs.ts",
+    "./file": "./file.ts",
+    "./language-tag": "./language_tag.ts",
+    "./log": "./log.ts",
+    "./markdown": "./markdown.ts",
+    "./media-type": "./media_type.ts",
+    "./metadata": "./metadata.ts",
+    "./mime": "./mime.ts",
+    "./multiview": "./multiview.ts",
+    "./path": "./path.ts",
+    "./pipeline": "./pipeline.ts",
+    "./resource": "./resource.ts",
+    "./sass": "./sass.ts"
+  },
+  "imports": {
+    "@hongminhee/aitertools": "jsr:@hongminhee/aitertools@^0.6.0",
+    "@hongminhee/dejs": "jsr:@hongminhee/dejs@0.10.5+jsr.1",
+    "@std/assert": "jsr:@std/assert@^1.0.10",
+    "@std/async": "jsr:@std/async@^1.0.9",
+    "@std/cli": "jsr:@std/cli@^1.0.9",
+    "@std/fs": "jsr:@std/fs@^1.0.7",
+    "@std/http": "jsr:@std/http@^1.0.12",
+    "@std/internal": "jsr:@std/internal@^1.0.5",
+    "@std/log": "jsr:@std/log@^0.224.12",
+    "@std/path": "jsr:@std/path@^1.0.8",
+    "@std/yaml": "jsr:@std/yaml@^1.0.5",
+    "markdown-it": "npm:markdown-it@^14.1.0",
+    "markdown-it-abbr": "npm:markdown-it-abbr@^2.0.0",
+    "markdown-it-attrs": "npm:markdown-it-attrs@^4.3.0",
+    "markdown-it-bracketed-spans": "npm:markdown-it-bracketed-spans@^1.0.1",
+    "markdown-it-deflist": "npm:markdown-it-deflist@^3.0.0",
+    "markdown-it-footnote": "npm:markdown-it-footnote@^4.0.0",
+    "markdown-it-title": "npm:markdown-it-title@^4.0.0",
+    "mime": "npm:mime@^4.0.6",
+    "sass": "npm:sass@^1.83.0"
   },
   "fmt": {
     "exclude": [
       ".github/",
+      ".vscode/",
       "*.md"
     ],
-    "options": {
-      "lineWidth": 80
-    }
+    "lineWidth": 80
   },
   "tasks": {
+    "check": "deno check **/*.ts && deno lint && deno fmt --check",
     "test": "deno test --allow-read --allow-write --allow-net=cdn.skypack.dev,deno.land --check --doc --parallel",
     "prepare-coverage": "deno task test --coverage=.cov-profile && deno coverage --exclude=tests/ .cov-profile",
     "coverage": "deno task prepare-coverage && rm -r .cov-profile",

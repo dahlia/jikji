@@ -2,23 +2,11 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import {
-  AssertionError,
-  equal,
-} from "https://deno.land/std@0.206.0/assert/mod.ts";
-import {
-  diff,
-  DiffResult,
-  DiffType,
-} from "https://deno.land/std@0.206.0/assert/_diff.ts";
-import { format } from "https://deno.land/std@0.206.0/assert/_format.ts";
-import {
-  bold,
-  gray,
-  green,
-  red,
-  white,
-} from "https://deno.land/std@0.206.0/fmt/colors.ts";
+import { AssertionError, equal } from "@std/assert";
+import { buildMessage } from "@std/internal";
+import { diff } from "@std/internal/diff";
+import { diffStr } from "@std/internal/diff-str";
+import { format } from "@std/internal/format";
 import { Content } from "../content.ts";
 import { Resource } from "../resource.ts";
 
@@ -195,48 +183,6 @@ async function equals(
   return equal(actual, expected);
 }
 
-function createColor(diffType: DiffType): (s: string) => string {
-  switch (diffType) {
-    case DiffType.added:
-      return (s: string): string => green(bold(s));
-    case DiffType.removed:
-      return (s: string): string => red(bold(s));
-    default:
-      return white;
-  }
-}
-
-function createSign(diffType: DiffType): string {
-  switch (diffType) {
-    case DiffType.added:
-      return "+   ";
-    case DiffType.removed:
-      return "-   ";
-    default:
-      return "    ";
-  }
-}
-
-function buildMessage(diffResult: ReadonlyArray<DiffResult<string>>): string[] {
-  const messages: string[] = [];
-  messages.push("");
-  messages.push("");
-  messages.push(
-    `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
-      green(bold("Expected"))
-    }`,
-  );
-  messages.push("");
-  messages.push("");
-  diffResult.forEach((result: DiffResult<string>): void => {
-    const c = createColor(result.type);
-    messages.push(c(`${createSign(result.type)}${result.value}`));
-  });
-  messages.push("");
-
-  return messages;
-}
-
 export function assertEquals$(
   actual: unknown,
   expected: unknown,
@@ -255,21 +201,17 @@ export async function assertEquals$(
   if (await equals(actual, expected)) {
     return;
   }
-  let message = "";
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  let message = `Values are not equal${msgSuffix}`;
+
   const actualString = format(actual);
   const expectedString = format(expected);
-  try {
-    const diffResult = diff(
-      actualString.split("\n"),
-      expectedString.split("\n"),
-    );
-    const diffMsg = buildMessage(diffResult).join("\n");
-    message = `Values are not equal:\n${diffMsg}`;
-  } catch {
-    message = `\n${red("[Cannot display]")} + \n\n`;
-  }
-  if (msg) {
-    message = msg;
-  }
+  const stringDiff = (typeof actual === "string") &&
+    (typeof expected === "string");
+  const diffResult = stringDiff
+    ? diffStr(actual as string, expected as string)
+    : diff(actualString.split("\n"), expectedString.split("\n"));
+  const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+  message = `${message}\n${diffMsg}`;
   throw new AssertionError(message);
 }

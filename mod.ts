@@ -28,6 +28,9 @@ export {
 export {
   allRepresentations,
   anyRepresentations,
+  type ContentTransformer,
+  type PathTransformer,
   Pipeline,
+  type ResourceTransformer,
 } from "./pipeline.ts";
 export { Resource, ResourceError } from "./resource.ts";

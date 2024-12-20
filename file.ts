@@ -2,6 +2,8 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
+import { expandGlob, type ExpandGlobOptions } from "@std/fs/expand-glob";
+import * as log from "@std/log";
 import {
   basename,
   dirname,
@@ -11,21 +13,21 @@ import {
   isGlob,
   join,
   resolve,
-  SEP,
-  SEP_PATTERN,
+  SEPARATOR,
+  SEPARATOR_PATTERN,
   toFileUrl,
-} from "https://deno.land/std@0.206.0/path/mod.ts";
-import {
-  expandGlob,
-  ExpandGlobOptions,
-} from "https://deno.land/std@0.206.0/fs/expand_glob.ts";
-import * as log from "https://deno.land/std@0.206.0/log/mod.ts";
+} from "@std/path";
 import { MediaType, MediaTypeError } from "./media_type.ts";
-import { defaultMime, Mime } from "./mime.ts";
-import { Content, PathTransformer, Pipeline, Resource } from "./pipeline.ts";
-import { rebase as rebaseUrl } from "./path.ts";
-import { ResourceError } from "./resource.ts";
+import { defaultMime, type Mime } from "./mime.ts";
 import { intoMultiView } from "./multiview.ts";
+import { rebase as rebaseUrl } from "./path.ts";
+import {
+  Content,
+  type PathTransformer,
+  Pipeline,
+  Resource,
+} from "./pipeline.ts";
+import { ResourceError } from "./resource.ts";
 
 function getLogger() {
   return log.getLogger("file");
@@ -64,7 +66,7 @@ export function rebase(
  *             a {@link URL} instance, it is returned without any change.
  * @returns A URL which corresponds to the given `path`.
  */
-export function relativePathToFileUrl(path: string | URL) {
+export function relativePathToFileUrl(path: string | URL): URL {
   if (typeof path == "string") {
     if (Deno.build.os !== "windows" || path.indexOf("\\") < 0) {
       try {
@@ -77,7 +79,7 @@ export function relativePathToFileUrl(path: string | URL) {
     }
     const url = toFileUrl(isAbsolute(path) ? path : resolve(path));
     if (
-      path.charAt(path.length - 1).match(SEP_PATTERN) &&
+      path.charAt(path.length - 1).match(SEPARATOR_PATTERN) &&
       !url.pathname.endsWith("/")
     ) {
       url.pathname += "/";
@@ -155,7 +157,7 @@ export function scanFiles(
   async function* watchFileChanges(): AsyncIterable<void> {
     const logger = getLogger();
     let cwd = Deno.cwd();
-    if (!cwd.endsWith(SEP)) cwd += SEP;
+    if (!cwd.endsWith(SEPARATOR)) cwd += SEPARATOR;
     for await (const event of Deno.watchFs(fixedDirs, { recursive: true })) {
       if (event.kind == "access") continue;
       const matched = event.paths.some((p) =>
@@ -173,8 +175,8 @@ export function scanFiles(
 }
 
 function getFixedDirFromGlob(glob: string): string {
-  let fixedDir = `.${SEP}`;
-  for (const match of glob.matchAll(new RegExp(SEP_PATTERN, "g"))) {
+  let fixedDir = `.${SEPARATOR}`;
+  for (const match of glob.matchAll(new RegExp(SEPARATOR_PATTERN, "g"))) {
     if (isGlob(glob.substr(0, match.index ?? 0))) break;
     fixedDir = glob.substr(0, (match.index ?? 0) + match[0].length);
   }

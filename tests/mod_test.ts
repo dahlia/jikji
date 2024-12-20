@@ -2,13 +2,13 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { walk } from "https://deno.land/std@0.206.0/fs/walk.ts";
-import { join, sep } from "https://deno.land/std@0.206.0/path/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.206.0/assert/mod.ts";
-import { tempDirPermissions, withFixture } from "./fixtures.ts";
+import { assertEquals } from "@std/assert";
+import { walk } from "@std/fs/walk";
+import { join, SEPARATOR } from "@std/path";
 import { renderTemplate } from "../ejs.ts";
 import { frontMatter, markdown } from "../markdown.ts";
 import { intoDirectory, rebase, scanFiles, writeFiles } from "../mod.ts";
+import { tempDirPermissions, withFixture } from "./fixtures.ts";
 
 Deno.test({
   name: "sample",
@@ -35,7 +35,7 @@ Deno.test({
         );
 
         await scanFiles(join(srcDir, "posts", "**", "*.md"))
-          .move(rebase(srcDir + sep, baseUrl))
+          .move(rebase(srcDir + SEPARATOR, baseUrl))
           .move(intoDirectory())
           .transform(frontMatter, { type: "text/markdown" })
           .transform(markdown(), { type: "text/markdown" })
@@ -43,7 +43,7 @@ Deno.test({
           .forEach(writeFiles(outDir, baseUrl));
         const outFiles = [];
         for await (const entry of walk(outDir)) {
-          if (entry.isFile && entry.path.startsWith(outDir + sep)) {
+          if (entry.isFile && entry.path.startsWith(outDir + SEPARATOR)) {
             outFiles.push(entry.path.substr(outDir.length + 1));
           }
         }

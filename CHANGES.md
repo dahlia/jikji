@@ -8,6 +8,28 @@ Version 0.4.0
 
 To be released.
 
+ -  Jikji now requires Deno 2.0.0 or later.
+
+ -  Jikji now is distributed on [JSR] as well as deno.land/x.  It exports
+    the following modules:
+
+     -  `@hongminhee/jikji`
+     -  `@hongminhee/jikji/content`
+     -  `@hongminhee/jikji/ejs`
+     -  `@hongminhee/jikji/file`
+     -  `@hongminhee/jikji/log`
+     -  `@hongminhee/jikji/markdown`
+     -  `@hongminhee/jikji/media-type`
+     -  `@hongminhee/jikji/metadata`
+     -  `@hongminhee/jikji/mime`
+     -  `@hongminhee/jikji/multiview`
+     -  `@hongminhee/jikji/path`
+     -  `@hongminhee/jikji/pipeline`
+     -  `@hongminhee/jikji/resource`
+     -  `@hongminhee/jikji/sass`
+
+[JSR]: https://jsr.io/@hongminhee/jikji
+
 
 Version 0.3.0
 -------------

@@ -1,0 +1,68 @@
+name: main
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    env:
+      OS: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: denoland/setup-deno@v2
+      with:
+        deno-version: v2.x
+    - run: deno task lcov
+    - uses: codecov/codecov-action@v2
+      with:
+        files: .cov-profile/cov.lcov
+        env_vars: OS
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: denoland/setup-deno@v2
+      with:
+        deno-version: v2.x
+    - run: deno lint
+    - run: deno fmt --check
+
+  test-examples:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: denoland/setup-deno@v2
+      with:
+        deno-version: v2.x
+    - run: |
+        set -e
+        cd examples/blog/
+        deno run --allow-all --check main.ts
+
+  publish:
+    if: github.event_name == 'push'
+    needs: [test, lint, test-examples]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+    - uses: actions/checkout@v4
+    - uses: denoland/setup-deno@v2
+      with:
+        deno-version: v2.x
+    - if: github.ref_type == 'branch'
+      run: |
+        jq \
+          --arg build "$GITHUB_RUN_NUMBER" \
+          --arg commit "${GITHUB_SHA::8}" \
+          '.version = .version + "-dev." + $build + "+" + $commit' \
+          deno.json > deno.json.tmp
+        mv deno.json.tmp deno.json
+    - if: github.ref_type == 'tag'
+      run: '[[ "$(jq -r .version deno.json)" = "$GITHUB_REF_NAME" ]]'
+    - run: deno publish --allow-dirty

@@ -2,12 +2,12 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import denosass from "https://deno.land/x/denosass@1.0.6/mod.ts";
+import { compileStringAsync } from "sass";
 import { MediaType, MediaTypeError } from "./media_type.ts";
-import { Content, ContentTransformer } from "./pipeline.ts";
+import type { Content, ContentTransformer } from "./pipeline.ts";
 
-export const CSS_MEDIA_TYPE = MediaType.fromString("text/css");
-export const SCSS_MEDIA_TYPE = MediaType.fromString("text/x-scss");
+export const CSS_MEDIA_TYPE: MediaType = MediaType.fromString("text/css");
+export const SCSS_MEDIA_TYPE: MediaType = MediaType.fromString("text/x-scss");
 
 export const REQUIRED_PERMISSIONS: Deno.PermissionOptionsObject = {
   net: ["deno.land"],
@@ -43,24 +43,20 @@ export function sass(options?: Options): ContentTransformer {
       type: CSS_MEDIA_TYPE,
       body: async () => {
         const body = await content.getBody();
-        const bodyBytes = body instanceof Uint8Array
+        const bodyBytes = typeof body === "string"
           ? body
-          : new TextEncoder().encode(body);
-        const sass = denosass(bodyBytes, {
+          : new TextDecoder().decode(body);
+        const sass = await compileStringAsync(bodyBytes, {
           style: options?.outputStyle,
-          load_paths: [],
+          loadPaths: [],
         });
-        const resultBytes = sass.to_buffer();
-        if (resultBytes instanceof Uint8Array) {
-          if (
-            options != null && "asString" in options &&
-            (options as { asString: boolean }).asString
-          ) {
-            return new TextDecoder().decode(resultBytes);
-          }
-          return resultBytes;
+        if (
+          options != null && "asString" in options &&
+          (options as { asString: boolean }).asString
+        ) {
+          return sass.css;
         }
-        throw new Error(`Something went wrong: ${Deno.inspect(resultBytes)}`);
+        return new TextEncoder().encode(sass.css);
       },
     });
   };

@@ -2,11 +2,11 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import {
-  Mime,
-  mime,
-  MimeTypeMap,
-} from "https://deno.land/x/mimetypes@v1.0.0/mod.ts";
+import { Mime } from "mime";
+import otherTypes from "mime/types/other.js";
+import standardTypes from "mime/types/standard.js";
+
+type MimeTypeMap = Record<string, string[]>;
 
 /**
  * Extends a given `mime` object with given `typeMaps`.
@@ -16,10 +16,14 @@ import {
  */
 export function extendMime(mime: Mime, ...typeMaps: MimeTypeMap[]): Mime {
   const mimeTypes: MimeTypeMap = {};
-  mime.types.forEach((type, ext) => {
-    if (type in mimeTypes) mimeTypes[type].push(ext);
-    else mimeTypes[type] = [ext];
-  });
+  const types = mime._getTestState().extensions.keys();
+  for (const type of types) {
+    const extensions = mime.getAllExtensions(type) ?? [];
+    for (const ext of extensions) {
+      if (type in mimeTypes) mimeTypes[type].push(ext);
+      else mimeTypes[type] = [ext];
+    }
+  }
 
   return new Mime(mimeTypes, ...typeMaps);
 }
@@ -27,6 +31,6 @@ export function extendMime(mime: Mime, ...typeMaps: MimeTypeMap[]): Mime {
 /**
  * Default {@link Mime} instance.
  */
-const defaultMime = extendMime(mime);
+const defaultMime: Mime = new Mime(standardTypes, otherTypes);
 
 export { defaultMime, Mime };

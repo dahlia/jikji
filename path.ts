@@ -3,14 +3,18 @@
  * @license LGPL-3.0-only
  */
 import { LanguageTag, LanguageTagError } from "./language_tag.ts";
-import { PathTransformer, Resource, ResourceTransformer } from "./pipeline.ts";
+import {
+  type PathTransformer,
+  Resource,
+  type ResourceTransformer,
+} from "./pipeline.ts";
 
 /**
  * An identity {@link PathTransformer} that does nothing.
  * @param path The path (not) to transform.
  * @returns The given `path` as-is.
  */
-export function identity(path: URL) {
+export function identity(path: URL): URL {
   return path;
 }
 

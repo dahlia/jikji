@@ -2,15 +2,15 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import MarkdownIt from "npm:markdown-it@13.0.1";
-import abbr from "npm:markdown-it-abbr@1.0.4";
-import attrs from "npm:markdown-it-attrs@4.1.4";
-import bracketedSpans from "npm:markdown-it-bracketed-spans@1.0.1";
-import deflist from "npm:markdown-it-deflist@2.1.0";
-import footnote from "npm:markdown-it-footnote@3.0.3";
-import title from "npm:markdown-it-title@4.0.0";
-import * as yaml from "https://deno.land/std@0.206.0/yaml/mod.ts";
-import { Content, ContentTransformer, MediaType } from "./pipeline.ts";
+import * as yaml from "@std/yaml";
+import MarkdownIt from "markdown-it";
+import abbr from "markdown-it-abbr";
+import attrs from "markdown-it-attrs";
+import bracketedSpans from "markdown-it-bracketed-spans";
+import deflist from "markdown-it-deflist";
+import footnote from "markdown-it-footnote";
+import title from "markdown-it-title";
+import { Content, type ContentTransformer, MediaType } from "./pipeline.ts";
 
 /**
  * Parses front matter in the given {@link Content} (if exists) and turn it
@@ -23,7 +23,7 @@ import { Content, ContentTransformer, MediaType } from "./pipeline.ts";
  * @param content The content to parse its front matter.
  * @returns The distinct content with front matter turned to metadata.
  */
-export function frontMatter(content: Content) {
+export function frontMatter(content: Content): Content {
   const frontMatterPattern = /^\ufeff?---\r?\n((.+?\r?\n)*?)---\r?\n/;
   const charset = content.type.parameters.charset;
   return new Content(

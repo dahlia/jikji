@@ -2,15 +2,8 @@
  * @copyright 2021–2024 Hong Minhee
  * @license LGPL-3.0-only
  */
-import { basename } from "https://deno.land/std@0.206.0/path/mod.ts";
-import {
-  assert,
-  assertEquals,
-  assertRejects,
-  assertThrows,
-} from "https://deno.land/std@0.206.0/assert/mod.ts";
-import { assertEquals$ } from "./asserts.ts";
-import { makeResources } from "./fixtures.ts";
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
+import { basename } from "@std/path";
 import { Content, ContentKeyError } from "../content.ts";
 import { LanguageTag, LanguageTagError } from "../language_tag.ts";
 import { MediaType, MediaTypeError } from "../media_type.ts";
@@ -23,10 +16,12 @@ import {
   Pipeline,
   replace,
   Resource,
-  ResourceDivider,
+  type ResourceDivider,
   ResourceSet,
   transform,
 } from "../pipeline.ts";
+import { assertEquals$ } from "./asserts.ts";
+import { makeResources } from "./fixtures.ts";
 
 async function toArray<T>(iterable: AsyncIterable<T>): Promise<T[]> {
   const result: T[] = [];

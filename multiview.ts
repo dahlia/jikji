@@ -4,13 +4,13 @@
  */
 import {
   Content,
-  ContentBody,
-  ContentKey,
+  type ContentBody,
+  type ContentKey,
   LanguageTag,
-  MediaType,
+  type MediaType,
 } from "./content.ts";
 import { defaultMime } from "./mime.ts";
-import { Resource, ResourceDivider } from "./pipeline.ts";
+import { Resource, type ResourceDivider } from "./pipeline.ts";
 
 /**
  * Represents multiple views, i.e., concrete files with different contents for

@@ -1,10 +1,8 @@
 {
   "deno.codeLens.implementations": true,
   "deno.codeLens.references": true,
-  "deno.config": "./deno.json",
   "deno.enable": true,
   "deno.lint": true,
-  "deno.unstable": false,
   "deno.testing.args": [
     "--allow-read",
     "--allow-write",
@@ -14,7 +12,10 @@
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
   "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
+    "editor.defaultFormatter": "denoland.vscode-deno",
+    "editor.codeActionsOnSave": {
+      "source.sortImports": "always"
+    }
   },
   "cSpell.words": [
     "backreferences",

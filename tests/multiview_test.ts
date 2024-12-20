@@ -1,20 +1,17 @@
-import {
-  assertEquals,
-  assertNotEquals,
-} from "https://deno.land/std@0.206.0/assert/mod.ts";
+import { assertEquals, assertNotEquals } from "@std/assert";
 import {
   DOMParser,
-  Element,
+  type Element,
 } from "https://deno.land/x/deno_dom@v0.1.31-alpha/deno-dom-wasm.ts";
-import { assertEquals$ } from "./asserts.ts";
 import { Content, ContentKey, LanguageTag, MediaType } from "../content.ts";
 import {
   _negotiateUsingClientSideJavaScript$internal,
   htmlRedirector,
   intoMultiView,
-  MultiView,
+  type MultiView,
 } from "../multiview.ts";
 import { Resource } from "../resource.ts";
+import { assertEquals$ } from "./asserts.ts";
 
 async function toArray<T>(
   iterable: Iterable<T> | AsyncIterable<T>,
@@ -65,8 +62,8 @@ Deno.test("intoMultiView()", async () => {
         ]),
       ],
       [
-        "https://example.com/index.en.markdown",
-        new Resource("https://example.com/index.en.markdown", [
+        "https://example.com/index.en.md",
+        new Resource("https://example.com/index.en.md", [
           enMarkdown.replace({
             metadata: {
               multiViews,
@@ -87,8 +84,8 @@ Deno.test("intoMultiView()", async () => {
         ]),
       ],
       [
-        "https://example.com/index.jje.markdown",
-        new Resource("https://example.com/index.jje.markdown", [
+        "https://example.com/index.jje.md",
+        new Resource("https://example.com/index.jje.md", [
           jjeMarkdown.replace({
             metadata: {
               multiViews,
@@ -109,8 +106,8 @@ Deno.test("intoMultiView()", async () => {
         ]),
       ],
       [
-        "https://example.com/index.zh.markdown",
-        new Resource("https://example.com/index.zh.markdown", [
+        "https://example.com/index.zh.md",
+        new Resource("https://example.com/index.zh.md", [
           zhMarkdown.replace({
             metadata: {
               multiViews,
@@ -167,9 +164,9 @@ Deno.test("intoMultiView()", async () => {
               "text/html [en]: https://example.com/index.en.html\n" +
               "text/html [jje]: https://example.com/index.jje.html\n" +
               "text/html [zh]: https://example.com/index.zh.html\n" +
-              "text/markdown [en]: https://example.com/index.en.markdown\n" +
-              "text/markdown [jje]: https://example.com/index.jje.markdown\n" +
-              "text/markdown [zh]: https://example.com/index.zh.markdown\n" +
+              "text/markdown [en]: https://example.com/index.en.md\n" +
+              "text/markdown [jje]: https://example.com/index.jje.md\n" +
+              "text/markdown [zh]: https://example.com/index.zh.md\n" +
               "default:\n" +
               "<h1>Hello</h1>",
             "text/html",
